@@ -33,6 +33,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
+import FormHelperText from "@material-ui/core/FormHelperText";
+
 const StyledTableCell = withStyles((theme) => ({
   head: {
     backgroundColor: theme.palette.common.black,
@@ -80,7 +82,14 @@ const SignUp = () => {
     { id: "", type: "" },
   ]);
   const [chartofaccounts, getChartOfAccounts] = useState([
-    { Id: 0, type: "", Title: "", Description: "", Code: "", AccountTypeId: 0 },
+    {
+      Id: 0,
+      type: "",
+      Title: "",
+      Description: "",
+      Code: "",
+      AccountTypeId: "",
+    },
   ]);
 
   const [open, setOpen] = React.useState(false);
@@ -92,7 +101,7 @@ const SignUp = () => {
   const [addMode, setAddMode] = useState(true);
   const initialValues = {
     id: 0,
-    accountTypeId: "0",
+    accountTypeId: "",
     title: "",
     description: "",
     code: "",
@@ -101,8 +110,8 @@ const SignUp = () => {
 
   const handleClose = () => {
     setAddMode(true);
-     setFormValues(null);
-     setOpen(false);
+    setFormValues(null);
+    setOpen(false);
   };
 
   useEffect(() => {
@@ -208,22 +217,27 @@ const SignUp = () => {
     setAddMode(false);
     handleClickOpen(true);
     console.log(row);
-
   };
 
-  
+  const testSchema = Yup.object().shape({
+    accountTypeId: Yup.string().required("Please Enter Type"),
+    title: Yup.string().required("Please Enter Title"),
+    description: Yup.string().required("Please Enter Description"),
+    code: Yup.string().required("Please Enter Code"),
+  });
 
-  return ( 
+  return (
     <div className={classes.root}>
       <Formik
         initialValues={formValues || initialValues}
         enableReinitialize={true}
         //resetForm={true}
+        validationSchema={testSchema}
         onSubmit={(values, { resetForm }) => {
           //console.log(values);
           //resetForm();
-          handleSubmit(values, resetForm);          
-        }}   
+          handleSubmit(values, resetForm);
+        }}
       >
         {(props) => {
           const {
@@ -232,7 +246,7 @@ const SignUp = () => {
             errors,
             handleBlur,
             handleChange,
-            resetForm
+            resetForm,
           } = props;
 
           return (
@@ -241,7 +255,9 @@ const SignUp = () => {
                 <Button
                   variant="outlined"
                   color="primary"
-                  onClick={() => {handleClickOpen(); }}
+                  onClick={() => {
+                    handleClickOpen();
+                  }}
                 >
                   Open form dialog
                 </Button>
@@ -250,7 +266,9 @@ const SignUp = () => {
                   onClose={handleClose}
                   aria-labelledby="form-dialog-title"
                 >
-                  <DialogTitle id="form-dialog-title">{addMode ? 'New Account' : 'Edit Count' }</DialogTitle>
+                  <DialogTitle id="form-dialog-title">
+                    {addMode ? "New Account" : "Edit Count"}
+                  </DialogTitle>
                   <DialogContent>
                     <Form id="coaForm">
                       <Grid container justify="space-around" direction="row">
@@ -265,16 +283,29 @@ const SignUp = () => {
                             value={values.accountTypeId}
                             onChange={handleChange}
                             onBlur={handleBlur}
+                            error={
+                              errors.accountTypeId && touched.accountTypeId
+                                ? true
+                                : false
+                            }
                           >
-                            <MuiMenuItem key={0} value={0}>
-                              Please Select ...
-                            </MuiMenuItem>
                             {chartofaccounttypes.map((label, key) => (
                               <MuiMenuItem key={key} value={label.id}>
                                 {label.type}
                               </MuiMenuItem>
                             ))}
                           </MuiSelect>
+                          <FormHelperText
+                            error={
+                              errors.accountTypeId && touched.accountTypeId
+                                ? true
+                                : false
+                            }
+                          >
+                            {errors.accountTypeId && touched.accountTypeId
+                              ? errors.accountTypeId
+                              : "Enter Type."}
+                          </FormHelperText>
                         </Grid>
                         <Grid item xs={12} className={classes.textField}>
                           <TextField
@@ -285,7 +316,7 @@ const SignUp = () => {
                             type="text"
                             helperText={
                               errors.title && touched.title
-                                ? errors.type
+                                ? errors.title
                                 : "Enter Title."
                             }
                             error={errors.title && touched.title ? true : false}
@@ -305,7 +336,11 @@ const SignUp = () => {
                                 ? errors.description
                                 : "Enter Description."
                             }
-                            error={errors.description && touched.description ? true : false}
+                            error={
+                              errors.description && touched.description
+                                ? true
+                                : false
+                            }
                             onChange={handleChange}
                             onBlur={handleBlur}
                           />
