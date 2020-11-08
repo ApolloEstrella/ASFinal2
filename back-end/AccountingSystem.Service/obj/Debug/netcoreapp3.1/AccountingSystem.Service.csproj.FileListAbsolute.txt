@@ -1,0 +1,9 @@
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\bin\Debug\netcoreapp3.1\AccountingSystem.Service.deps.json
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\bin\Debug\netcoreapp3.1\AccountingSystem.Service.dll
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\bin\Debug\netcoreapp3.1\AccountingSystem.Service.pdb
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\obj\Debug\netcoreapp3.1\AccountingSystem.Service.csprojAssemblyReference.cache
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\obj\Debug\netcoreapp3.1\AccountingSystem.Service.AssemblyInfoInputs.cache
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\obj\Debug\netcoreapp3.1\AccountingSystem.Service.AssemblyInfo.cs
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\obj\Debug\netcoreapp3.1\AccountingSystem.Service.csproj.CoreCompileInputs.cache
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\obj\Debug\netcoreapp3.1\AccountingSystem.Service.dll
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Service\obj\Debug\netcoreapp3.1\AccountingSystem.Service.pdb

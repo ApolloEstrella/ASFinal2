@@ -8,6 +8,8 @@ import {
   InputLabel,
   withStyles,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 
 import MuiSelect from "@material-ui/core/Select";
@@ -107,12 +109,15 @@ const SignUp = () => {
     code: "",
   };
   const [formValues, setFormValues] = useState(null);
-
   const handleClose = () => {
     setAddMode(true);
     setFormValues(null);
     setOpen(false);
   };
+  const [openDelete, setOpenDelete] = React.useState(false);
+  const [deleteItemId, setDeleteItemId] = React.useState(null);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     fetch("https://localhost:44302/api/chartofaccount/gettypes", {
@@ -195,7 +200,13 @@ const SignUp = () => {
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDeleteConfirmation = (id) => {
+    setOpenDelete(true);
+    setDeleteItemId(id)
+  };
+
+  const handleDelete = () => {
+    const id = deleteItemId
     fetch("https://localhost:44302/api/chartofaccount/deleteaccount/" + id, {
       method: "DELETE",
       headers: {
@@ -206,6 +217,7 @@ const SignUp = () => {
       .then((data) => {
         setCount(count + 1);
         setSubmitting(false);
+        setOpenDelete(false);
       })
       .catch(function (error) {
         console.log("network error");
@@ -217,6 +229,14 @@ const SignUp = () => {
     setAddMode(false);
     handleClickOpen(true);
     console.log(row);
+  };
+
+  const handleClickOpenDelete = () => {
+    //setOpenDelete(true);
+  };
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
   };
 
   const testSchema = Yup.object().shape({
@@ -385,6 +405,40 @@ const SignUp = () => {
                 </Dialog>
               </div>
 
+              <div>
+                <Dialog
+                  fullScreen={fullScreen}
+                  open={openDelete}
+                  onClose={handleClose}
+                  aria-labelledby="responsive-dialog-title"
+                >
+                  <DialogTitle id="responsive-dialog-title">
+                    DELETE CONFIRMATION
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                       Are you sure you want to delete?
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      autoFocus
+                      onClick={() => handleCloseDelete()}
+                      color="primary"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => handleDelete()}
+                      color="primary"
+                      autoFocus
+                    >
+                      Delete
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </div>
+
               <br></br>
               <TableContainer component={Paper}>
                 <Table className={classes.table} aria-label="customized table">
@@ -425,7 +479,7 @@ const SignUp = () => {
                           </IconButton>
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <IconButton onClick={() => handleDelete(row.id)}>
+                          <IconButton onClick={() => handleDeleteConfirmation(row.id)}>
                             <DeleteIcon />
                           </IconButton>
                         </StyledTableCell>

@@ -1,0 +1,12 @@
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.deps.json
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.dll
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.AssemblyInfoInputs.cache
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.AssemblyInfo.cs
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.runtimeconfig.json
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.runtimeconfig.dev.json
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.pdb
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.dll
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.pdb
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.genruntimeconfig.cache
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.csproj.CoreCompileInputs.cache
+D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.csprojAssemblyReference.cache
