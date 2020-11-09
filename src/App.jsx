@@ -18,6 +18,7 @@ import StorageService from "../src/services/storage.service";
 import store from "./store";
 import Logout from "./components/authentications/logout";
 import ChartOfAccounts from "./components/libraries/chart-of-account";
+import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-account";
 
 const storageService = new StorageService();
 
@@ -129,9 +130,19 @@ const App = (props) => {
                       <>
                         <Button
                           color="inherit"
-                          onClick={() => handleButtonClick("/chart-of-accounts")}
+                          onClick={() =>
+                            handleButtonClick("/chart-of-accounts")
+                          }
                         >
                           Chart of Accounts
+                        </Button>
+                        <Button
+                          color="inherit"
+                          onClick={() =>
+                            handleButtonClick("/subsidiary-ledger-accounts")
+                          }
+                        >
+                          Subsidiary Ledger Account Names
                         </Button>
                         <Button
                           color="inherit"
@@ -180,6 +191,11 @@ const App = (props) => {
           exact
           path="/chart-of-accounts"
           render={(props) => <ChartOfAccounts {...props} />}
+        />
+        <Route
+          exact
+          path="/subsidiary-ledger-accounts"
+          render={(props) => <SubsidiaryLedgerAccounts {...props} />}
         />
       </Switch>
     </div>

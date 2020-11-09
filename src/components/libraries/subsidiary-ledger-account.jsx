@@ -5,17 +5,14 @@ import {
   Button,
   makeStyles,
   createStyles,
-  InputLabel,
   withStyles,
   IconButton,
   useMediaQuery,
   useTheme,
 } from "@material-ui/core";
 
-import MuiSelect from "@material-ui/core/Select";
-import MuiMenuItem from "@material-ui/core/MenuItem";
 
-import { Formik, Form, FormikProps } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
 import Table from "@material-ui/core/Table";
@@ -35,7 +32,6 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
-import FormHelperText from "@material-ui/core/FormHelperText";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -76,14 +72,12 @@ const useStyles = makeStyles((theme) =>
   })
 );
 
-const ChartOfAccounts = () => {
+const SubsidiaryLedgerAccounts = () => {
   const classes = useStyles();
   const [count, setCount] = useState(0);
   const [isSubmitting, setSubmitting] = useState(false);
-  const [chartofaccounttypes, getChartOfAccountTypes] = useState([
-    { id: "", type: "" },
-  ]);
-  const [chartofaccounts, getChartOfAccounts] = useState([
+   
+  const [subsidiaryLedgerAccounts, getSubsidiaryLedgerAccounts] = useState([
     {
       Id: 0,
       type: "",
@@ -103,10 +97,7 @@ const ChartOfAccounts = () => {
   const [addMode, setAddMode] = useState(true);
   const initialValues = {
     id: 0,
-    accountTypeId: "",
-    title: "",
-    description: "",
-    code: "",
+    name: "" 
   };
   const [formValues, setFormValues] = useState(null);
   const handleClose = () => {
@@ -120,23 +111,7 @@ const ChartOfAccounts = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/chartofaccount/gettypes", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((results) => results.json())
-      .then((data) => {
-        getChartOfAccountTypes(data);
-      })
-      .catch(function (error) {
-        console.log("network error");
-      });
-  }, [count]);
-
-  useEffect(() => {
-    fetch("https://localhost:44302/api/chartofaccount/get", {
+    fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -145,7 +120,7 @@ const ChartOfAccounts = () => {
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
-        getChartOfAccounts(data);
+        getSubsidiaryLedgerAccounts(data);
       })
       .catch(function (error) {
         console.log("network error");
@@ -155,7 +130,7 @@ const ChartOfAccounts = () => {
   const handleSubmit = (values, resetForm) => {
     if (addMode) {
       values.id = 0;
-      fetch("https://localhost:44302/api/chartofaccount/addaccount", {
+      fetch("https://localhost:44302/api/SubsidiaryLedger/addaccount", {
         method: "POST",
         body: JSON.stringify(values),
         headers: {
@@ -176,7 +151,7 @@ const ChartOfAccounts = () => {
           setAddMode(true);
         });
     } else {
-      fetch("https://localhost:44302/api/chartofaccount/EditAccount", {
+      fetch("https://localhost:44302/api/SubsidiaryLedger/EditAccount", {
         method: "PUT",
         body: JSON.stringify(values),
         headers: {
@@ -207,7 +182,7 @@ const ChartOfAccounts = () => {
 
   const handleDelete = () => {
     const id = deleteItemId;
-    fetch("https://localhost:44302/api/chartofaccount/deleteaccount/" + id, {
+    fetch("https://localhost:44302/api/SubsidiaryLedger/deleteaccount/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -231,19 +206,12 @@ const ChartOfAccounts = () => {
     console.log(row);
   };
 
-  const handleClickOpenDelete = () => {
-    //setOpenDelete(true);
-  };
-
   const handleCloseDelete = () => {
     setOpenDelete(false);
   };
 
   const testSchema = Yup.object().shape({
-    accountTypeId: Yup.string().required("Please Enter Type"),
-    title: Yup.string().required("Please Enter Title"),
-    description: Yup.string().required("Please Enter Description"),
-    code: Yup.string().required("Please Enter Code"),
+    name: Yup.string().required("Please Enter Name") 
   });
 
   return (
@@ -266,7 +234,6 @@ const ChartOfAccounts = () => {
             errors,
             handleBlur,
             handleChange,
-            resetForm,
           } = props;
 
           return (
@@ -292,97 +259,22 @@ const ChartOfAccounts = () => {
                   <DialogContent>
                     <Form id="coaForm">
                       <Grid container justify="space-around" direction="row">
-                        <Grid item xs={12}>
-                          <InputLabel id="type">Type</InputLabel>
-                          <MuiSelect
-                            fullWidth
-                            name="accountTypeId"
-                            id="accountTypeId"
-                            labelId="Type"
-                            //defaultValue="0"
-                            value={values.accountTypeId}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={
-                              errors.accountTypeId && touched.accountTypeId
-                                ? true
-                                : false
-                            }
-                          >
-                            {chartofaccounttypes.map((label, key) => (
-                              <MuiMenuItem key={key} value={label.id}>
-                                {label.type}
-                              </MuiMenuItem>
-                            ))}
-                          </MuiSelect>
-                          <FormHelperText
-                            error={
-                              errors.accountTypeId && touched.accountTypeId
-                                ? true
-                                : false
-                            }
-                          >
-                            {errors.accountTypeId && touched.accountTypeId
-                              ? errors.accountTypeId
-                              : "Enter Type."}
-                          </FormHelperText>
-                        </Grid>
                         <Grid item xs={12} className={classes.textField}>
                           <TextField
-                            name="title"
-                            id="title"
-                            label="Title"
-                            value={values.title}
+                            name="name"
+                            id="name"
+                            label="Name"
+                            value={values.name}
                             type="text"
                             helperText={
-                              errors.title && touched.title
-                                ? errors.title
-                                : "Enter Title."
+                              errors.name && touched.name
+                                ? errors.name
+                                : "Enter Name."
                             }
-                            error={errors.title && touched.title ? true : false}
+                            error={errors.name && touched.name ? true : false}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            inputProps={{ maxLength: 50 }}
-                          />
-                        </Grid>
-                        <Grid item xs={12} className={classes.textField}>
-                          <TextField
-                            name="description"
-                            id="description"
-                            label="Description"
-                            value={values.description}
-                            type="text"
-                            helperText={
-                              errors.description && touched.description
-                                ? errors.description
-                                : "Enter Description."
-                            }
-                            error={
-                              errors.description && touched.description
-                                ? true
-                                : false
-                            }
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            inputProps={{ maxLength: 50 }}
-                          />
-                        </Grid>
-                        <Grid item xs={12} className={classes.textField}>
-                          <TextField
-                            name="code"
-                            id="code"
-                            label="Code"
-                            value={values.code}
-                            type="text"
-                            helperText={
-                              errors.code && touched.code
-                                ? errors.code
-                                : "Enter Code."
-                            }
-                            error={errors.code && touched.code ? true : false}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            inputProps={{ maxLength: 30 }}
+                            inputProps={{ maxLength: 100 }}
                           />
                         </Grid>
                         <Grid item xs={12} className={classes.submitButton}>
@@ -392,7 +284,6 @@ const ChartOfAccounts = () => {
                             variant="contained"
                             color="secondary"
                             disabled={isSubmitting}
-                            //onClick={handleClose}
                           >
                             Submit
                           </Button>
@@ -447,31 +338,17 @@ const ChartOfAccounts = () => {
                 <Table className={classes.table} aria-label="customized table">
                   <TableHead>
                     <TableRow>
-                      <StyledTableCell>Type</StyledTableCell>
-                      <StyledTableCell align="right">Title</StyledTableCell>
-                      <StyledTableCell align="right">
-                        Description
-                      </StyledTableCell>
-                      <StyledTableCell align="right">Code</StyledTableCell>
-                      <StyledTableCell align="right">Id</StyledTableCell>
+                      <StyledTableCell>Name</StyledTableCell>
+                      <StyledTableCell align="right">id</StyledTableCell>
                       <StyledTableCell align="right">Edit</StyledTableCell>
                       <StyledTableCell align="right">Delete</StyledTableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {chartofaccounts.map((row, index) => (
+                    {subsidiaryLedgerAccounts.map((row, index) => (
                       <StyledTableRow key={index}>
                         <StyledTableCell component="th" scope="row">
-                          {row.type}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          {row.description}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          {row.title}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          {row.code}
+                          {row.name}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           {row.id}
@@ -501,4 +378,4 @@ const ChartOfAccounts = () => {
   );
 };
 
-export default ChartOfAccounts;
+export default SubsidiaryLedgerAccounts;

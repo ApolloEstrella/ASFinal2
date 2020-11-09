@@ -43,6 +43,7 @@ namespace AccountingSystem
             services.AddDbContext<accounting_systemContext>(options => options.UseSqlServer("Server=DESKTOP-GT4AAMB;Database=accounting_system;Trusted_Connection=True;"));
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IChartOfAccountService, ChartOfAccountService>();
+            services.AddScoped<ISubsdiaryLedgerService, SubsdiaryLedgerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
