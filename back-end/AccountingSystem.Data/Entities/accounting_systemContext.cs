@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace AccountingSystem.Data.Models
+namespace AccountingSystem.Data.Entities
 {
     public partial class accounting_systemContext : DbContext
     {
@@ -20,6 +20,7 @@ namespace AccountingSystem.Data.Models
         public virtual DbSet<ChartOfAccount> ChartOfAccounts { get; set; }
         public virtual DbSet<ChartOfAccountsCategory> ChartOfAccountsCategories { get; set; }
         public virtual DbSet<ChartOfAccountsType> ChartOfAccountsTypes { get; set; }
+        public virtual DbSet<SubsidiaryLedgerAccountName> SubsidiaryLedgerAccountNames { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -96,6 +97,18 @@ namespace AccountingSystem.Data.Models
                     .HasForeignKey(d => d.CategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_category_id");
+            });
+
+            modelBuilder.Entity<SubsidiaryLedgerAccountName>(entity =>
+            {
+                entity.ToTable("subsidiary_ledger_account_name");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnName("name");
             });
 
             modelBuilder.Entity<User>(entity =>

@@ -22,14 +22,6 @@ namespace AccountingSystem.Services
 
         public List<ChartOfAccountModel> GetChartOfAccount()
         {
-            var x = (from a in _serverContext.ChartOfAccounts
-                            join b in _serverContext.ChartOfAccountsTypes
-                            on a.AccountTypeId equals b.Id
-                            join c in _serverContext.ChartOfAccountsCategories
-                            on b.CategoryId equals c.Id
-                            select new { a.Id, b.Type, a.Title, Category_Id = c.Id, a.Description, a.Code }).ToList()
-                     .Select(x => new ChartOfAccountModel { Id = x.Id, Type = x.Type, Title = x.Title, Description = x.Description, Code = x.Code }).OrderBy(x => x.Type).ToList();
-
             return (from a in _serverContext.ChartOfAccounts
                     join b in _serverContext.ChartOfAccountsTypes
                     on a.AccountTypeId equals b.Id

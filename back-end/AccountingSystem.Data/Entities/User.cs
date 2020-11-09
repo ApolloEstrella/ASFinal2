@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace AccountingSystem.Data.Models
+namespace AccountingSystem.Data.Entities
 {
     public partial class User
     {

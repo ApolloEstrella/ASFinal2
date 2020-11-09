@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj": {}
+    "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj": {}
   },
   "projects": {
-    "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj": {
+    "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj",
+        "projectUniqueName": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj",
         "projectName": "AccountingSystem.Data",
-        "projectPath": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj",
+        "projectPath": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj",
         "packagesPath": "C:\\Users\\stars\\.nuget\\packages\\",
-        "outputPath": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\obj\\",
+        "outputPath": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

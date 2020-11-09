@@ -7994,11 +7994,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem\\AccountingSystem.csproj",
+      "projectUniqueName": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem\\AccountingSystem.csproj",
       "projectName": "AccountingSystem",
-      "projectPath": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem\\AccountingSystem.csproj",
+      "projectPath": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem\\AccountingSystem.csproj",
       "packagesPath": "C:\\Users\\stars\\.nuget\\packages\\",
-      "outputPath": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem\\obj\\",
+      "outputPath": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -8018,8 +8018,8 @@
       "frameworks": {
         "netcoreapp3.1": {
           "projectReferences": {
-            "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj": {
-              "projectPath": "D:\\MyProjects\\accounting-system-saas\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj"
+            "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj": {
+              "projectPath": "D:\\TestProjects\\accounting-system\\ASFinal2\\back-end\\AccountingSystem.Data\\AccountingSystem.Data.csproj"
             }
           }
         }
