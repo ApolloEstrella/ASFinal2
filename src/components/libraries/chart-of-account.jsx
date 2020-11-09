@@ -279,7 +279,7 @@ const SignUp = () => {
                     handleClickOpen();
                   }}
                 >
-                  Open form dialog
+                  New
                 </Button>
                 <Dialog
                   open={open}
@@ -287,7 +287,7 @@ const SignUp = () => {
                   aria-labelledby="form-dialog-title"
                 >
                   <DialogTitle id="form-dialog-title">
-                    {addMode ? "New Account" : "Edit Count"}
+                    {addMode ? "New Account" : "Edit Account"}
                   </DialogTitle>
                   <DialogContent>
                     <Form id="coaForm">
@@ -342,6 +342,7 @@ const SignUp = () => {
                             error={errors.title && touched.title ? true : false}
                             onChange={handleChange}
                             onBlur={handleBlur}
+                            inputProps={{ maxLength: 50 }}
                           />
                         </Grid>
                         <Grid item xs={12} className={classes.textField}>
@@ -363,6 +364,7 @@ const SignUp = () => {
                             }
                             onChange={handleChange}
                             onBlur={handleBlur}
+                            inputProps={{ maxLength: 50 }}
                           />
                         </Grid>
                         <Grid item xs={12} className={classes.textField}>
@@ -380,6 +382,7 @@ const SignUp = () => {
                             error={errors.code && touched.code ? true : false}
                             onChange={handleChange}
                             onBlur={handleBlur}
+                            inputProps={{ maxLength: 30 }}
                           />
                         </Grid>
                         <Grid item xs={12} className={classes.submitButton}>
@@ -417,7 +420,7 @@ const SignUp = () => {
                   </DialogTitle>
                   <DialogContent>
                     <DialogContentText>
-                       Are you sure you want to delete?
+                      Are you sure you want to delete?
                     </DialogContentText>
                   </DialogContent>
                   <DialogActions>
@@ -479,7 +482,9 @@ const SignUp = () => {
                           </IconButton>
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <IconButton onClick={() => handleDeleteConfirmation(row.id)}>
+                          <IconButton
+                            onClick={() => handleDeleteConfirmation(row.id)}
+                          >
                             <DeleteIcon />
                           </IconButton>
                         </StyledTableCell>
