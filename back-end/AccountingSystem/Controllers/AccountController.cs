@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using AccountingSystem.Data;
 using AccountingSystem.Services.Interfaces;
-using AccountingSystem.Data.Models;
 using Microsoft.AspNetCore.Cors;
+using AccountingSystem.Data.Entities;
 
 namespace AccountingSystem.Controllers
 {

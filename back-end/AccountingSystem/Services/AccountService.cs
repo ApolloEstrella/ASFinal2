@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AccountingSystem.Services.Interfaces;
-using AccountingSystem.Data.Models;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net.Http;
 using System.Net;
+using AccountingSystem.Data.Entities;
 
 namespace AccountingSystem.Services
 {

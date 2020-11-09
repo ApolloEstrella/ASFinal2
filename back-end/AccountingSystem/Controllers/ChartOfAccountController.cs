@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using AccountingSystem.Services.Interfaces;
-using AccountingSystem.Data.Models;
+using AccountingSystem.Data.Entities;
 
 namespace AccountingSystem.Controllers
 {

@@ -11,10 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using AccountingSystem.Data;
-using AccountingSystem.Data.Models;
 using AccountingSystem.Services;
 using AccountingSystem.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using AccountingSystem.Data.Entities;
 
 namespace AccountingSystem
 {

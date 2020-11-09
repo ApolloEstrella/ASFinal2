@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AccountingSystem.Data.Models;
+using AccountingSystem.Data.Entities;
 
 namespace AccountingSystem.Services.Interfaces
 {

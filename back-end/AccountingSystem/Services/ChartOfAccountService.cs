@@ -4,11 +4,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using AccountingSystem.Data.Models;
 using AccountingSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AccountingSystem.Models;
+using AccountingSystem.Data.Entities;
 
 namespace AccountingSystem.Services
 {

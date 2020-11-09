@@ -10,3 +10,14 @@ D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\ne
 D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.genruntimeconfig.cache
 D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.csproj.CoreCompileInputs.cache
 D:\MyProjects\accounting-system-saas\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.csprojAssemblyReference.cache
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.deps.json
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.runtimeconfig.json
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.runtimeconfig.dev.json
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.dll
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\bin\Debug\netcoreapp3.1\AccountingSystem.Data.pdb
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.AssemblyInfoInputs.cache
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.AssemblyInfo.cs
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.csproj.CoreCompileInputs.cache
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.dll
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.pdb
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.genruntimeconfig.cache
