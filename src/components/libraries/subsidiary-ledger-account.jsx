@@ -80,11 +80,7 @@ const SubsidiaryLedgerAccounts = () => {
   const [subsidiaryLedgerAccounts, getSubsidiaryLedgerAccounts] = useState([
     {
       Id: 0,
-      type: "",
-      Title: "",
-      Description: "",
-      Code: "",
-      AccountTypeId: "",
+      name: "" 
     },
   ]);
 

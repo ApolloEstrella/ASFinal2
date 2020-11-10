@@ -1,0 +1,186 @@
+/* eslint-disable no-use-before-define */
+import React, { useState, useEffect } from "react";
+import TextField from "@material-ui/core/TextField";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogActions from "@material-ui/core/DialogActions";
+import Button from "@material-ui/core/Button";
+import Autocomplete, {
+  createFilterOptions,
+} from "@material-ui/lab/Autocomplete";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+
+const filter = createFilterOptions();
+
+const SalesInvoice = () => {
+  const [value, setValue] = useState(null);
+  const [open, toggleOpen] = useState(false);
+  const [count, setCount] = useState(0);
+
+  const handleClose = () => {
+    //setDialogValue({
+    //  name: "",
+    //});
+
+    toggleOpen(false);
+  };
+
+  const [dialogValue, setDialogValue] = useState({
+    name: "",
+  });
+
+  const [subsidiaryLedgerAccounts, getSubsidiaryLedgerAccounts] = useState([
+    {
+      Id: 0,
+      name: "",
+    },
+  ]);
+
+  useEffect(() => {
+    fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        console.log(data);
+        getSubsidiaryLedgerAccounts(data);
+      })
+      .catch(function (error) {
+        console.log("network error");
+      });
+  }, [count]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setValue({
+      name: dialogValue.name,
+    });
+
+    handleClose();
+  };
+
+  const handleAddAccount = (event) => {
+    event.preventDefault();
+
+    fetch("https://localhost:44302/api/SubsidiaryLedger/addaccount", {
+      method: "POST",
+      body: JSON.stringify({ id: 0, name: dialogValue.name }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        setCount(count + 1);
+        setValue({
+          name: dialogValue.name,
+        });
+      })
+      .catch(function (error) {
+        console.log("network error");
+      });
+
+    handleClose();
+  };
+
+  return (
+    <React.Fragment>
+      <Autocomplete
+        value={value}
+        onChange={(event, newValue) => {
+          if (typeof newValue === "string") {
+            // timeout to avoid instant validation of the dialog's form.
+            setTimeout(() => {
+              toggleOpen(true);
+              setDialogValue({
+                name: newValue,
+              });
+            });
+          } else if (newValue && newValue.inputValue) {
+            toggleOpen(true);
+            setDialogValue({
+              name: newValue.inputValue,
+            });
+          } else {
+            setValue(newValue);
+          }
+        }}
+        filterOptions={(options, params) => {
+          const filtered = filter(options, params);
+
+          if (params.inputValue !== "") {
+            filtered.push({
+              inputValue: params.inputValue,
+              name: `Add "${params.inputValue}"`,
+            });
+          }
+
+          return filtered;
+        }}
+        id="free-solo-dialog-demo"
+        options={subsidiaryLedgerAccounts}
+        getOptionLabel={(option) => {
+          // e.g value selected with enter, right from the input
+          if (typeof option === "string") {
+            return option;
+          }
+          if (option.inputValue) {
+            return option.inputValue;
+          }
+          return option.name;
+        }}
+        selectOnFocus
+        clearOnBlur
+        handleHomeEndKeys
+        renderOption={(option) => option.name}
+        style={{ width: 300 }}
+        freeSolo
+        renderInput={(params) => (
+          <TextField {...params} label="Search Customer" variant="outlined" />
+        )}
+      />
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="form-dialog-title"
+      >
+        <form onSubmit={handleAddAccount}>
+          <DialogTitle id="form-dialog-title">Add a new Customer</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Customer does not exists. Please, add it!
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              fullWidth
+              value={dialogValue.name}
+              onChange={(event) =>
+                setDialogValue({ ...dialogValue, name: event.target.value })
+              }
+              label="name"
+              type="text"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
+            </Button>
+            <Button type="submit" color="primary">
+              Add
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </React.Fragment>
+  );
+};
+
+export default SalesInvoice;

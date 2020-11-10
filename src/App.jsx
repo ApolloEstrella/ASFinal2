@@ -19,6 +19,7 @@ import store from "./store";
 import Logout from "./components/authentications/logout";
 import ChartOfAccounts from "./components/libraries/chart-of-account";
 import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-account";
+import SalesInvoice from "./components/sales/sales-invoice";
 
 const storageService = new StorageService();
 
@@ -146,6 +147,14 @@ const App = (props) => {
                         </Button>
                         <Button
                           color="inherit"
+                          onClick={() =>
+                            handleButtonClick("/sales-invoice")
+                          }
+                        >
+                          Sales Invoice
+                        </Button>
+                        <Button
+                          color="inherit"
                           onClick={() => handleButtonClick("/logout")}
                         >
                           Logout
@@ -196,6 +205,11 @@ const App = (props) => {
           exact
           path="/subsidiary-ledger-accounts"
           render={(props) => <SubsidiaryLedgerAccounts {...props} />}
+        />
+        <Route
+          exact
+          path="/sales-invoice"
+          render={(props) => <SalesInvoice {...props} />}
         />
       </Switch>
     </div>
