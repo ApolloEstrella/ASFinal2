@@ -20,6 +20,7 @@ import Logout from "./components/authentications/logout";
 import ChartOfAccounts from "./components/libraries/chart-of-account";
 import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-account";
 import SalesInvoice from "./components/sales/sales-invoice";
+import MaterialUIPickers from "./components/sales/test"
 
 const storageService = new StorageService();
 
@@ -147,9 +148,7 @@ const App = (props) => {
                         </Button>
                         <Button
                           color="inherit"
-                          onClick={() =>
-                            handleButtonClick("/sales-invoice")
-                          }
+                          onClick={() => handleButtonClick("/sales-invoice")}
                         >
                           Sales Invoice
                         </Button>
@@ -158,6 +157,12 @@ const App = (props) => {
                           onClick={() => handleButtonClick("/logout")}
                         >
                           Logout
+                        </Button>
+                        <Button
+                          color="inherit"
+                          onClick={() => handleButtonClick("/test")}
+                        >
+                          Test
                         </Button>
                       </>
                     ) : (
@@ -210,6 +215,11 @@ const App = (props) => {
           exact
           path="/sales-invoice"
           render={(props) => <SalesInvoice {...props} />}
+        />
+        <Route
+          exact
+          path="/test"
+          render={(props) => <MaterialUIPickers {...props} />}
         />
       </Switch>
     </div>
