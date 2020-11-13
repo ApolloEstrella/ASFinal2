@@ -67,7 +67,7 @@ const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       flexGrow: 1,
-      maxWidth: "60%",
+      maxWidth: "70%",
       display: "block",
       margin: "0 auto",
     },
@@ -75,6 +75,8 @@ const useStyles = makeStyles((theme) =>
       "& > *": {
         width: "100%",
       },
+      marginRight: "0",
+      marginLeft: "0",
     },
     submitButton: {
       paddingTop: "25px",
@@ -117,6 +119,25 @@ const SalesInvoice = () => {
 
   const handleClickOpen = () => {
     //setOpen(true);
+  };
+
+  const handleAddClick = () => {
+    setInputList([...inputList, { firstName: "", lastName: "" }]);
+  };
+
+  // handle input change
+  const handleInputChange = (e, index) => {
+    const { name, value } = e.target;
+    const list = [...inputList];
+    list[index][name] = value;
+    setInputList(list);
+  };
+
+  // handle click event of the Remove button
+  const handleRemoveClick = (index) => {
+    const list = [...inputList];
+    list.splice(index, 1);
+    setInputList(list);
   };
 
   const [addMode, setAddMode] = useState(true);
@@ -266,9 +287,23 @@ const SalesInvoice = () => {
     setSelectedDate(date);
   };
 
-const handleDueDateChange = (date) => {
-  setSelectedDueDate(date);
-};
+  const handleDueDateChange = (date) => {
+    setSelectedDueDate(date);
+  };
+
+  const [inputList, setInputList] = useState([
+    [
+      {
+        salesItem: "",
+        description: "",
+        qty: 0,
+        unitPrice: 0,
+        taxRate: "",
+        amount: 0,
+        tracking: "",
+      },
+    ],
+  ]);
 
   return (
     <div className={classes.root}>
@@ -418,7 +453,263 @@ const handleDueDateChange = (date) => {
                         label="Reference"
                       />
                     </Grid>
+                    <br></br>
+                    <br></br>
+                    <br></br>
+                    <br></br>
+
+                    {inputList.map((x, i) => {
+                      return (
+                        <>
+                          <Grid item xs={2} className={classes.textField}>
+                            <Autocomplete
+                              name="salesItem"
+                              value={value}
+                              onChange={(event, newValue) => {
+                                if (typeof newValue === "string") {
+                                  // timeout to avoid instant validation of the dialog's form.
+                                  setTimeout(() => {
+                                    toggleOpen(true);
+                                    setDialogValue({
+                                      name: newValue,
+                                    });
+                                  });
+                                } else if (newValue && newValue.inputValue) {
+                                  toggleOpen(true);
+                                  setDialogValue({
+                                    name: newValue.inputValue,
+                                  });
+                                } else {
+                                  setValue(newValue);
+                                }
+                              }}
+                              filterOptions={(options, params) => {
+                                const filtered = filter(options, params);
+
+                                if (params.inputValue !== "") {
+                                  filtered.push({
+                                    inputValue: params.inputValue,
+                                    name: `Add "${params.inputValue}"`,
+                                  });
+                                }
+
+                                return filtered;
+                              }}
+                              id="free-solo-dialog-demo"
+                              options={subsidiaryLedgerAccounts}
+                              getOptionLabel={(option) => {
+                                // e.g value selected with enter, right from the input
+                                if (typeof option === "string") {
+                                  return option;
+                                }
+                                if (option.inputValue) {
+                                  return option.inputValue;
+                                }
+                                return option.name;
+                              }}
+                              selectOnFocus
+                              clearOnBlur
+                              handleHomeEndKeys
+                              renderOption={(option) => option.name}
+                              style={{ width: "100%" }}
+                              freeSolo
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Search Sales Item"
+                                  variant="outlined"
+                                  size="small"
+                                />
+                              )}
+                            />
+                          </Grid>
+                          <Grid item xs={2} className={classes.textField}>
+                            <TextField
+                              name="description"
+                              id="outlined-multiline-static"
+                              label="Description"
+                              variant="outlined"
+                              size="small"
+                              inputStyle={{ fontSize: "5px" }}
+                            />
+                          </Grid>
+                          <Grid item xs={1} className={classes.textField}>
+                            <TextField
+                              name="Qty"
+                              id="outlined-multiline-static"
+                              label="Qty"
+                              type="number"
+                              variant="outlined"
+                              size="small"
+                            />
+                          </Grid>
+                          <Grid item xs={2} className={classes.textField}>
+                            <TextField
+                              name="unitPrice"
+                              id="outlined-multiline-static"
+                              label="Unit Price"
+                              type="number"
+                              variant="outlined"
+                              size="small"
+                            />
+                          </Grid>
+                          <Grid item xs={1} className={classes.textField}>
+                            <Autocomplete
+                              name="taxRate"
+                              value={value}
+                              size="small"
+                              onChange={(event, newValue) => {
+                                if (typeof newValue === "string") {
+                                  // timeout to avoid instant validation of the dialog's form.
+                                  setTimeout(() => {
+                                    toggleOpen(true);
+                                    setDialogValue({
+                                      name: newValue,
+                                    });
+                                  });
+                                } else if (newValue && newValue.inputValue) {
+                                  toggleOpen(true);
+                                  setDialogValue({
+                                    name: newValue.inputValue,
+                                  });
+                                } else {
+                                  setValue(newValue);
+                                }
+                              }}
+                              filterOptions={(options, params) => {
+                                const filtered = filter(options, params);
+
+                                if (params.inputValue !== "") {
+                                  filtered.push({
+                                    inputValue: params.inputValue,
+                                    name: `Add "${params.inputValue}"`,
+                                  });
+                                }
+
+                                return filtered;
+                              }}
+                              id="free-solo-dialog-demo"
+                              options={subsidiaryLedgerAccounts}
+                              getOptionLabel={(option) => {
+                                // e.g value selected with enter, right from the input
+                                if (typeof option === "string") {
+                                  return option;
+                                }
+                                if (option.inputValue) {
+                                  return option.inputValue;
+                                }
+                                return option.name;
+                              }}
+                              selectOnFocus
+                              clearOnBlur
+                              handleHomeEndKeys
+                              renderOption={(option) => option.name}
+                              style={{ width: "100%" }}
+                              freeSolo
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Tax Rate"
+                                  variant="outlined"
+                                />
+                              )}
+                            />
+                          </Grid>
+                          <Grid item xs={2} className={classes.textField}>
+                            <TextField
+                              name="amount"
+                              id="outlined-multiline-static"
+                              label="Amount"
+                              type="number"
+                              variant="outlined"
+                              size="small"
+                            />
+                          </Grid>
+                          <Grid item xs={1} className={classes.textField}>
+                            <Autocomplete
+                              name="tracking"
+                              value={value}
+                              size="small"
+                              onChange={(event, newValue) => {
+                                if (typeof newValue === "string") {
+                                  // timeout to avoid instant validation of the dialog's form.
+                                  setTimeout(() => {
+                                    toggleOpen(true);
+                                    setDialogValue({
+                                      name: newValue,
+                                    });
+                                  });
+                                } else if (newValue && newValue.inputValue) {
+                                  toggleOpen(true);
+                                  setDialogValue({
+                                    name: newValue.inputValue,
+                                  });
+                                } else {
+                                  setValue(newValue);
+                                }
+                              }}
+                              filterOptions={(options, params) => {
+                                const filtered = filter(options, params);
+
+                                if (params.inputValue !== "") {
+                                  filtered.push({
+                                    inputValue: params.inputValue,
+                                    name: `Add "${params.inputValue}"`,
+                                  });
+                                }
+
+                                return filtered;
+                              }}
+                              id="free-solo-dialog-demo"
+                              options={subsidiaryLedgerAccounts}
+                              getOptionLabel={(option) => {
+                                // e.g value selected with enter, right from the input
+                                if (typeof option === "string") {
+                                  return option;
+                                }
+                                if (option.inputValue) {
+                                  return option.inputValue;
+                                }
+                                return option.name;
+                              }}
+                              selectOnFocus
+                              clearOnBlur
+                              handleHomeEndKeys
+                              renderOption={(option) => option.name}
+                              style={{ width: "100%" }}
+                              freeSolo
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Tracking"
+                                  variant="outlined"
+                                />
+                              )}
+                            />
+                          </Grid>
+                          <Grid item xs={1} className={classes.textField}>
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              className={classes.button}
+                              startIcon={<DeleteIcon />}
+                              onClick={() => handleDeleteConfirmation()}
+                            >
+                              Delete
+                            </Button>
+                          </Grid>
+                        </>
+                      );
+                    })}
                   </Grid>
+                  <br></br>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleAddClick()}
+                  >
+                    New Item
+                  </Button>
                 </Form>
               </div>
 
