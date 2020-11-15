@@ -44,6 +44,7 @@ namespace AccountingSystem
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IChartOfAccountService, ChartOfAccountService>();
             services.AddScoped<ISubsdiaryLedgerService, SubsdiaryLedgerService>();
+            services.AddScoped<IIncomeItemService, IncomeItemService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

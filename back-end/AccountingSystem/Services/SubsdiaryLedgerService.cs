@@ -25,7 +25,7 @@ namespace AccountingSystem.Services
         {
             _serverContext.SubsidiaryLedgerAccountNames.Add(account);
             _serverContext.SaveChanges();
-            return 1;
+            return account.Id;
         }
 
         public int DeleteAccount(int id)

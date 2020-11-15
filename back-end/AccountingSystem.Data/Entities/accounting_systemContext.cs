@@ -20,6 +20,7 @@ namespace AccountingSystem.Data.Entities
         public virtual DbSet<ChartOfAccount> ChartOfAccounts { get; set; }
         public virtual DbSet<ChartOfAccountsCategory> ChartOfAccountsCategories { get; set; }
         public virtual DbSet<ChartOfAccountsType> ChartOfAccountsTypes { get; set; }
+        public virtual DbSet<IncomeItem> IncomeItems { get; set; }
         public virtual DbSet<SubsidiaryLedgerAccountName> SubsidiaryLedgerAccountNames { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
@@ -97,6 +98,35 @@ namespace AccountingSystem.Data.Entities
                     .HasForeignKey(d => d.CategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_category_id");
+            });
+
+            modelBuilder.Entity<IncomeItem>(entity =>
+            {
+                entity.ToTable("income_item");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(200)
+                    .HasColumnName("description");
+
+                entity.Property(e => e.IncomeAccountId).HasColumnName("income_account_id");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.Sku)
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasColumnName("sku");
+
+                entity.HasOne(d => d.IncomeAccount)
+                    .WithMany(p => p.IncomeItems)
+                    .HasForeignKey(d => d.IncomeAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_income_account_id");
             });
 
             modelBuilder.Entity<SubsidiaryLedgerAccountName>(entity =>

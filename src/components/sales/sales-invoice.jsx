@@ -5,26 +5,13 @@ import {
   Button,
   makeStyles,
   createStyles,
-  withStyles,
-  IconButton,
   useMediaQuery,
   useTheme,
 } from "@material-ui/core";
 
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
-
 import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
-
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -33,41 +20,20 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Autocomplete, {
   createFilterOptions,
 } from "@material-ui/lab/Autocomplete";
-
 import "date-fns";
-
 import DateFnsUtils from "@date-io/date-fns";
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
 
 const filter = createFilterOptions();
 
-const StyledTableCell = withStyles((theme) => ({
-  head: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  body: {
-    fontSize: 14,
-  },
-}))(TableCell);
-
-const StyledTableRow = withStyles((theme) => ({
-  root: {
-    "&:nth-of-type(odd)": {
-      backgroundColor: theme.palette.action.hover,
-    },
-  },
-}))(TableRow);
-
 const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       flexGrow: 1,
-      maxWidth: "70%",
+      maxWidth: "90%",
       display: "block",
       margin: "0 auto",
     },
@@ -89,6 +55,9 @@ const useStyles = makeStyles((theme) =>
       textAlign: "center",
       color: theme.palette.text.secondary,
     },
+    grid: {
+      marginTop: "8px",
+    },
   })
 );
 
@@ -99,6 +68,7 @@ const SalesInvoice = () => {
   const [value, setValue] = useState(null);
   const [open, toggleOpen] = useState(false);
   const [count, setCount] = useState(0);
+  const [itemCount, setItemCount] = useState(-2);
 
   const handleClose = () => {
     toggleOpen(false);
@@ -115,6 +85,18 @@ const SalesInvoice = () => {
     },
   ]);
 
+  const [inputList, setInputList] = useState([
+    {
+      id: -1,
+      salesItem: "",
+      description: "",
+      qty: 0,
+      unitPrice: 0,
+      taxRate: "",
+      amount: 0,
+      tracking: "",
+    },
+  ]);
   //const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -122,7 +104,20 @@ const SalesInvoice = () => {
   };
 
   const handleAddClick = () => {
-    setInputList([...inputList, { firstName: "", lastName: "" }]);
+    setItemCount(itemCount - 1);
+    setInputList([
+      ...inputList,
+      {
+        id: itemCount,
+        salesItem: "",
+        description: "",
+        qty: 0,
+        unitPrice: 0,
+        taxRate: "",
+        amount: 0,
+        tracking: "",
+      },
+    ]);
   };
 
   // handle input change
@@ -133,13 +128,6 @@ const SalesInvoice = () => {
     setInputList(list);
   };
 
-  // handle click event of the Remove button
-  const handleRemoveClick = (index) => {
-    const list = [...inputList];
-    list.splice(index, 1);
-    setInputList(list);
-  };
-
   const [addMode, setAddMode] = useState(true);
   const initialValues = {
     id: 0,
@@ -147,10 +135,50 @@ const SalesInvoice = () => {
   };
   const [formValues, setFormValues] = useState(null);
 
-  const [openDelete, setOpenDelete] = React.useState(false);
-  const [deleteItemId, setDeleteItemId] = React.useState(null);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+  const [addDeletedItemId, setAddDeletedItemId] = useState([]);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  // handle click event of the Remove button
+  const handleDelete = () => {
+    const id = deleteItemId;
+    const list = [...inputList];
+    //list.splice(id, 1);
+    //list.filter(x => x.id !== id)
+
+    for (var i = 0; i < list.length; i++)
+      if (list[i].id === id) {
+        list.splice(i, 1);
+        break;
+      }
+
+    setInputList(list);
+    //setAddDeletedItemId([...addDeletedItemId, {id: id}]);
+
+    //setAddDeletedItemId((prevItems) => [
+    //  ...prevItems,
+    //  {
+    //    id: id,
+    //  },
+    //]);
+
+    setAddDeletedItemId([...addDeletedItemId, id ]);
+
+    //const newToDos = [...addDeletedItemId, { id }];
+    //setAddDeletedItemId(newToDos);
+
+    const x = JSON.stringify(addDeletedItemId);
+    //console.log(x);
+    //alert(JSON.stringify(addDeletedItemId));
+    setOpenDelete(false);
+  };
+
+  const getDeletedItems = (items) => {
+    //console.log(JSON.stringify(items, null, 2));
+    console.log(JSON.stringify(items));
+  };
 
   useEffect(() => {
     fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
@@ -246,7 +274,7 @@ const SalesInvoice = () => {
     setDeleteItemId(id);
   };
 
-  const handleDelete = () => {
+  /*const handleDelete = () => {
     const id = deleteItemId;
     fetch("https://localhost:44302/api/SubsidiaryLedger/deleteaccount/" + id, {
       method: "DELETE",
@@ -263,7 +291,7 @@ const SalesInvoice = () => {
       .catch(function (error) {
         console.log("network error");
       });
-  };
+  };*/
 
   const handleEdit = (row) => {
     setFormValues(row);
@@ -291,22 +319,9 @@ const SalesInvoice = () => {
     setSelectedDueDate(date);
   };
 
-  const [inputList, setInputList] = useState([
-    [
-      {
-        salesItem: "",
-        description: "",
-        qty: 0,
-        unitPrice: 0,
-        taxRate: "",
-        amount: 0,
-        tracking: "",
-      },
-    ],
-  ]);
-
   return (
     <div className={classes.root}>
+      {getDeletedItems(addDeletedItemId)}
       <Formik
         initialValues={formValues || initialValues}
         enableReinitialize={true}
@@ -460,8 +475,18 @@ const SalesInvoice = () => {
 
                     {inputList.map((x, i) => {
                       return (
-                        <>
-                          <Grid item xs={2} className={classes.textField}>
+                        <Grid
+                          container
+                          spacing={1}
+                          justify="space-around"
+                          direction="row"
+                          key={i}
+                          className={classes.grid}
+                        >
+                          <Grid item xs={1} className={classes.textField}>
+                            {x.id}
+                          </Grid>
+                          <Grid item xs={1} className={classes.textField}>
                             <Autocomplete
                               name="salesItem"
                               value={value}
@@ -530,7 +555,6 @@ const SalesInvoice = () => {
                               label="Description"
                               variant="outlined"
                               size="small"
-                              inputStyle={{ fontSize: "5px" }}
                             />
                           </Grid>
                           <Grid item xs={1} className={classes.textField}>
@@ -693,12 +717,12 @@ const SalesInvoice = () => {
                               color="secondary"
                               className={classes.button}
                               startIcon={<DeleteIcon />}
-                              onClick={() => handleDeleteConfirmation()}
+                              onClick={() => handleDeleteConfirmation(x.id)}
                             >
                               Delete
                             </Button>
                           </Grid>
-                        </>
+                        </Grid>
                       );
                     })}
                   </Grid>

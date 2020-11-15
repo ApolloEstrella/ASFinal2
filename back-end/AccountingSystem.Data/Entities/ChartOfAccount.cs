@@ -7,6 +7,11 @@ namespace AccountingSystem.Data.Entities
 {
     public partial class ChartOfAccount
     {
+        public ChartOfAccount()
+        {
+            IncomeItems = new HashSet<IncomeItem>();
+        }
+
         public int Id { get; set; }
         public int AccountTypeId { get; set; }
         public string Title { get; set; }
@@ -15,5 +20,6 @@ namespace AccountingSystem.Data.Entities
         public int? SubAccountTypeId { get; set; }
 
         public virtual ChartOfAccountsType AccountType { get; set; }
+        public virtual ICollection<IncomeItem> IncomeItems { get; set; }
     }
 }
