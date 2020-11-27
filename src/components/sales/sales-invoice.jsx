@@ -179,9 +179,58 @@ const SalesInvoice = (props) => {
           billingAddress: ""
         }}
         onSubmit={(values, actions) => {
+
+          for (var i = 0; i < inputList.length; i++) {
+
+            //this["values.salesItem" + i] = values.salesItem0; 
+            
+            //console.log(values.salesItem0)
+
+
+
+            //window["salesItem" + i] = values.salesItem;
+            //console.log(values.salesItem0.value)
+            //console.log(window["salesItem" + i]);
+            var salesItem = window["salesItem" + i];
+            var taxRate = window["taxRate" + i];
+            var tracking = window["tracking" + i];
+
+            //console.log($("input").val())
+            //var y = $("input").find(x);
+            //console.log(x.lastChild.defaultValue);
+            //console.log(x.innerText);
+
+            var salesItemValue = salesItem.lastChild.defaultValue;
+            var salesItemLabel = salesItem.innerText;
+
+            var taxRateValue = taxRate.lastChild.defaultValue;
+            var taxRateLabel = taxRate.innerText;
+
+            var trackingValue = tracking.lastChild.defaultValue;
+            var trackingLabel = tracking.innerText;
+
+            inputList[i].salesItem.value = salesItemValue;
+            inputList[i].salesItem.label = salesItemLabel;
+
+            inputList[i].taxRate.value = taxRateValue;
+            inputList[i].taxRate.label = taxRateLabel;
+
+            inputList[i].tracking.value = trackingValue;
+            inputList[i].tracking.label = trackingLabel;
+
+
+            //console.log(inputList[i].description)
+            //const key = `values.salesItem${i}`;
+            //console.log(key.value);
+            //console.log(`values.salesItem${0}`);
+            //console.log("si: " + (`values.salesItem${0}`).value);
+          }
+
+
+
          // console.log(inputList);
-          console.log({ values });
-          console.log({inputList})
+          //console.log({ values });
+          //console.log({inputList})
          // console.log(JSON.stringify(values));
         }}
         /* validationSchema={Yup.object().shape({
