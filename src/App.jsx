@@ -19,7 +19,7 @@ import store from "./store";
 import Logout from "./components/authentications/logout";
 import ChartOfAccounts from "./components/libraries/chart-of-account";
 import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-account";
-import SalesInvoice from "./components/sales/sales-invoice";
+import SalesInvoice from "./components/sales/sales-invoice.jsx";
 import MaterialUIPickers from "./components/sales/test"
 
 const storageService = new StorageService();

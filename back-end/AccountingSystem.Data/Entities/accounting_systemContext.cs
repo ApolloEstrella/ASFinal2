@@ -22,6 +22,8 @@ namespace AccountingSystem.Data.Entities
         public virtual DbSet<ChartOfAccountsType> ChartOfAccountsTypes { get; set; }
         public virtual DbSet<IncomeItem> IncomeItems { get; set; }
         public virtual DbSet<SubsidiaryLedgerAccountName> SubsidiaryLedgerAccountNames { get; set; }
+        public virtual DbSet<TaxRate> TaxRates { get; set; }
+        public virtual DbSet<Tracking> Trackings { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -139,6 +141,34 @@ namespace AccountingSystem.Data.Entities
                     .IsRequired()
                     .HasMaxLength(100)
                     .HasColumnName("name");
+            });
+
+            modelBuilder.Entity<TaxRate>(entity =>
+            {
+                entity.ToTable("tax_rate");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("description");
+
+                entity.Property(e => e.Rate)
+                    .HasColumnType("decimal(5, 2)")
+                    .HasColumnName("rate")
+                    .HasAnnotation("Relational:ColumnType", "decimal(5, 2)");
+            });
+
+            modelBuilder.Entity<Tracking>(entity =>
+            {
+                entity.ToTable("tracking");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(50)
+                    .HasColumnName("description");
             });
 
             modelBuilder.Entity<User>(entity =>

@@ -5,10 +5,9 @@ import {
   Button,
   makeStyles,
   createStyles,
-  Theme,
   InputLabel,
 } from "@material-ui/core";
-import { Formik, Form, FormikProps } from "formik";
+import { Formik, Form} from "formik";
 import * as Yup from "yup";
 import { useHistory } from "react-router-dom";
 import bcrypt from "bcryptjs";
@@ -16,7 +15,7 @@ import bcrypt from "bcryptjs";
 import MuiSelect from "@material-ui/core/Select";
 import MuiMenuItem from "@material-ui/core/MenuItem";
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       maxWidth: "450px",
@@ -40,53 +39,16 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface ISignUpForm {
-  user: {
-    companyname: string;
-    password: string;
-    confirmPassword: string;
-    email: string;
-  };
-}
-
-interface IFormStatus {
-  message: string;
-  type: string;
-}
-
-interface IFormStatusProps {
-  [key: string]: IFormStatus;
-}
-
-const formStatusProps: IFormStatusProps = {
-  success: {
-    message: "Registered successfully.",
-    type: "success",
-  },
-  duplicate: {
-    message: "Email-id already exist. Please use different email-id.",
-    type: "error",
-  },
-  error: {
-    message: "Something went wrong. Please try again.",
-    type: "error",
-  },
-};
-
-const SignUp: React.FunctionComponent = () => {
+const SignUp = () => {
   const classes = useStyles();
-  const [displayFormStatus, setDisplayFormStatus] = useState(false);
-  const [formStatus, setFormStatus] = useState<IFormStatus>({
-    message: "",
-    type: "",
-  });
+   
   const history = useHistory();
 
-  const handleButtonClick = (pageURL: string) => {
+  const handleButtonClick = (pageURL) => {
     history.push(pageURL);
   };
 
-  const createNewUser = (data: ISignUpForm, resetForm: Function) => {
+  const createNewUser = (data) => {
     const saltRounds = 10;
     bcrypt.genSalt(saltRounds, function (err, salt) {
       if (err) {
@@ -113,21 +75,11 @@ const SignUp: React.FunctionComponent = () => {
               })
               .then(function (response) {
                 console.log(response);
-                if (response >= 0) {
-                  setFormStatus(formStatusProps.success);
-                  resetForm({});
-                  setDisplayFormStatus(true);
-                } else if (response === -1) {
-                  setFormStatus(formStatusProps.duplicate);
-                } else {
-                  setFormStatus(formStatusProps.error);
-                }
+                 
               })
               .catch(function (error) {
                 console.log("network error");
-                setFormStatus(formStatusProps.error);
               });
-            setDisplayFormStatus(true);
           }
         });
       }
@@ -145,11 +97,9 @@ const SignUp: React.FunctionComponent = () => {
             email: "",
           },
         }}
-        onSubmit={(values: ISignUpForm, actions) => {
-          createNewUser(values, actions.resetForm);
-          setTimeout(() => {
-            actions.setSubmitting(false);
-          }, 500);
+        onSubmit={(values, actions) => {
+          createNewUser();
+          console.log(values)
         }}
         validationSchema={Yup.object().shape({
           user: Yup.object().shape({
@@ -170,7 +120,7 @@ const SignUp: React.FunctionComponent = () => {
           }),
         })}
       >
-        {(props: FormikProps<ISignUpForm>) => {
+        {(props) => {
           const {
             values,
             touched,
@@ -183,21 +133,12 @@ const SignUp: React.FunctionComponent = () => {
             <Form>
               <h1 className={classes.title}>Register</h1>
               <Grid container justify="space-around" direction="row">
-                <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <InputLabel id="age" style={{fontSize: "13px"}} >Age</InputLabel>
-                          <MuiSelect labelId="age" style={{
-                              width: "13em", paddingBottom: "4px"
-                          }}>
-                    <MuiMenuItem value="1">1</MuiMenuItem>
-                    <MuiMenuItem value="2">2</MuiMenuItem>
-                  </MuiSelect>
-                </Grid>
                 <Grid
                   item
-                  lg={6}
-                  md={6}
-                  sm={6}
-                  xs={6}
+                  lg={10}
+                  md={10}
+                  sm={10}
+                  xs={10}
                   className={classes.textField}
                 >
                   <TextField
@@ -330,19 +271,6 @@ const SignUp: React.FunctionComponent = () => {
                   >
                     Cancel
                   </Button>
-                  {displayFormStatus && (
-                    <div className="formStatus">
-                      {formStatus.type === "error" ? (
-                        <p className={classes.errorMessage}>
-                          {formStatus.message}
-                        </p>
-                      ) : formStatus.type === "success" ? (
-                        <p className={classes.successMessage}>
-                          {formStatus.message}
-                        </p>
-                      ) : null}
-                    </div>
-                  )}
                 </Grid>
               </Grid>
             </Form>

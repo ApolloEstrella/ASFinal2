@@ -5,13 +5,12 @@ import {
   Button,
   makeStyles,
   createStyles,
-  Theme,
 } from "@material-ui/core";
-import { Formik, Form, FormikProps } from "formik";
+import { Formik, Form} from "formik";
 import * as Yup from "yup";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory} from "react-router-dom";
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       maxWidth: "450px",
@@ -35,65 +34,28 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface ISignUpForm {
-  user: {
-    email: string;
-  };
-}
-
-interface IFormStatus {
-  message: string;
-  type: string;
-}
-
-interface IFormStatusProps {
-  [key: string]: IFormStatus;
-}
-
-const formStatusProps: IFormStatusProps = {
-  success: {
-    message: "Registered successfully.",
-    type: "success",
-  },
-  duplicate: {
-    message: "Email-id already exist. Please use different email-id.",
-    type: "error",
-  },
-  error: {
-    message: "Something went wrong. Please try again.",
-    type: "error",
-  },
-};
+ 
 
 const ForgotPassword = () => {
   const classes = useStyles();
-  const [displayFormStatus, setDisplayFormStatus] = useState(false);
-  const [formStatus, setFormStatus] = useState<IFormStatus>({
-    message: "",
-    type: "",
-  });
   const history = useHistory();
 
-  const handleButtonClick = (pageURL: string) => {
+  const handleButtonClick = (pageURL) => {
     history.push(pageURL);
   };
 
-  const createNewUser = async (data: ISignUpForm, resetForm: Function) => {
+  const createNewUser = async (data, resetForm) => {
     try {
       // API call integration will be here. Handle success / error response accordingly.
       if (data) {
-        setFormStatus(formStatusProps.success);
         resetForm({});
       }
     } catch (error) {
       const response = error.response;
       if (response.data === "user already exist" && response.status === 400) {
-        setFormStatus(formStatusProps.duplicate);
       } else {
-        setFormStatus(formStatusProps.error);
       }
     } finally {
-      setDisplayFormStatus(true);
     }
   };
 
@@ -105,7 +67,7 @@ const ForgotPassword = () => {
             email: "",
           },
         }}
-        onSubmit={(values: ISignUpForm, actions) => {
+        onSubmit={(values, actions) => {
           createNewUser(values, actions.resetForm);
           setTimeout(() => {
             actions.setSubmitting(false);
@@ -117,7 +79,7 @@ const ForgotPassword = () => {
           }),
         })}
       >
-        {(props: FormikProps<ISignUpForm>) => {
+        {(props) => {
           const {
             values,
             touched,
@@ -182,19 +144,6 @@ const ForgotPassword = () => {
                   >
                     Cancel
                   </Button>
-                  {displayFormStatus && (
-                    <div className="formStatus">
-                      {formStatus.type === "error" ? (
-                        <p className={classes.errorMessage}>
-                          {formStatus.message}
-                        </p>
-                      ) : formStatus.type === "success" ? (
-                        <p className={classes.successMessage}>
-                          {formStatus.message}
-                        </p>
-                      ) : null}
-                    </div>
-                  )}
                 </Grid>
               </Grid>
             </Form>

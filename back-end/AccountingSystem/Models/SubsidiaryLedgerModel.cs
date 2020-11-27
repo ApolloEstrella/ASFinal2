@@ -7,7 +7,7 @@ namespace AccountingSystem.Models
 {
     public class SubsidiaryLedgerModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public int value { get; set; }
+        public string label { get; set; }
     }
 }

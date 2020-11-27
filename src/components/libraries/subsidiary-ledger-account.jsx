@@ -79,8 +79,8 @@ const SubsidiaryLedgerAccounts = () => {
    
   const [subsidiaryLedgerAccounts, getSubsidiaryLedgerAccounts] = useState([
     {
-      Id: 0,
-      name: "" 
+      value: 0,
+      label: "" 
     },
   ]);
 
@@ -92,8 +92,8 @@ const SubsidiaryLedgerAccounts = () => {
 
   const [addMode, setAddMode] = useState(true);
   const initialValues = {
-    id: 0,
-    name: "" 
+    value: 0,
+    label: "" 
   };
   const [formValues, setFormValues] = useState(null);
   const handleClose = () => {
@@ -124,6 +124,7 @@ const SubsidiaryLedgerAccounts = () => {
   }, [count]);
 
   const handleSubmit = (values, resetForm) => {
+    values = {id: values.value, name: values.label}
     if (addMode) {
       values.id = 0;
       fetch("https://localhost:44302/api/SubsidiaryLedger/addaccount", {
@@ -207,7 +208,7 @@ const SubsidiaryLedgerAccounts = () => {
   };
 
   const testSchema = Yup.object().shape({
-    name: Yup.string().required("Please Enter Name") 
+    label: Yup.string().required("Please Enter Name") 
   });
 
   return (
@@ -257,10 +258,10 @@ const SubsidiaryLedgerAccounts = () => {
                       <Grid container justify="space-around" direction="row">
                         <Grid item xs={12} className={classes.textField}>
                           <TextField
-                            name="name"
-                            id="name"
+                            name="label"
+                            id="label"
                             label="Name"
-                            value={values.name}
+                            value={values.label}
                             type="text"
                             helperText={
                               errors.name && touched.name
@@ -344,10 +345,10 @@ const SubsidiaryLedgerAccounts = () => {
                     {subsidiaryLedgerAccounts.map((row, index) => (
                       <StyledTableRow key={index}>
                         <StyledTableCell component="th" scope="row">
-                          {row.name}
+                          {row.label}
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          {row.id}
+                          {row.value}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <IconButton onClick={() => handleEdit(row)}>
@@ -356,7 +357,7 @@ const SubsidiaryLedgerAccounts = () => {
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <IconButton
-                            onClick={() => handleDeleteConfirmation(row.id)}
+                            onClick={() => handleDeleteConfirmation(row.value)}
                           >
                             <DeleteIcon />
                           </IconButton>

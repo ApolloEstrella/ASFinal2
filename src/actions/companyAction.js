@@ -4,11 +4,11 @@ export const SET_LOGIN = 'SET_LOGIN'
 
 
 
-export function setCompany(company: any) {
+export function setCompany(company) {
     return { type: SET_COMPANY, company: company }
 }
 
-export function setLogin(isLogin: boolean) {
+export function setLogin(isLogin) {
     return { type: SET_LOGIN, isLogin: isLogin }
 }
 

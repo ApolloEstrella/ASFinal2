@@ -5,78 +5,60 @@ import {
   Button,
   makeStyles,
   createStyles,
-  useMediaQuery,
-  useTheme,
+  InputLabel,
 } from "@material-ui/core";
-
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikProps } from "formik";
 import * as Yup from "yup";
-import DeleteIcon from "@material-ui/icons/Delete";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import Autocomplete, {
-  createFilterOptions,
-} from "@material-ui/lab/Autocomplete";
-import "date-fns";
-import DateFnsUtils from "@date-io/date-fns";
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from "@material-ui/pickers";
-
-const filter = createFilterOptions();
+import ReactSelect from "../controls/reactSelect";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
+import Paper from "@material-ui/core/Paper";
+import $ from "jquery";
+import CreatableSelect from "react-select/creatable";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
-      flexGrow: 1,
-      maxWidth: "90%",
+      maxWidth: "100%",
       display: "block",
       margin: "0 auto",
     },
     textField: {
       "& > *": {
         width: "100%",
+        paddingTop: "5px",
+        //marginTop: "2px"
       },
-      marginRight: "0",
-      marginLeft: "0",
+    },
+    textField2: {
+      "& > *": {
+        width: "100%",
+        paddingTop: ".5px",
+        //marginTop: "2px"
+      },
+    },
+    ReactSelect: {
+      paddingTop: "50px",
+    },
+
+    myTable: {
+      width: "500px",
     },
     submitButton: {
-      paddingTop: "25px",
+      marginTop: "24px",
     },
     title: { textAlign: "center" },
     successMessage: { color: "green" },
     errorMessage: { color: "red" },
-    paper: {
-      padding: theme.spacing(2),
-      textAlign: "center",
-      color: theme.palette.text.secondary,
-    },
-    grid: {
-      marginTop: "8px",
-    },
   })
 );
 
-const SalesInvoice = () => {
+const SalesInvoice = (props) => {
   const classes = useStyles();
-  const [isSubmitting, setSubmitting] = useState(false);
-
-  const [value, setValue] = useState(null);
-  const [open, toggleOpen] = useState(false);
-  const [count, setCount] = useState(0);
-  const [itemCount, setItemCount] = useState(-2);
-
-  const handleClose = () => {
-    toggleOpen(false);
-  };
-
-  const [dialogValue, setDialogValue] = useState({
-    name: "",
-  });
 
   const [subsidiaryLedgerAccounts, getSubsidiaryLedgerAccounts] = useState([
     {
@@ -85,100 +67,20 @@ const SalesInvoice = () => {
     },
   ]);
 
-  const [inputList, setInputList] = useState([
-    {
-      id: -1,
-      salesItem: "",
-      description: "",
-      qty: 0,
-      unitPrice: 0,
-      taxRate: "",
-      amount: 0,
-      tracking: "",
-    },
-  ]);
-  //const [open, setOpen] = React.useState(false);
+  const [rows, setRow] = useState([]);
 
-  const handleClickOpen = () => {
-    //setOpen(true);
+  const [rowId, setRowId] = useState(-1);
+
+  const removeRow = (id) => {
+    var result = $.grep(rows, function (e, i) {
+      return +e.id !== id;
+    });
+    setRow(result);
+    console.log(rows);
   };
 
-  const handleAddClick = () => {
-    setItemCount(itemCount - 1);
-    setInputList([
-      ...inputList,
-      {
-        id: itemCount,
-        salesItem: "",
-        description: "",
-        qty: 0,
-        unitPrice: 0,
-        taxRate: "",
-        amount: 0,
-        tracking: "",
-      },
-    ]);
-  };
-
-  // handle input change
-  const handleInputChange = (e, index) => {
-    const { name, value } = e.target;
-    const list = [...inputList];
-    list[index][name] = value;
-    setInputList(list);
-  };
-
-  const [addMode, setAddMode] = useState(true);
-  const initialValues = {
-    id: 0,
-    name: "",
-  };
-  const [formValues, setFormValues] = useState(null);
-
-  const [openDelete, setOpenDelete] = useState(false);
-  const [deleteItemId, setDeleteItemId] = useState(null);
-  const [addDeletedItemId, setAddDeletedItemId] = useState([]);
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  // handle click event of the Remove button
-  const handleDelete = () => {
-    const id = deleteItemId;
-    const list = [...inputList];
-    //list.splice(id, 1);
-    //list.filter(x => x.id !== id)
-
-    for (var i = 0; i < list.length; i++)
-      if (list[i].id === id) {
-        list.splice(i, 1);
-        break;
-      }
-
-    setInputList(list);
-    //setAddDeletedItemId([...addDeletedItemId, {id: id}]);
-
-    //setAddDeletedItemId((prevItems) => [
-    //  ...prevItems,
-    //  {
-    //    id: id,
-    //  },
-    //]);
-
-    setAddDeletedItemId([...addDeletedItemId, id ]);
-
-    //const newToDos = [...addDeletedItemId, { id }];
-    //setAddDeletedItemId(newToDos);
-
-    const x = JSON.stringify(addDeletedItemId);
-    //console.log(x);
-    //alert(JSON.stringify(addDeletedItemId));
-    setOpenDelete(false);
-  };
-
-  const getDeletedItems = (items) => {
-    //console.log(JSON.stringify(items, null, 2));
-    console.log(JSON.stringify(items));
-  };
+  const editRow = (row) => {};
+  const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
 
   useEffect(() => {
     fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
@@ -189,628 +91,320 @@ const SalesInvoice = () => {
     })
       .then((results) => results.json())
       .then((data) => {
-        console.log(data);
+        //console.log(data);
         getSubsidiaryLedgerAccounts(data);
       })
       .catch(function (error) {
         console.log("network error");
       });
-  }, [count]);
+  }, [loadSubsidiaryLedger]);
 
-  const handleSubmit = (values, resetForm) => {
-    if (addMode) {
-      values.id = 0;
-      fetch("https://localhost:44302/api/SubsidiaryLedger/addaccount", {
-        method: "POST",
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((results) => results.json())
-        .then((data) => {
-          setCount(count + 1);
-          setSubmitting(false);
-          resetForm();
-          setFormValues(null);
-        })
-        .catch(function (error) {
-          console.log("network error");
-        })
-        .finally(function () {
-          setAddMode(true);
-        });
-    } else {
-      fetch("https://localhost:44302/api/SubsidiaryLedger/EditAccount", {
-        method: "PUT",
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((results) => results.json())
-        .then((data) => {
-          setCount(count + 1);
-          setSubmitting(false);
-          setFormValues(null);
-          resetForm();
-          handleClose();
-        })
-        .catch(function (error) {
-          console.log("network error");
-        })
-        .finally(function () {
-          setAddMode(true);
-        });
-    }
+  const handleItemChange = (e) => {
+    // alert(e.target.value)
+    // $("#" + p1).val(e.target.value);
+    const value = e.target[e.target.type === "checkbox" ? "checked" : "value"];
+    const name = e.target.name;
+
+    //props.onFilter({
+    //  [name]: value,
+    //});
   };
 
-  const handleAddAccount = (event) => {
-    event.preventDefault();
-
-    fetch("https://localhost:44302/api/SubsidiaryLedger/addaccount", {
-      method: "POST",
-      body: JSON.stringify({ id: 0, name: dialogValue.name }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((results) => results.json())
-      .then((data) => {
-        setCount(count + 1);
-        setValue({
-          name: dialogValue.name,
-        });
-      })
-      .catch(function (error) {
-        console.log("network error");
-      });
-
-    handleClose();
-  };
-
-  const handleDeleteConfirmation = (id) => {
-    setOpenDelete(true);
-    setDeleteItemId(id);
-  };
-
-  /*const handleDelete = () => {
-    const id = deleteItemId;
-    fetch("https://localhost:44302/api/SubsidiaryLedger/deleteaccount/" + id, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((results) => results.json())
-      .then((data) => {
-        setCount(count + 1);
-        setSubmitting(false);
-        setOpenDelete(false);
-      })
-      .catch(function (error) {
-        console.log("network error");
-      });
-  };*/
-
-  const handleEdit = (row) => {
-    setFormValues(row);
-    setAddMode(false);
-    handleClickOpen(true);
-    console.log(row);
-  };
-
-  const handleCloseDelete = () => {
-    setOpenDelete(false);
-  };
-
-  const testSchema = Yup.object().shape({
-    name: Yup.string().required("Please Enter Name"),
+  const [quantity, setQuantity] = React.useState({
+    qty: 0,
   });
 
-  const [selectedDate, setSelectedDate] = React.useState(new Date());
-  const [selectedDueDate, setSelectedDueDate] = React.useState(new Date());
+  const [inputList, setInputList] = useState([{
+    salesItem: { value: 0, label: "" },
+    description: "",
+    qty: 0,
+    unitPrice: 0,
+    taxRate: { value: 0, label: "" },
+    amount: 0,
+    tracking: { value: 0, label: "" },
+  }]);
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
+  const AddItem = () => {
+    setInputList([
+      ...inputList,
+      {
+        salesItem: { value: 0, label: "" },
+        description: "",
+        qty: 0,
+        unitPrice: 0,
+        taxRate: { value: 0, label: "" },
+        amount: 0,
+        tracking: { value: 0, label: "" }
+      }
+    ]
+    );
   };
 
-  const handleDueDateChange = (date) => {
-    setSelectedDueDate(date);
+  // handle input change
+  const handleInputChange = (e, index) => {
+    const { name, value } = e.target;
+    const list = [...inputList];
+    list[index][name] = value;
+    setInputList(list);
+    //$("#fullName").val(
+    //  $("#firstName").val() + $("#lastName").val()
+    //);
+  };
+
+  const handleInputChange2 = (inputValue, actionMeta) => {
+    console.group("Input Changed");
+    console.log(inputValue);
+    console.log(`action: ${actionMeta.action}`);
+    console.groupEnd();
+  };
+
+  const [me, setNewValue] = useState({ value: 0, label: "" });
+
+  const handleChangeMe = (newValue, actionMeta) => {
+    console.group("Value Changed");
+    console.log(newValue);
+    console.log(`action: ${actionMeta.action}`);
+    console.groupEnd();
+    //this.setState({ value: newValue });
+    setNewValue({ value: newValue.value, label: newValue.label });
   };
 
   return (
     <div className={classes.root}>
-      {getDeletedItems(addDeletedItemId)}
+      <button onClick={AddItem}>New</button>
       <Formik
-        initialValues={formValues || initialValues}
-        enableReinitialize={true}
-        //resetForm={true}
-        validationSchema={testSchema}
-        onSubmit={(values, { resetForm }) => {
-          //console.log(values);
-          //resetForm();
-          handleSubmit(values, resetForm);
+        initialValues={{
+          id: 0,
+          customer: "",
+          billingAddress: ""
         }}
+        onSubmit={(values, actions) => {
+         // console.log(inputList);
+          console.log({ values });
+          console.log({inputList})
+         // console.log(JSON.stringify(values));
+        }}
+        /* validationSchema={Yup.object().shape({
+          //email: Yup.string().email().required("Enter valid email-id"),
+          customer: Yup.string().required("Please enter full name"),
+           password: Yup.string()
+            .matches(
+              /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()]).{8,20}\S$/
+            )
+            .required(
+              "Please valid password. One uppercase, one lowercase, one special character and no spaces"
+            ),
+          confirmPassword: Yup.string()
+            .required("Required")
+            .test("password-match", "Password musth match", function (value) {
+              return this.parent.password === value;
+            }), 
+        })} */
       >
         {(props) => {
-          const { values, touched, errors, handleBlur, handleChange } = props;
-
+          const {
+            values,
+            touched,
+            errors,
+            handleBlur,
+            handleChange,
+            //handleItemChange,
+            isSubmitting,
+          } = props;
           return (
-            <>
-              <div>
-                <Form id="salesInvoiceForm">
-                  <Grid
-                    container
-                    spacing={1}
-                    justify="space-around"
-                    direction="row"
-                  >
-                    <Grid item xs={12} className={classes.textField}>
-                      <Autocomplete
-                        value={value}
-                        onChange={(event, newValue) => {
-                          if (typeof newValue === "string") {
-                            // timeout to avoid instant validation of the dialog's form.
-                            setTimeout(() => {
-                              toggleOpen(true);
-                              setDialogValue({
-                                name: newValue,
-                              });
-                            });
-                          } else if (newValue && newValue.inputValue) {
-                            toggleOpen(true);
-                            setDialogValue({
-                              name: newValue.inputValue,
-                            });
-                          } else {
-                            setValue(newValue);
-                          }
-                        }}
-                        filterOptions={(options, params) => {
-                          const filtered = filter(options, params);
-
-                          if (params.inputValue !== "") {
-                            filtered.push({
-                              inputValue: params.inputValue,
-                              name: `Add "${params.inputValue}"`,
-                            });
-                          }
-
-                          return filtered;
-                        }}
-                        id="free-solo-dialog-demo"
-                        options={subsidiaryLedgerAccounts}
-                        getOptionLabel={(option) => {
-                          // e.g value selected with enter, right from the input
-                          if (typeof option === "string") {
-                            return option;
-                          }
-                          if (option.inputValue) {
-                            return option.inputValue;
-                          }
-                          return option.name;
-                        }}
-                        selectOnFocus
-                        clearOnBlur
-                        handleHomeEndKeys
-                        renderOption={(option) => option.name}
-                        style={{ width: "100%" }}
-                        freeSolo
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="Search Customer"
-                            variant="outlined"
-                          />
-                        )}
-                      />
+            <Form>
+              <h1 className={classes.title}>Sales Invoice</h1>
+              <Grid container justify="space-around" direction="row">
+                <Grid item xs={12}>
+                  <ReactSelect
+                    label="Customer"
+                    id="customer"
+                    name="customer"
+                    type="text"
+                    options={subsidiaryLedgerAccounts}
+                    value={values.customer}
+                  />
+                </Grid>
+                <Grid
+                  item
+                  lg={10}
+                  md={10}
+                  sm={10}
+                  xs={10}
+                  className={classes.textField}
+                >
+                  <TextField
+                    label="Billing Address"
+                    name="billingAddress"
+                    className={classes.textField}
+                    value={values.billingAddress}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={
+                      errors.description &&
+                      touched.description &&
+                      errors.description
+                    }
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid
+                  item
+                  lg={10}
+                  md={10}
+                  sm={10}
+                  xs={10}
+                  className={classes.textField}
+                >
+                  <Grid container justify="space-around" direction="row">
+                    <Grid item xs={2}>
+                      Sales Item
                     </Grid>
-                    <Grid item xs={12} className={classes.textField}>
-                      <TextField
-                        id="outlined-multiline-static"
-                        label="Billing Address"
-                        multiline
-                        rows={4}
-                        variant="outlined"
-                      />
+                    <Grid item xs={3}>
+                      Description
                     </Grid>
-                    <Grid item xs={2} className={classes.textField}>
-                      <TextField
-                        id="outlined-multiline-static"
-                        label="Invoice No."
-                      />
+                    <Grid item xs={1}>
+                      Quantity
                     </Grid>
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <Grid item xs={2} className={classes.textField}>
-                        <KeyboardDatePicker
-                          style={{ marginTop: "0px" }}
-                          disableToolbar
-                          variant="inline"
-                          format="MM/dd/yyyy"
-                          margin="normal"
-                          id="date-picker-inline"
-                          label="Date"
-                          value={selectedDate}
-                          onChange={handleDateChange}
-                          KeyboardButtonProps={{
-                            "aria-label": "change date",
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={2} className={classes.textField}>
-                        <KeyboardDatePicker
-                          style={{ marginTop: "0px" }}
-                          disableToolbar
-                          variant="inline"
-                          format="MM/dd/yyyy"
-                          margin="normal"
-                          id="date-picker-inline"
-                          label="Due Date"
-                          value={selectedDueDate}
-                          onChange={handleDueDateChange}
-                          KeyboardButtonProps={{
-                            "aria-label": "change date",
-                          }}
-                        />
-                      </Grid>
-                    </MuiPickersUtilsProvider>
-                    <Grid item xs={1} className={classes.textField}>
-                      <TextField
-                        id="outlined-multiline-static"
-                        label="Terms"
-                        type="number"
-                      />
+                    <Grid item xs={1}>
+                      Unit Price
                     </Grid>
-                    <Grid item xs={5} className={classes.textField}>
-                      <TextField
-                        id="outlined-multiline-static"
-                        label="Reference"
-                      />
+                    <Grid item xs={2}>
+                      Tax Rate
                     </Grid>
-                    <br></br>
-                    <br></br>
-                    <br></br>
-                    <br></br>
-
-                    {inputList.map((x, i) => {
-                      return (
-                        <Grid
-                          container
-                          spacing={1}
-                          justify="space-around"
-                          direction="row"
-                          key={i}
-                          className={classes.grid}
-                        >
-                          <Grid item xs={1} className={classes.textField}>
-                            {x.id}
-                          </Grid>
-                          <Grid item xs={1} className={classes.textField}>
-                            <Autocomplete
-                              name="salesItem"
-                              value={value}
-                              onChange={(event, newValue) => {
-                                if (typeof newValue === "string") {
-                                  // timeout to avoid instant validation of the dialog's form.
-                                  setTimeout(() => {
-                                    toggleOpen(true);
-                                    setDialogValue({
-                                      name: newValue,
-                                    });
-                                  });
-                                } else if (newValue && newValue.inputValue) {
-                                  toggleOpen(true);
-                                  setDialogValue({
-                                    name: newValue.inputValue,
-                                  });
-                                } else {
-                                  setValue(newValue);
-                                }
-                              }}
-                              filterOptions={(options, params) => {
-                                const filtered = filter(options, params);
-
-                                if (params.inputValue !== "") {
-                                  filtered.push({
-                                    inputValue: params.inputValue,
-                                    name: `Add "${params.inputValue}"`,
-                                  });
-                                }
-
-                                return filtered;
-                              }}
-                              id="free-solo-dialog-demo"
-                              options={subsidiaryLedgerAccounts}
-                              getOptionLabel={(option) => {
-                                // e.g value selected with enter, right from the input
-                                if (typeof option === "string") {
-                                  return option;
-                                }
-                                if (option.inputValue) {
-                                  return option.inputValue;
-                                }
-                                return option.name;
-                              }}
-                              selectOnFocus
-                              clearOnBlur
-                              handleHomeEndKeys
-                              renderOption={(option) => option.name}
-                              style={{ width: "100%" }}
-                              freeSolo
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Search Sales Item"
-                                  variant="outlined"
-                                  size="small"
-                                />
-                              )}
-                            />
-                          </Grid>
-                          <Grid item xs={2} className={classes.textField}>
-                            <TextField
-                              name="description"
-                              id="outlined-multiline-static"
-                              label="Description"
-                              variant="outlined"
-                              size="small"
-                            />
-                          </Grid>
-                          <Grid item xs={1} className={classes.textField}>
-                            <TextField
-                              name="Qty"
-                              id="outlined-multiline-static"
-                              label="Qty"
-                              type="number"
-                              variant="outlined"
-                              size="small"
-                            />
-                          </Grid>
-                          <Grid item xs={2} className={classes.textField}>
-                            <TextField
-                              name="unitPrice"
-                              id="outlined-multiline-static"
-                              label="Unit Price"
-                              type="number"
-                              variant="outlined"
-                              size="small"
-                            />
-                          </Grid>
-                          <Grid item xs={1} className={classes.textField}>
-                            <Autocomplete
-                              name="taxRate"
-                              value={value}
-                              size="small"
-                              onChange={(event, newValue) => {
-                                if (typeof newValue === "string") {
-                                  // timeout to avoid instant validation of the dialog's form.
-                                  setTimeout(() => {
-                                    toggleOpen(true);
-                                    setDialogValue({
-                                      name: newValue,
-                                    });
-                                  });
-                                } else if (newValue && newValue.inputValue) {
-                                  toggleOpen(true);
-                                  setDialogValue({
-                                    name: newValue.inputValue,
-                                  });
-                                } else {
-                                  setValue(newValue);
-                                }
-                              }}
-                              filterOptions={(options, params) => {
-                                const filtered = filter(options, params);
-
-                                if (params.inputValue !== "") {
-                                  filtered.push({
-                                    inputValue: params.inputValue,
-                                    name: `Add "${params.inputValue}"`,
-                                  });
-                                }
-
-                                return filtered;
-                              }}
-                              id="free-solo-dialog-demo"
-                              options={subsidiaryLedgerAccounts}
-                              getOptionLabel={(option) => {
-                                // e.g value selected with enter, right from the input
-                                if (typeof option === "string") {
-                                  return option;
-                                }
-                                if (option.inputValue) {
-                                  return option.inputValue;
-                                }
-                                return option.name;
-                              }}
-                              selectOnFocus
-                              clearOnBlur
-                              handleHomeEndKeys
-                              renderOption={(option) => option.name}
-                              style={{ width: "100%" }}
-                              freeSolo
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Tax Rate"
-                                  variant="outlined"
-                                />
-                              )}
-                            />
-                          </Grid>
-                          <Grid item xs={2} className={classes.textField}>
-                            <TextField
-                              name="amount"
-                              id="outlined-multiline-static"
-                              label="Amount"
-                              type="number"
-                              variant="outlined"
-                              size="small"
-                            />
-                          </Grid>
-                          <Grid item xs={1} className={classes.textField}>
-                            <Autocomplete
-                              name="tracking"
-                              value={value}
-                              size="small"
-                              onChange={(event, newValue) => {
-                                if (typeof newValue === "string") {
-                                  // timeout to avoid instant validation of the dialog's form.
-                                  setTimeout(() => {
-                                    toggleOpen(true);
-                                    setDialogValue({
-                                      name: newValue,
-                                    });
-                                  });
-                                } else if (newValue && newValue.inputValue) {
-                                  toggleOpen(true);
-                                  setDialogValue({
-                                    name: newValue.inputValue,
-                                  });
-                                } else {
-                                  setValue(newValue);
-                                }
-                              }}
-                              filterOptions={(options, params) => {
-                                const filtered = filter(options, params);
-
-                                if (params.inputValue !== "") {
-                                  filtered.push({
-                                    inputValue: params.inputValue,
-                                    name: `Add "${params.inputValue}"`,
-                                  });
-                                }
-
-                                return filtered;
-                              }}
-                              id="free-solo-dialog-demo"
-                              options={subsidiaryLedgerAccounts}
-                              getOptionLabel={(option) => {
-                                // e.g value selected with enter, right from the input
-                                if (typeof option === "string") {
-                                  return option;
-                                }
-                                if (option.inputValue) {
-                                  return option.inputValue;
-                                }
-                                return option.name;
-                              }}
-                              selectOnFocus
-                              clearOnBlur
-                              handleHomeEndKeys
-                              renderOption={(option) => option.name}
-                              style={{ width: "100%" }}
-                              freeSolo
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Tracking"
-                                  variant="outlined"
-                                />
-                              )}
-                            />
-                          </Grid>
-                          <Grid item xs={1} className={classes.textField}>
-                            <Button
-                              variant="contained"
-                              color="secondary"
-                              className={classes.button}
-                              startIcon={<DeleteIcon />}
-                              onClick={() => handleDeleteConfirmation(x.id)}
-                            >
-                              Delete
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      );
-                    })}
+                    <Grid item xs={1}>
+                      Amount
+                    </Grid>
+                    <Grid item xs={2}>
+                      Tracking
+                    </Grid>
                   </Grid>
-                  <br></br>
+
+                  {inputList.map((r, i) => (
+                    <Grid
+                      container
+                      justify="space-around"
+                      direction="row"
+                      key={i}
+                    >
+                      <Grid item xs={2}>
+                        <ReactSelect
+                          label="salesItem"
+                          id={"salesItem" + i}
+                          name={"salesItem" + i}
+                          type="text"
+                          options={subsidiaryLedgerAccounts}
+                          value={{
+                            value: r.salesItem.value,
+                            label: r.salesItem.label,
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={3} className={classes.textField}>
+                        <TextField
+                          id="description"
+                          name="description"
+                          value={r.description}
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={
+                            errors.description &&
+                            touched.description &&
+                            errors.description
+                          }                         
+                          className={classes.textField2}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <TextField
+                          id="qty"
+                          name="qty"
+                          value={r.qty}
+                          type="number"
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={errors.qty && touched.qty && errors.qty}
+                          className={classes.textField}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <TextField
+                          id="unitPrice"
+                          name="unitPrice"
+                          value={r.unitPrice}
+                          type="number"
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={
+                            errors.unitPrice &&
+                            touched.unitPrice &&
+                            errors.unitPrice
+                          }
+                          className={classes.textField}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <ReactSelect
+                          label="Tax Rate"
+                          id={"taxRate" + i}
+                          name={"taxRate" + i}
+                          type="text"
+                          options={subsidiaryLedgerAccounts}
+                          value={{
+                            value: r.taxRate.value,
+                            label: r.taxRate.label,
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <TextField
+                          id="amount"
+                          name="amount"
+                          value={r.qty * r.unitPrice}
+                          type="number"
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={
+                            errors.amount && touched.amount && errors.amount
+                          }
+                          className={classes.textField}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <ReactSelect
+                          label="Tracking"
+                          id={"tracking" + i}
+                          name={"tracking" + i}
+                          type="text"
+                          options={subsidiaryLedgerAccounts}
+                          value={{
+                            value: r.tracking.value,
+                            label: r.tracking.label,
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
+                  ))}
+                </Grid>
+                <Grid
+                  item
+                  lg={10}
+                  md={10}
+                  sm={10}
+                  xs={10}
+                  className={classes.submitButton}
+                >
                   <Button
+                    type="submit"
                     variant="contained"
-                    color="primary"
-                    onClick={() => handleAddClick()}
+                    color="secondary"
+                    // disabled={isSubmitting}
                   >
-                    New Item
+                    Submit
                   </Button>
-                </Form>
-              </div>
-
-              <div>
-                <Dialog
-                  open={open}
-                  onClose={handleClose}
-                  aria-labelledby="form-dialog-title"
-                >
-                  <form onSubmit={handleAddAccount}>
-                    <DialogTitle id="form-dialog-title">
-                      Add a new Customer
-                    </DialogTitle>
-                    <DialogContent>
-                      <DialogContentText>
-                        Customer does not exists. Please, add it!
-                      </DialogContentText>
-                      <TextField
-                        autoFocus
-                        margin="dense"
-                        id="name"
-                        fullWidth
-                        value={dialogValue.name}
-                        onChange={(event) =>
-                          setDialogValue({
-                            ...dialogValue,
-                            name: event.target.value,
-                          })
-                        }
-                        label="name"
-                        type="text"
-                      />
-                    </DialogContent>
-                    <DialogActions>
-                      <Button onClick={handleClose} color="primary">
-                        Cancel
-                      </Button>
-                      <Button type="submit" color="primary">
-                        Add
-                      </Button>
-                    </DialogActions>
-                  </form>
-                </Dialog>
-
-                <Dialog
-                  fullScreen={fullScreen}
-                  open={openDelete}
-                  onClose={handleClose}
-                  aria-labelledby="responsive-dialog-title"
-                >
-                  <DialogTitle id="responsive-dialog-title">
-                    DELETE CONFIRMATION
-                  </DialogTitle>
-                  <DialogContent>
-                    <DialogContentText>
-                      Are you sure you want to delete?
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      autoFocus
-                      onClick={() => handleCloseDelete()}
-                      color="primary"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete()}
-                      color="primary"
-                      autoFocus
-                    >
-                      Delete
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </div>
-            </>
+                </Grid>
+              </Grid>
+            </Form>
           );
         }}
       </Formik>

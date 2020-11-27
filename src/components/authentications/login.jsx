@@ -13,11 +13,11 @@ import * as Yup from "yup";
 import { useHistory } from "react-router-dom";
 import bcrypt from "bcryptjs";
 import StorageService from "../../services/storage.service";
-import { SET_COMPANY, SET_LOGIN } from "../../actions/companyAction";
+import { SET_LOGIN } from "../../actions/companyAction";
 import store from "../../store";
 
 const storageService = new StorageService();
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       maxWidth: "450px",
@@ -41,48 +41,22 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface ISignUpForm {
-  user: {
-    email: string;
-    password: string;
-    rememberMe: boolean;
-  };
-}
+ 
+ 
 
-interface IFormStatus {
-  message: string;
-  type: string;
-}
-
-interface IFormStatusProps {
-  [key: string]: IFormStatus;
-}
-
-const formStatusProps: IFormStatusProps = {
-  authenticate: {
-    message: "Invalid email or password!",
-    type: "error",
-  },
-  error: {
-    message: "Something went wrong. Please try again.",
-    type: "error",
-  },
-};
-
-const Login: React.FunctionComponent = () => {
+const Login = () => {
   const classes = useStyles();
-  const [displayFormStatus, setDisplayFormStatus] = useState(false);
-  const [formStatus, setFormStatus] = useState<IFormStatus>({
+  const [formStatus, setFormStatus] = useState({
     message: "",
     type: "",
   });
   const history = useHistory();
 
-  const handleButtonClick = (pageURL: string) => {
+  const handleButtonClick = (pageURL) => {
     history.push(pageURL);
   };
 
-  const createNewUser = (data: ISignUpForm, resetForm: Function) => {
+  const createNewUser = (data, resetForm) => {
     var statusCode = 200;
     fetch("https://localhost:44302/api/account?email=" + data.user.email, {
       method: "GET",
@@ -106,8 +80,6 @@ const Login: React.FunctionComponent = () => {
             throw err;
           } else if (!isMatch) {
             console.log("Password doesn't match!");
-            setDisplayFormStatus(true);
-            setFormStatus(formStatusProps.authenticate);
           } else {
             if (storageService.secureStorage.getItem("rememberMe") === true) {
               history.push("/");
@@ -132,19 +104,12 @@ const Login: React.FunctionComponent = () => {
               console.log(store.getState().accountReducer.isLogin);
               console.log("User authenticated!");
 
-              //const x = store.getState().accountReducer.email
               history.push("/");
             }
           }
         });
       })
       .catch(function (error) {
-        setDisplayFormStatus(true);
-        if (statusCode === 204) {
-          setFormStatus(formStatusProps.authenticate);
-        } else {
-          setFormStatus(formStatusProps.error);
-        }
       });
   };
 
@@ -153,14 +118,12 @@ const Login: React.FunctionComponent = () => {
       <Formik
         initialValues={{
           user: {
-            //companyname: "",
             password: "",
-            //confirmPassword: "",
             email: "",
             rememberMe: false,
           },
         }}
-        onSubmit={(values: ISignUpForm, actions) => {
+        onSubmit={(values, actions) => {
           createNewUser(values, actions.resetForm);
         }}
         validationSchema={Yup.object().shape({
@@ -170,7 +133,7 @@ const Login: React.FunctionComponent = () => {
           }),
         })}
       >
-        {(props: FormikProps<ISignUpForm>) => {
+        {(props) => {
           const {
             values,
             touched,
@@ -279,19 +242,7 @@ const Login: React.FunctionComponent = () => {
                   >
                     Cancel
                   </Button>
-                  {displayFormStatus && (
-                    <div className="formStatus">
-                      {formStatus.type === "error" ? (
-                        <p className={classes.errorMessage}>
-                          {formStatus.message}
-                        </p>
-                      ) : formStatus.type === "success" ? (
-                        <p className={classes.successMessage}>
-                          {formStatus.message}
-                        </p>
-                      ) : null}
-                    </div>
-                  )}
+                   
                 </Grid>
               </Grid>
             </Form>
