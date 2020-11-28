@@ -14,6 +14,6 @@ namespace AccountingSystem.Models
         public decimal UnitPrice { get; set; }
         public decimal TaxRate { get; set; }
         public int Tracking { get; set; }
-
+        public decimal Amount { get; set; }
     }
 }

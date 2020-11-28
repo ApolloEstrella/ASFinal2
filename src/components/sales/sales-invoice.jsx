@@ -152,13 +152,13 @@ const SalesInvoice = (props) => {
   const [inputList, setInputList] = useState([
     {
       id: -1,
-      salesItem: { value: 0, label: "" },
+      salesItem: 0,
       description: "",
       qty: 0,
       unitPrice: 0,
-      taxRate: { value: 0, label: "" },
+      taxRate: 0,
       amount: 0,
-      tracking: { value: 0, label: "" },
+      tracking: 0,
     },
   ]);
 
@@ -168,13 +168,13 @@ const SalesInvoice = (props) => {
       ...inputList,
       {
         id: itemCount,
-        salesItem: { value: 0, label: "" },
+        salesItem: 0,
         description: "",
         qty: 0,
         unitPrice: 0,
-        taxRate: { value: 0, label: "" },
+        taxRate: 0,
         amount: 0,
-        tracking: { value: 0, label: "" },
+        tracking: 0,
       },
     ]);
   };
@@ -238,6 +238,11 @@ const SalesInvoice = (props) => {
 
             //console.log(values.salesItem0)
 
+            inputList[i].qty = Number(inputList[i].qty);
+            inputList[i].unitPrice = Number(inputList[i].unitPrice);
+
+
+
             //window["salesItem" + i] = values.salesItem;
             //console.log(values.salesItem0.value)
             //console.log(window["salesItem" + i]);
@@ -251,21 +256,26 @@ const SalesInvoice = (props) => {
             //console.log(x.innerText);
 
             var salesItemValue = salesItem.lastChild.defaultValue;
-            var salesItemLabel = salesItem.innerText;
+            //var salesItemLabel = salesItem.innerText;
 
             var taxRateValue = taxRate.lastChild.defaultValue;
-            var taxRateLabel = taxRate.innerText;
+            //var taxRateLabel = taxRate.innerText;
 
             var trackingValue = tracking.lastChild.defaultValue;
-            var trackingLabel = tracking.innerText;
+            //var trackingLabel = tracking.innerText;
 
-            inputList[i].salesItem.value = salesItemValue;
+            inputList[i].salesItem = Number(salesItemValue);
+            inputList[i].taxRate = Number(taxRateValue);
+            inputList[i].tracking = Number(trackingValue);
+
+            
+            //inputList[i].salesItem.value = salesItemValue;
             //inputList[i].salesItem.label = salesItemLabel;
 
-            inputList[i].taxRate.value = taxRateValue;
+            //inputList[i].taxRate.value = taxRateValue;
             //inputList[i].taxRate.label = taxRateLabel;
 
-            inputList[i].tracking.value = trackingValue;
+            //inputList[i].tracking.value = trackingValue;
             //inputList[i].tracking.label = trackingLabel;
 
             //console.log(inputList[i].description)
@@ -283,13 +293,13 @@ const SalesInvoice = (props) => {
             invoiceNo: values.invoiceNo,
             reference: values.reference,
             terms: values.terms,
-            //items: inputList
+            items: inputList
           }
 
           //console.log(salesInvoice)
 
           
-            values.id = 0;
+             
             fetch("https://localhost:44302/api/sales/addaccount", {
               method: "POST",
               body: JSON.stringify(salesInvoice),
@@ -505,10 +515,9 @@ const SalesInvoice = (props) => {
                           name={"salesItem" + i}
                           type="text"
                           options={subsidiaryLedgerAccounts}
-                          value={{
-                            value: r.salesItem.value,
-                            label: r.salesItem.label,
-                          }}
+                          value={
+                             r.salesItem
+                          }
                         />
                       </Grid>
                       <Grid item xs={3} className={classes.textField}>
@@ -561,10 +570,7 @@ const SalesInvoice = (props) => {
                           name={"taxRate" + i}
                           type="text"
                           options={subsidiaryLedgerAccounts}
-                          value={{
-                            value: r.taxRate.value,
-                            label: r.taxRate.label,
-                          }}
+                          value={ r.taxRate}
                         />
                       </Grid>
                       <Grid item xs={1}>
@@ -588,10 +594,8 @@ const SalesInvoice = (props) => {
                           name={"tracking" + i}
                           type="text"
                           options={subsidiaryLedgerAccounts}
-                          value={{
-                            value: r.tracking.value,
-                            label: r.tracking.label,
-                          }}
+                          value={ r.tracking
+                          }
                         />
                       </Grid>
                       <Grid item xs={1}>
