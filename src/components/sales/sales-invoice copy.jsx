@@ -154,7 +154,7 @@ const SalesInvoice = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   // handle click event of the Remove button
-  const handleDelete = () => {
+  const handleDelete =     () => {
     const id = deleteItemId;
     const list = [...inputList];
     //list.splice(id, 1);

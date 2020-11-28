@@ -7,7 +7,13 @@ namespace AccountingSystem.Models
 {
     public class CustomerInvoiceModel
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public int Customer { get; set; }
+        public string BillingAddress { get; set; }
+        public string InvoiceNo { get; set; }
+        public DateTime Date { get; set; }
+        public DateTime DueDate { get; set; }
+        public int Terms { get; set; }
+        public string Reference { get; set; }
+        public List<CustomerInvoiceItemModel> Items { get; set; }
     }
 }

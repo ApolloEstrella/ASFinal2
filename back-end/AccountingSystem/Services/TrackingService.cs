@@ -12,7 +12,7 @@ namespace AccountingSystem.Services
         private readonly accounting_systemContext _serverContext;
         public TrackingService(accounting_systemContext serverContext)
         {
-            serverContext = _serverContext;
+            _serverContext = serverContext;
         }
         public List<Tracking> GetTracking()
         {

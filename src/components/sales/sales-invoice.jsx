@@ -5,7 +5,10 @@ import {
   Button,
   makeStyles,
   createStyles,
+  useMediaQuery,
   InputLabel,
+  IconButton,
+  useTheme,
 } from "@material-ui/core";
 import { Formik, Form, FormikProps } from "formik";
 import * as Yup from "yup";
@@ -18,7 +21,18 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import $ from "jquery";
-import CreatableSelect from "react-select/creatable";
+import DeleteIcon from "@material-ui/icons/Delete";
+import "date-fns";
+import DateFnsUtils from "@date-io/date-fns";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -37,7 +51,7 @@ const useStyles = makeStyles((theme) =>
     textField2: {
       "& > *": {
         width: "100%",
-        paddingTop: ".5px",
+        //paddingTop: ".5px",
         //marginTop: "2px"
       },
     },
@@ -50,6 +64,9 @@ const useStyles = makeStyles((theme) =>
     },
     submitButton: {
       marginTop: "24px",
+    },
+    deleteButton: {
+      marginLeft: "15px",
     },
     title: { textAlign: "center" },
     successMessage: { color: "green" },
@@ -72,15 +89,33 @@ const SalesInvoice = (props) => {
   const [rowId, setRowId] = useState(-1);
 
   const removeRow = (id) => {
-    var result = $.grep(rows, function (e, i) {
-      return +e.id !== id;
-    });
-    setRow(result);
-    console.log(rows);
+    var result = $.grep(
+      inputList,
+      function (n, i) {
+        return n.id !== id;
+      },
+      false
+    );
+    setInputList(result);
+    console.log(result);
+    setOpenDelete(false);
   };
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const editRow = (row) => {};
   const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+
+  const handleDeleteConfirmation = (id) => {
+    setOpenDelete(true);
+    setDeleteItemId(id);
+  };
+
+  const [itemCount, setItemCount] = useState(-2);
 
   useEffect(() => {
     fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
@@ -114,30 +149,34 @@ const SalesInvoice = (props) => {
     qty: 0,
   });
 
-  const [inputList, setInputList] = useState([{
-    salesItem: { value: 0, label: "" },
-    description: "",
-    qty: 0,
-    unitPrice: 0,
-    taxRate: { value: 0, label: "" },
-    amount: 0,
-    tracking: { value: 0, label: "" },
-  }]);
+  const [inputList, setInputList] = useState([
+    {
+      id: -1,
+      salesItem: { value: 0, label: "" },
+      description: "",
+      qty: 0,
+      unitPrice: 0,
+      taxRate: { value: 0, label: "" },
+      amount: 0,
+      tracking: { value: 0, label: "" },
+    },
+  ]);
 
   const AddItem = () => {
+    setItemCount(itemCount - 1);
     setInputList([
       ...inputList,
       {
+        id: itemCount,
         salesItem: { value: 0, label: "" },
         description: "",
         qty: 0,
         unitPrice: 0,
         taxRate: { value: 0, label: "" },
         amount: 0,
-        tracking: { value: 0, label: "" }
-      }
-    ]
-    );
+        tracking: { value: 0, label: "" },
+      },
+    ]);
   };
 
   // handle input change
@@ -168,25 +207,36 @@ const SalesInvoice = (props) => {
     //this.setState({ value: newValue });
     setNewValue({ value: newValue.value, label: newValue.label });
   };
+  const [selectedDate, setSelectedDate] = React.useState();
+  const [selectedDueDate, setSelectedDueDate] = React.useState();
+
+  const [open, toggleOpen] = useState(false);
+  const handleClose = () => {
+    toggleOpen(false);
+  };
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
 
   return (
     <div className={classes.root}>
-      <button onClick={AddItem}>New</button>
       <Formik
         initialValues={{
-          id: 0,
+          id: -1,
           customer: "",
-          billingAddress: ""
+          billingAddress: "",
+          invoiceNo: "",
+          date: new Date(),
+          dueDate: new Date(),
+          terms: "",
+          reference: "",
         }}
         onSubmit={(values, actions) => {
-
           for (var i = 0; i < inputList.length; i++) {
+            //this["values.salesItem" + i] = values.salesItem0;
 
-            //this["values.salesItem" + i] = values.salesItem0; 
-            
             //console.log(values.salesItem0)
-
-
 
             //window["salesItem" + i] = values.salesItem;
             //console.log(values.salesItem0.value)
@@ -210,14 +260,13 @@ const SalesInvoice = (props) => {
             var trackingLabel = tracking.innerText;
 
             inputList[i].salesItem.value = salesItemValue;
-            inputList[i].salesItem.label = salesItemLabel;
+            //inputList[i].salesItem.label = salesItemLabel;
 
             inputList[i].taxRate.value = taxRateValue;
-            inputList[i].taxRate.label = taxRateLabel;
+            //inputList[i].taxRate.label = taxRateLabel;
 
             inputList[i].tracking.value = trackingValue;
-            inputList[i].tracking.label = trackingLabel;
-
+            //inputList[i].tracking.label = trackingLabel;
 
             //console.log(inputList[i].description)
             //const key = `values.salesItem${i}`;
@@ -226,12 +275,45 @@ const SalesInvoice = (props) => {
             //console.log("si: " + (`values.salesItem${0}`).value);
           }
 
+          const salesInvoice = {
+            billingAddress: values.billingAddress,
+            customer: values.customer.value,
+            date: values.date,
+            dueDate: values.dueDate,
+            invoiceNo: values.invoiceNo,
+            reference: values.reference,
+            terms: values.terms,
+            //items: inputList
+          }
 
+          //console.log(salesInvoice)
 
-         // console.log(inputList);
+          
+            values.id = 0;
+            fetch("https://localhost:44302/api/sales/addaccount", {
+              method: "POST",
+              body: JSON.stringify(salesInvoice),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((results) => results.json())
+              .then((data) => {
+                 console.log("successful")
+              })
+              .catch(function (error) {
+                console.log("network error");
+              })
+              .finally(function () {
+                
+              });
+           
+
+          
+          //console.log(inputList);
           //console.log({ values });
           //console.log({inputList})
-         // console.log(JSON.stringify(values));
+          // console.log(JSON.stringify(values));
         }}
         /* validationSchema={Yup.object().shape({
           //email: Yup.string().email().required("Enter valid email-id"),
@@ -276,10 +358,10 @@ const SalesInvoice = (props) => {
                 </Grid>
                 <Grid
                   item
-                  lg={10}
-                  md={10}
-                  sm={10}
-                  xs={10}
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
                   className={classes.textField}
                 >
                   <TextField
@@ -295,14 +377,93 @@ const SalesInvoice = (props) => {
                       errors.description
                     }
                     margin="normal"
+                    multiline
+                    rows={4}
+                    rowsMax={4}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={2} className={classes.textField}>
+                  <TextField
+                    id="invoiceNo"
+                    name="invoiceNo"
+                    label="Invoice No."
+                    values={values.invoiceNo}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={
+                      errors.invoiceNo && touched.invoiceNo && errors.invoiceNo
+                    }
+                  />
+                </Grid>
+
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <Grid item xs={2} className={classes.textField}>
+                    <KeyboardDatePicker
+                      style={{ marginTop: "0px" }}
+                      disableToolbar
+                      variant="inline"
+                      format="MM/dd/yyyy"
+                      margin="normal"
+                      id="date"
+                      name="date"
+                      label="Date"
+                      value={props.values.date}
+                      onChange={(value) => props.setFieldValue("date", value)}
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={2} className={classes.textField}>
+                    <KeyboardDatePicker
+                      style={{ marginTop: "0px" }}
+                      disableToolbar
+                      variant="inline"
+                      format="MM/dd/yyyy"
+                      margin="normal"
+                      id="dueDate"
+                      name="dueDate"
+                      label="Due Date"
+                      value={props.values.dueDate}
+                      onChange={(value) => props.setFieldValue("dueDate", value)}
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                      }}
+                    />
+                  </Grid>
+                </MuiPickersUtilsProvider>
+                <Grid item xs={1} className={classes.textField}>
+                  <TextField
+                    id="terms"
+                    name="terms"
+                    label="Terms"
+                    type="number"
+                    value={values.terms}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={errors.terms && touched.terms && errors.terms}
+                  />
+                </Grid>
+                <Grid item xs={5} className={classes.textField}>
+                  <TextField
+                    id="reference"
+                    name="reference"
+                    label="Reference"
+                    value={values.reference}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={
+                      errors.reference && touched.reference && errors.reference
+                    }
                   />
                 </Grid>
                 <Grid
                   item
-                  lg={10}
-                  md={10}
-                  sm={10}
-                  xs={10}
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
                   className={classes.textField}
                 >
                   <Grid container justify="space-around" direction="row">
@@ -324,9 +485,10 @@ const SalesInvoice = (props) => {
                     <Grid item xs={1}>
                       Amount
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid item xs={1}>
                       Tracking
                     </Grid>
+                    <Grid item xs={1}></Grid>
                   </Grid>
 
                   {inputList.map((r, i) => (
@@ -360,7 +522,7 @@ const SalesInvoice = (props) => {
                             errors.description &&
                             touched.description &&
                             errors.description
-                          }                         
+                          }
                           className={classes.textField2}
                         />
                       </Grid>
@@ -419,7 +581,7 @@ const SalesInvoice = (props) => {
                           className={classes.textField}
                         />
                       </Grid>
-                      <Grid item xs={2}>
+                      <Grid item xs={1}>
                         <ReactSelect
                           label="Tracking"
                           id={"tracking" + i}
@@ -432,21 +594,43 @@ const SalesInvoice = (props) => {
                           }}
                         />
                       </Grid>
+                      <Grid item xs={1}>
+                        {r.id}
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={classes.deleteButton}
+                          startIcon={<DeleteIcon />}
+                          onClick={() => handleDeleteConfirmation(r.id)}
+                        >
+                          Delete
+                        </Button>
+                      </Grid>
                     </Grid>
                   ))}
                 </Grid>
                 <Grid
                   item
-                  lg={10}
-                  md={10}
-                  sm={10}
-                  xs={10}
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
                   className={classes.submitButton}
                 >
                   <Button
+                    type="button"
+                    variant="contained"
+                    color="primary"
+                    onClick={AddItem}
+                    // disabled={isSubmitting}
+                  >
+                    Add New Row
+                  </Button>
+
+                  <Button
                     type="submit"
                     variant="contained"
-                    color="secondary"
+                    color="primary"
                     // disabled={isSubmitting}
                   >
                     Submit
@@ -457,6 +641,39 @@ const SalesInvoice = (props) => {
           );
         }}
       </Formik>
+      <>
+        <Dialog
+          fullScreen={fullScreen}
+          open={openDelete}
+          onClose={handleClose}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            DELETE CONFIRMATION
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              autoFocus
+              onClick={() => handleCloseDelete()}
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => removeRow(deleteItemId)}
+              color="primary"
+              autoFocus
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     </div>
   );
 };
