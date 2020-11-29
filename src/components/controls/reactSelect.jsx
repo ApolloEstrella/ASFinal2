@@ -17,7 +17,7 @@ import {
 } from "@material-ui/core";
 
 const ReactSelect = ({ options, label, value, ...props }) => {
-  console.log("value=> " + value.value + " label=>" + value.label);
+  //console.log("value=> " + value.value + " label=>" + value.label);
   const { setFieldValue, setFieldTouched } = useFormikContext();
   const [field, meta] = useField(props);
   const [open, toggleOpen] = useState(false);
@@ -52,7 +52,9 @@ const ReactSelect = ({ options, label, value, ...props }) => {
         onChange={handleOptionChange}
         onCreateOption={() => toggleOpen(true)}
         //value={options.find((obj) => obj  === value)}
-        value={options.find((obj) => obj.value === value)}
+        //value={options.find((obj) => obj.value === value)}
+        value={value === null ? null : options.find((obj) => obj.value === value)}
+        isClearable
       />
       {meta.touched && meta.error ? (
         <span className="custom-input-error">{meta.error.value}</span>

@@ -1,6 +1,5 @@
 ﻿using AccountingSystem.Data.Entities;
 using AccountingSystem.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using AccountingSystem.Services.Interfaces;
@@ -14,9 +13,12 @@ namespace AccountingSystem.Services
         {
             _serverContext = serverContext;
         }
-        public List<Tracking> GetTracking()
+        public List<TrackingModel> GetTracking()
         {
-           return _serverContext.Trackings.OrderBy(x => x.Description).ToList();
+            return (from a in _serverContext.Trackings
+                    select new { a.Id, a.Description }).ToList()
+                      .Select(x => new TrackingModel { value = x.Id, label = x.Description }).OrderBy(x => x.label).ToList();
+
         }
         public int AddAccount(Tracking account)
         {

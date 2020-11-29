@@ -107,8 +107,6 @@ const SalesInvoice = (props) => {
     },
   ]);
 
-  const [customerValue, setCustomerValue] = useState();
-
   const [rows, setRow] = useState([]);
 
   const [rowId, setRowId] = useState(-1);
@@ -130,6 +128,7 @@ const SalesInvoice = (props) => {
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const editRow = (row) => {};
+
   const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
 
   const [loadSalesItems, setLoadSalesItems] = useState(false);
@@ -161,7 +160,7 @@ const SalesInvoice = (props) => {
       .catch(function (error) {
         console.log("network error");
       });
-  }, [loadSubsidiaryLedger]);
+  });
 
   useEffect(() => {
     fetch("https://localhost:44302/api/IncomeItem/get", {
@@ -299,22 +298,24 @@ const SalesInvoice = (props) => {
     setOpenDelete(false);
   };
 
-   const initialValues = {
-     id: -1,
-     customer: null,
-     billingAddress: "",
-     invoiceNo: "",
-     date: new Date(),
-     dueDate: new Date(),
-     terms: "",
-     reference: "",
-   };
+  //const defaultValue={ label: "Select Customer", value: 0 }
+
+  const initialValues = {
+    id: -1,
+    customer: 0,
+    billingAddress: "",
+    invoiceNo: "",
+    date: new Date(),
+    dueDate: new Date(),
+    terms: "",
+    reference: "",
+  };
 
   return (
     <div className={classes.root}>
       <Formik
         initialValues={initialValues}
-        onSubmit={(values, {resetForm}) => {
+        onSubmit={(values, { resetForm }) => {
           for (var i = 0; i < inputList.length; i++) {
             //this["values.salesItem" + i] = values.salesItem0;
 
@@ -364,7 +365,6 @@ const SalesInvoice = (props) => {
             //console.log("si: " + (`values.salesItem${0}`).value);
           }
 
-
           const salesInvoice = {
             billingAddress: values.billingAddress,
             customer: values.customer.value,
@@ -388,9 +388,9 @@ const SalesInvoice = (props) => {
             .then((results) => results.json())
             .then((data) => {
               resetForm(initialValues);
-              //setLoadSubsidiaryLedger(true);
-              setCustomerValue(null);
+              setLoadSubsidiaryLedger(true);
               setInputList([]);
+              //AddItem();
               console.log("successful");
             })
             .catch(function (error) {
@@ -431,301 +431,295 @@ const SalesInvoice = (props) => {
             isSubmitting,
           } = props;
           return (
-            <>
-              {setCustomerValue(values.customer)}
-              <Form>
-                <h1 className={classes.title}>Sales Invoice</h1>
-                <Grid container justify="space-around" direction="row">
-                  <Grid item xs={12}>
-                    <ReactSelect
-                      label="Customer"
-                      id="customer"
-                      name="customer"
-                      type="text"
-                      options={subsidiaryLedgerAccounts}
-                      value={customerValue}
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    lg={12}
-                    md={12}
-                    sm={12}
-                    xs={12}
+            <Form>
+              <h1 className={classes.title}>Sales Invoice</h1>
+              <Grid container justify="space-around" direction="row">
+                <Grid item xs={12}>
+                  <ReactSelect
+                    label="Customer"
+                    id="customer"
+                    name="customer"
+                    type="text"
+                    options={subsidiaryLedgerAccounts}
+                    value={values.customer}
+                    //defaultValue={{ label: "Select Customer", value: 0 }}
+                  />
+                </Grid>
+                <Grid
+                  item
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
+                  className={classes.textField}
+                >
+                  <TextField
+                    label="Billing Address"
+                    name="billingAddress"
                     className={classes.textField}
-                  >
-                    <TextField
-                      label="Billing Address"
-                      name="billingAddress"
-                      className={classes.textField}
-                      value={values.billingAddress}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      helperText={
-                        errors.description &&
-                        touched.description &&
-                        errors.description
-                      }
+                    value={values.billingAddress}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={
+                      errors.description &&
+                      touched.description &&
+                      errors.description
+                    }
+                    margin="normal"
+                    multiline
+                    rows={4}
+                    rowsMax={4}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={2} className={classes.textField}>
+                  <TextField
+                    id="invoiceNo"
+                    name="invoiceNo"
+                    label="Invoice No"
+                    value={values.invoiceNo}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={
+                      errors.invoiceNo && touched.invoiceNo && errors.invoiceNo
+                    }
+                  />
+                </Grid>
+
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <Grid item xs={2} className={classes.textField}>
+                    <KeyboardDatePicker
+                      style={{ marginTop: "0px" }}
+                      disableToolbar
+                      variant="inline"
+                      format="MM/dd/yyyy"
                       margin="normal"
-                      multiline
-                      rows={4}
-                      rowsMax={4}
-                      variant="outlined"
+                      id="date"
+                      name="date"
+                      label="Date"
+                      value={props.values.date}
+                      onChange={(value) => props.setFieldValue("date", value)}
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                      }}
                     />
                   </Grid>
                   <Grid item xs={2} className={classes.textField}>
-                    <TextField
-                      id="invoiceNo"
-                      name="invoiceNo"
-                      label="invoice No"
-                      value={values.invoiceNo}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      helperText={
-                        errors.invoiceNo &&
-                        touched.invoiceNo &&
-                        errors.invoiceNo
+                    <KeyboardDatePicker
+                      style={{ marginTop: "0px" }}
+                      disableToolbar
+                      variant="inline"
+                      format="MM/dd/yyyy"
+                      margin="normal"
+                      id="dueDate"
+                      name="dueDate"
+                      label="Due Date"
+                      value={props.values.dueDate}
+                      onChange={(value) =>
+                        props.setFieldValue("dueDate", value)
                       }
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                      }}
                     />
                   </Grid>
-
-                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                    <Grid item xs={2} className={classes.textField}>
-                      <KeyboardDatePicker
-                        style={{ marginTop: "0px" }}
-                        disableToolbar
-                        variant="inline"
-                        format="MM/dd/yyyy"
-                        margin="normal"
-                        id="date"
-                        name="date"
-                        label="Date"
-                        value={props.values.date}
-                        onChange={(value) => props.setFieldValue("date", value)}
-                        KeyboardButtonProps={{
-                          "aria-label": "change date",
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={2} className={classes.textField}>
-                      <KeyboardDatePicker
-                        style={{ marginTop: "0px" }}
-                        disableToolbar
-                        variant="inline"
-                        format="MM/dd/yyyy"
-                        margin="normal"
-                        id="dueDate"
-                        name="dueDate"
-                        label="Due Date"
-                        value={props.values.dueDate}
-                        onChange={(value) =>
-                          props.setFieldValue("dueDate", value)
-                        }
-                        KeyboardButtonProps={{
-                          "aria-label": "change date",
-                        }}
-                      />
-                    </Grid>
-                  </MuiPickersUtilsProvider>
-                  <Grid item xs={1} className={classes.textField}>
-                    <TextField
-                      id="terms"
-                      name="terms"
-                      label="Terms"
-                      type="number"
-                      value={values.terms}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      helperText={errors.terms && touched.terms && errors.terms}
-                    />
-                  </Grid>
-                  <Grid item xs={5} className={classes.textField}>
-                    <TextField
-                      id="reference"
-                      name="reference"
-                      label="Reference"
-                      value={values.reference}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      helperText={
-                        errors.reference &&
-                        touched.reference &&
-                        errors.reference
-                      }
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    lg={12}
-                    md={12}
-                    sm={12}
-                    xs={12}
-                    className={classes.textField}
-                  >
-                    <Grid container justify="space-around" direction="row">
-                      <Grid item xs={2}>
-                        Sales Item
-                      </Grid>
-                      <Grid item xs={3}>
-                        Description
-                      </Grid>
-                      <Grid item xs={1}>
-                        Quantity
-                      </Grid>
-                      <Grid item xs={1}>
-                        Unit Price
-                      </Grid>
-                      <Grid item xs={2}>
-                        Tax Rate
-                      </Grid>
-                      <Grid item xs={1}>
-                        Amount
-                      </Grid>
-                      <Grid item xs={1}>
-                        Tracking
-                      </Grid>
-                      <Grid item xs={1}></Grid>
-                    </Grid>
-
-                    {inputList.map((r, i) => (
-                      <Grid
-                        container
-                        justify="space-around"
-                        direction="row"
-                        key={i}
-                      >
-                        <Grid item xs={2}>
-                          <ReactSelect
-                            label="salesItem"
-                            id={"salesItem" + i}
-                            name={"salesItem" + i}
-                            type="text"
-                            options={salesItems}
-                            value={r.salesItem}
-                          />
-                        </Grid>
-                        <Grid item xs={3} className={classes.textField}>
-                          <TextField
-                            id="description"
-                            name="description"
-                            value={r.description}
-                            onChange={(e) => handleInputChange(e, i)}
-                            onBlur={handleBlur}
-                            helperText={
-                              errors.description &&
-                              touched.description &&
-                              errors.description
-                            }
-                            className={classes.textField2}
-                          />
-                        </Grid>
-                        <Grid item xs={1}>
-                          <TextField
-                            id="qty"
-                            name="qty"
-                            value={r.qty}
-                            type="number"
-                            onChange={(e) => handleInputChange(e, i)}
-                            onBlur={handleBlur}
-                            helperText={errors.qty && touched.qty && errors.qty}
-                            className={classes.textField}
-                          />
-                        </Grid>
-                        <Grid item xs={1}>
-                          <TextField
-                            id="unitPrice"
-                            name="unitPrice"
-                            value={r.unitPrice}
-                            type="number"
-                            onChange={(e) => handleInputChange(e, i)}
-                            onBlur={handleBlur}
-                            helperText={
-                              errors.unitPrice &&
-                              touched.unitPrice &&
-                              errors.unitPrice
-                            }
-                            className={classes.textField}
-                          />
-                        </Grid>
-                        <Grid item xs={2}>
-                          <ReactSelect
-                            label="Tax Rate"
-                            id={"taxRate" + i}
-                            name={"taxRate" + i}
-                            type="text"
-                            options={taxRates}
-                            value={r.taxRate}
-                          />
-                        </Grid>
-                        <Grid item xs={1}>
-                          <TextField
-                            id="amount"
-                            name="amount"
-                            value={r.qty * r.unitPrice}
-                            type="number"
-                            onChange={(e) => handleInputChange(e, i)}
-                            onBlur={handleBlur}
-                            helperText={
-                              errors.amount && touched.amount && errors.amount
-                            }
-                            className={classes.textField}
-                          />
-                        </Grid>
-                        <Grid item xs={1}>
-                          <ReactSelect
-                            label="Tracking"
-                            id={"tracking" + i}
-                            name={"tracking" + i}
-                            type="text"
-                            options={trackings}
-                            value={r.tracking}
-                          />
-                        </Grid>
-                        <Grid item xs={1}>
-                          {r.id}
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            className={classes.deleteButton}
-                            startIcon={<DeleteIcon />}
-                            onClick={() => handleDeleteConfirmation(r.id)}
-                          >
-                            Delete
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    ))}
-                  </Grid>
-                  <Grid
-                    item
-                    lg={12}
-                    md={12}
-                    sm={12}
-                    xs={12}
-                    className={classes.submitButton}
-                  >
-                    <Button
-                      type="button"
-                      variant="contained"
-                      color="primary"
-                      onClick={AddItem}
-                      // disabled={isSubmitting}
-                    >
-                      Add New Row
-                    </Button>
-
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      // disabled={isSubmitting}
-                    >
-                      Submit
-                    </Button>
-                  </Grid>
+                </MuiPickersUtilsProvider>
+                <Grid item xs={1} className={classes.textField}>
+                  <TextField
+                    id="terms"
+                    name="terms"
+                    label="Terms"
+                    type="number"
+                    value={values.terms}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={errors.terms && touched.terms && errors.terms}
+                  />
                 </Grid>
-              </Form>
-            </>
+                <Grid item xs={5} className={classes.textField}>
+                  <TextField
+                    id="reference"
+                    name="reference"
+                    label="Reference"
+                    value={values.reference}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    helperText={
+                      errors.reference && touched.reference && errors.reference
+                    }
+                  />
+                </Grid>
+                <Grid
+                  item
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
+                  className={classes.textField}
+                >
+                  <Grid container justify="space-around" direction="row">
+                    <Grid item xs={2}>
+                      Sales Item
+                    </Grid>
+                    <Grid item xs={3}>
+                      Description
+                    </Grid>
+                    <Grid item xs={1}>
+                      Quantity
+                    </Grid>
+                    <Grid item xs={1}>
+                      Unit Price
+                    </Grid>
+                    <Grid item xs={2}>
+                      Tax Rate
+                    </Grid>
+                    <Grid item xs={1}>
+                      Amount
+                    </Grid>
+                    <Grid item xs={1}>
+                      Tracking
+                    </Grid>
+                    <Grid item xs={1}></Grid>
+                  </Grid>
+
+                  {inputList.map((r, i) => (
+                    <Grid
+                      container
+                      justify="space-around"
+                      direction="row"
+                      key={i}
+                    >
+                      <Grid item xs={2}>
+                        <ReactSelect
+                          label="salesItem"
+                          id={"salesItem" + i}
+                          name={"salesItem" + i}
+                          type="text"
+                          options={salesItems}
+                          value={r.salesItem}
+                        />
+                      </Grid>
+                      <Grid item xs={3} className={classes.textField}>
+                        <TextField
+                          id="description"
+                          name="description"
+                          value={r.description}
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={
+                            errors.description &&
+                            touched.description &&
+                            errors.description
+                          }
+                          className={classes.textField2}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <TextField
+                          id="qty"
+                          name="qty"
+                          value={r.qty}
+                          type="number"
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={errors.qty && touched.qty && errors.qty}
+                          className={classes.textField}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <TextField
+                          id="unitPrice"
+                          name="unitPrice"
+                          value={r.unitPrice}
+                          type="number"
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={
+                            errors.unitPrice &&
+                            touched.unitPrice &&
+                            errors.unitPrice
+                          }
+                          className={classes.textField}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <ReactSelect
+                          label="Tax Rate"
+                          id={"taxRate" + i}
+                          name={"taxRate" + i}
+                          type="text"
+                          options={taxRates}
+                          value={r.taxRate}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <TextField
+                          id="amount"
+                          name="amount"
+                          value={r.qty * r.unitPrice}
+                          type="number"
+                          onChange={(e) => handleInputChange(e, i)}
+                          onBlur={handleBlur}
+                          helperText={
+                            errors.amount && touched.amount && errors.amount
+                          }
+                          className={classes.textField}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        <ReactSelect
+                          label="Tracking"
+                          id={"tracking" + i}
+                          name={"tracking" + i}
+                          type="text"
+                          options={trackings}
+                          value={r.tracking}
+                        />
+                      </Grid>
+                      <Grid item xs={1}>
+                        {r.id}
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={classes.deleteButton}
+                          startIcon={<DeleteIcon />}
+                          onClick={() => handleDeleteConfirmation(r.id)}
+                        >
+                          Delete
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  ))}
+                </Grid>
+                <Grid
+                  item
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
+                  className={classes.submitButton}
+                >
+                  <Button
+                    type="button"
+                    variant="contained"
+                    color="primary"
+                    onClick={AddItem}
+                    // disabled={isSubmitting}
+                  >
+                    Add New Row
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    // disabled={isSubmitting}
+                  >
+                    Submit
+                  </Button>
+                </Grid>
+              </Grid>
+            </Form>
           );
         }}
       </Formik>

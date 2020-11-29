@@ -1,7 +1,8 @@
-﻿using System.Linq;
-using AccountingSystem.Services.Interfaces;
-using AccountingSystem.Data.Entities;
+﻿using AccountingSystem.Data.Entities;
+using AccountingSystem.Models;
 using System.Collections.Generic;
+using System.Linq;
+using AccountingSystem.Services.Interfaces;
 
 namespace AccountingSystem.Services
 {
@@ -13,9 +14,12 @@ namespace AccountingSystem.Services
         {
             _serverContext = serverContext;
         }
-        public List<TaxRate> GetTaxRates()
+        public List<TaxRateModel> GetTaxRates()
         {
-            return _serverContext.TaxRates.OrderBy(x => x.Description).ToList();
+            return (from a in _serverContext.TaxRates
+                    select new { a.Id, a.Description }).ToList()
+                     .Select(x => new TaxRateModel { value = x.Id, label = x.Description }).OrderBy(x => x.label).ToList();
+
         }
 
         public int AddAccount(TaxRate taxRate)

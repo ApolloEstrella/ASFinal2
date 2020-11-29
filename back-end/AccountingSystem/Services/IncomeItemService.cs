@@ -1,7 +1,7 @@
-﻿using System;
+﻿using AccountingSystem.Data.Entities;
+using AccountingSystem.Models;
 using System.Collections.Generic;
 using System.Linq;
-using AccountingSystem.Data.Entities;
 using AccountingSystem.Services.Interfaces;
 
 namespace AccountingSystem.Services
@@ -14,9 +14,11 @@ namespace AccountingSystem.Services
         {
             _serverContext = serverContext;
         }
-        public List<IncomeItem> GetIncomeItem()
+        public List<IncomeItemModel> GetIncomeItem()
         {
-            return _serverContext.IncomeItems.OrderBy(x => x.Name).ToList();
+            return (from a in _serverContext.IncomeItems
+                    select new { a.Id, a.Name }).ToList()
+                     .Select(x => new IncomeItemModel { value = x.Id, label = x.Name }).OrderBy(x => x.label).ToList();
         }
         public int AddAccount(IncomeItem account)
         {
