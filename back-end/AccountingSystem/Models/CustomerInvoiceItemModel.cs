@@ -8,12 +8,13 @@ namespace AccountingSystem.Models
     public class CustomerInvoiceItemModel
     {
         public int Id { get; set; }
-        public int SalesItem { get; set; }
+        public int SalesItemId { get; set; }
         public string Description { get; set; }
         public int Qty { get; set; }
         public decimal UnitPrice { get; set; }
+        public int TaxRateId { get; set; }
         public decimal TaxRate { get; set; }
-        public int Tracking { get; set; }
+        public int TrackingId { get; set; }
         public decimal Amount { get; set; }
     }
 }

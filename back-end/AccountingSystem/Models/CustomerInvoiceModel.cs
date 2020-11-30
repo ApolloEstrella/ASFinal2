@@ -12,7 +12,7 @@ namespace AccountingSystem.Models
         public string InvoiceNo { get; set; }
         public DateTime Date { get; set; }
         public DateTime DueDate { get; set; }
-        public int Terms { get; set; }
+        public short Terms { get; set; }
         public string Reference { get; set; }
         public List<CustomerInvoiceItemModel> Items { get; set; }
     }

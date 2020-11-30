@@ -232,13 +232,14 @@ const SalesInvoice = (props) => {
   const [inputList, setInputList] = useState([
     {
       id: -1,
-      salesItem: 0,
+      salesItemId: 0,
       description: "",
       qty: 0,
       unitPrice: 0,
+      taxRateId: 0,
       taxRate: 0,
       amount: 0,
-      tracking: 0,
+      trackingId: 0,
     },
   ]);
 
@@ -248,13 +249,14 @@ const SalesInvoice = (props) => {
       ...inputList,
       {
         id: itemCount,
-        salesItem: 0,
+        salesItemId: 0,
         description: "",
         qty: 0,
         unitPrice: 0,
+        taxRateId: 0,
         taxRate: 0,
         amount: 0,
-        tracking: 0,
+        trackingId: 0,
       },
     ]);
   };
@@ -299,22 +301,22 @@ const SalesInvoice = (props) => {
     setOpenDelete(false);
   };
 
-   const initialValues = {
-     id: -1,
-     customer: null,
-     billingAddress: "",
-     invoiceNo: "",
-     date: new Date(),
-     dueDate: new Date(),
-     terms: "",
-     reference: "",
-   };
+  const initialValues = {
+    id: -1,
+    customer: null,
+    billingAddress: "",
+    invoiceNo: "",
+    date: new Date(),
+    dueDate: new Date(),
+    terms: "",
+    reference: "",
+  };
 
   return (
     <div className={classes.root}>
       <Formik
         initialValues={initialValues}
-        onSubmit={(values, {resetForm}) => {
+        onSubmit={(values, { resetForm }) => {
           for (var i = 0; i < inputList.length; i++) {
             //this["values.salesItem" + i] = values.salesItem0;
 
@@ -326,9 +328,9 @@ const SalesInvoice = (props) => {
             //window["salesItem" + i] = values.salesItem;
             //console.log(values.salesItem0.value)
             //console.log(window["salesItem" + i]);
-            var salesItem = window["salesItem" + i];
-            var taxRate = window["taxRate" + i];
-            var tracking = window["tracking" + i];
+            var salesItem = window["salesItemId" + i];
+            var taxRate = window["taxRateId" + i];
+            var tracking = window["trackingId" + i];
 
             //console.log($("input").val())
             //var y = $("input").find(x);
@@ -338,15 +340,16 @@ const SalesInvoice = (props) => {
             var salesItemValue = salesItem.lastChild.defaultValue;
             //var salesItemLabel = salesItem.innerText;
 
-            var taxRateValue = taxRate.lastChild.defaultValue;
+            var taxRateValueId = taxRate.lastChild.defaultValue;
             //var taxRateLabel = taxRate.innerText;
 
             var trackingValue = tracking.lastChild.defaultValue;
             //var trackingLabel = tracking.innerText;
 
-            inputList[i].salesItem = Number(salesItemValue);
-            inputList[i].taxRate = Number(taxRateValue);
-            inputList[i].tracking = Number(trackingValue);
+            inputList[i].salesItemId = Number(salesItemValue);
+            inputList[i].taxRate = 0;
+            inputList[i].taxRateId = Number(taxRateValueId);
+            inputList[i].trackingId = Number(trackingValue);
 
             //inputList[i].salesItem.value = salesItemValue;
             //inputList[i].salesItem.label = salesItemLabel;
@@ -363,7 +366,6 @@ const SalesInvoice = (props) => {
             //console.log(`values.salesItem${0}`);
             //console.log("si: " + (`values.salesItem${0}`).value);
           }
-
 
           const salesInvoice = {
             billingAddress: values.billingAddress,
@@ -390,6 +392,9 @@ const SalesInvoice = (props) => {
               resetForm(initialValues);
               //setLoadSubsidiaryLedger(true);
               setCustomerValue(null);
+
+              //setCustomerValue(values.customer);
+
               setInputList([]);
               console.log("successful");
             })
@@ -432,7 +437,6 @@ const SalesInvoice = (props) => {
           } = props;
           return (
             <>
-              {setCustomerValue(values.customer)}
               <Form>
                 <h1 className={classes.title}>Sales Invoice</h1>
                 <Grid container justify="space-around" direction="row">
@@ -443,7 +447,7 @@ const SalesInvoice = (props) => {
                       name="customer"
                       type="text"
                       options={subsidiaryLedgerAccounts}
-                      value={customerValue}
+                      value={values.customer}
                     />
                   </Grid>
                   <Grid
@@ -597,11 +601,11 @@ const SalesInvoice = (props) => {
                         <Grid item xs={2}>
                           <ReactSelect
                             label="salesItem"
-                            id={"salesItem" + i}
-                            name={"salesItem" + i}
+                            id={"salesItemId" + i}
+                            name={"salesItemId" + i}
                             type="text"
                             options={salesItems}
-                            value={r.salesItem}
+                            value={r.salesItemId}
                           />
                         </Grid>
                         <Grid item xs={3} className={classes.textField}>
@@ -650,11 +654,11 @@ const SalesInvoice = (props) => {
                         <Grid item xs={2}>
                           <ReactSelect
                             label="Tax Rate"
-                            id={"taxRate" + i}
-                            name={"taxRate" + i}
+                            id={"taxRateId" + i}
+                            name={"taxRateId" + i}
                             type="text"
                             options={taxRates}
-                            value={r.taxRate}
+                            value={r.taxRateId}
                           />
                         </Grid>
                         <Grid item xs={1}>
@@ -674,11 +678,11 @@ const SalesInvoice = (props) => {
                         <Grid item xs={1}>
                           <ReactSelect
                             label="Tracking"
-                            id={"tracking" + i}
-                            name={"tracking" + i}
+                            id={"trackingId" + i}
+                            name={"trackingId" + i}
                             type="text"
                             options={trackings}
-                            value={r.tracking}
+                            value={r.trackingId}
                           />
                         </Grid>
                         <Grid item xs={1}>
