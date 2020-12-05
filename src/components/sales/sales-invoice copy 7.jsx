@@ -10,7 +10,7 @@ import {
   IconButton,
   useTheme,
 } from "@material-ui/core";
-import { Formik, Form, ErrorMessage, FieldArray, Field } from "formik";
+import { Formik, Form, ErrorMessage, FieldArray } from "formik";
 import * as Yup from "yup";
 import ReactSelect from "../controls/reactSelect";
 import Table from "@material-ui/core/Table";
@@ -59,9 +59,7 @@ const useStyles = makeStyles((theme) =>
       paddingTop: "50px",
       zIndex: "5",
     },
-    rowLines: {
-      maxWidth: "100%",
-    },
+
     myTable: {
       width: "500px",
     },
@@ -231,7 +229,19 @@ const SalesInvoice = (props) => {
     qty: 0,
   });
 
-  const [inputList, setInputList] = useState([]);
+  const [inputList, setInputList] = useState([
+    {
+      id: -1,
+      salesItemId: 0,
+      description: "",
+      qty: 0,
+      unitPrice: 0,
+      taxRateId: 0,
+      taxRate: 0,
+      amount: 0,
+      trackingId: 0,
+    },
+  ]);
 
   const AddItem = () => {
     setItemCount(itemCount - 1);
@@ -239,7 +249,14 @@ const SalesInvoice = (props) => {
       ...inputList,
       {
         id: itemCount,
-        name: "",
+        salesItemId: 0,
+        description: "",
+        qty: 0,
+        unitPrice: 0,
+        taxRateId: 0,
+        taxRate: 0,
+        amount: 0,
+        trackingId: 0,
       },
     ]);
   };
@@ -247,9 +264,9 @@ const SalesInvoice = (props) => {
   // handle input change
   const handleInputChange = (e, index) => {
     const { name, value } = e.target;
-    //const list = [...inputList];
-    //list[index][name] = value;
-    //setInputList(list);
+    const list = [...inputList];
+    list[index][name] = value;
+    setInputList(list);
     //$("#fullName").val(
     //  $("#firstName").val() + $("#lastName").val()
     //);
@@ -293,37 +310,16 @@ const SalesInvoice = (props) => {
     dueDate: new Date(),
     terms: "",
     reference: "",
-    people: [{ name: null, description: "", qty: null, unitPrice: null, taxRate: null, tracking: null }],
   };
-
-  const validationSchema = Yup.object().shape({
-    invoiceNo: Yup.string().required("Enter Invoice No."),
-    customer: Yup.string().nullable().required("Enter Customer"),
-    people: Yup.array().of(
-      Yup.object().shape({
-        name: Yup.string().nullable().required("Sales Item is required"),
-        taxRate: Yup.string().nullable().required("Tax Rate is required"),
-        tracking: Yup.string().nullable().required("Tracking is required"),
-        //description: Yup.string()
-        //  .nullable()
-        //  .required("Description is required"),
-        qty: Yup.string().nullable().required("Quantity is required"),
-        unitPrice: Yup.string().nullable().required("Unit Price is required"),
-      })
-    ),
-  });
 
   return (
     <div className={classes.root}>
       <Formik
         initialValues={initialValues}
-        //validationSchema={Yup.object().shape({
-        //  invoiceNo: Yup.string().required("Enter Invoice No."),
-        //  customer: Yup.string().nullable().required("Enter Customer"),
-        //
-        //})}
-
-        validationSchema={validationSchema}
+        validationSchema={Yup.object().shape({
+          invoiceNo: Yup.string().required("Enter Invoice No."),
+          customer: Yup.string().nullable().required("Enter Customer")
+        })}
         onSubmit={(values, { resetForm }) => {
           for (var i = 0; i < inputList.length; i++) {
             //this["values.salesItem" + i] = values.salesItem0;
@@ -403,7 +399,7 @@ const SalesInvoice = (props) => {
 
               //setCustomerValue(values.customer);
 
-              //setInputList([]);
+              setInputList([]);
               console.log("successful");
             })
             .catch(function (error) {
@@ -574,205 +570,148 @@ const SalesInvoice = (props) => {
                       }
                     />
                   </Grid>
+                  <Grid
+                    item
+                    lg={12}
+                    md={12}
+                    sm={12}
+                    xs={12}
+                    className={classes.textField}
+                  >
+                    <Grid container justify="space-around" direction="row">
+                      <Grid item xs={2}>
+                        Sales Item
+                      </Grid>
+                      <Grid item xs={3}>
+                        Description
+                      </Grid>
+                      <Grid item xs={1}>
+                        Quantity
+                      </Grid>
+                      <Grid item xs={1}>
+                        Unit Price
+                      </Grid>
+                      <Grid item xs={2}>
+                        Tax Rate
+                      </Grid>
+                      <Grid item xs={1}>
+                        Amount
+                      </Grid>
+                      <Grid item xs={1}>
+                        Tracking
+                      </Grid>
+                      <Grid item xs={1}></Grid>
+                    </Grid>
 
-                  <Grid container justify="space-around" direction="row">
-                    <Grid item xs={2}>
-                      Sales Item
-                    </Grid>
-                    <Grid item xs={3}>
-                      Description
-                    </Grid>
-                    <Grid item xs={1}>
-                      Quantity
-                    </Grid>
-                    <Grid item xs={1}>
-                      Unit Price
-                    </Grid>
-                    <Grid item xs={2}>
-                      Tax Rate
-                    </Grid>
-                    <Grid item xs={1}>
-                      Amount
-                    </Grid>
-                    <Grid item xs={1}>
-                      Tracking
-                    </Grid>
-                    <Grid item xs={1}></Grid>
+                    {inputList.map((r, i) => (
+                      <Grid
+                        container
+                        justify="space-around"
+                        direction="row"
+                        key={i}
+                      >
+                        <Grid item xs={2}>
+                          <ReactSelect
+                            label="salesItem"
+                            id={"salesItemId" + i}
+                            name={"salesItemId" + i}
+                            type="text"
+                            options={salesItems}
+                            value={r.salesItemId}
+                          />
+                        </Grid>
+                        <Grid item xs={3} className={classes.textField}>
+                          <TextField
+                            id="description"
+                            name="description"
+                            value={r.description}
+                            onChange={(e) => handleInputChange(e, i)}
+                            onBlur={handleBlur}
+                            helperText={
+                              errors.description &&
+                              touched.description &&
+                              errors.description
+                            }
+                            className={classes.textField2}
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <TextField
+                            id="qty"
+                            name="qty"
+                            value={r.qty}
+                            type="number"
+                            onChange={(e) => handleInputChange(e, i)}
+                            onBlur={handleBlur}
+                            helperText={errors.qty && touched.qty && errors.qty}
+                            className={classes.textField}
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <TextField
+                            id="unitPrice"
+                            name="unitPrice"
+                            value={r.unitPrice}
+                            type="number"
+                            onChange={(e) => handleInputChange(e, i)}
+                            onBlur={handleBlur}
+                            helperText={
+                              errors.unitPrice &&
+                              touched.unitPrice &&
+                              errors.unitPrice
+                            }
+                            className={classes.textField}
+                          />
+                        </Grid>
+                        <Grid item xs={2}>
+                          <ReactSelect
+                            label="Tax Rate"
+                            id={"taxRateId" + i}
+                            name={"taxRateId" + i}
+                            type="text"
+                            options={taxRates}
+                            value={r.taxRateId}
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <TextField
+                            id="amount"
+                            name="amount"
+                            value={r.qty * r.unitPrice}
+                            type="number"
+                            onChange={(e) => handleInputChange(e, i)}
+                            onBlur={handleBlur}
+                            helperText={
+                              errors.amount && touched.amount && errors.amount
+                            }
+                            className={classes.textField}
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <ReactSelect
+                            label="Tracking"
+                            id={"trackingId" + i}
+                            name={"trackingId" + i}
+                            type="text"
+                            options={trackings}
+                            value={r.trackingId}
+                          />
+                        </Grid>
+                        <Grid item xs={1}>
+                          {r.id}
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.deleteButton}
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleDeleteConfirmation(r.id)}
+                          >
+                            Delete
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    ))}
                   </Grid>
-
-                  <Grid container justify="space-around" direction="row">
-                    <Grid item xs={12}>
-                      <FieldArray name="people">
-                        {({ push, remove, touched }) => (
-                          <>
-                            {values.people.map((r, index) => (
-                              <>
-                                <Grid
-                                  container
-                                  justify="space-around"
-                                  direction="row"
-                                >
-                                  <Grid item xs={2}>
-                                    <ReactSelect
-                                      label="Customer"
-                                      name={`people[${index}].name`}
-                                      type="text"
-                                      options={salesItems}
-                                      value={r.name}
-                                      //helperText={
-                                      //  errors.customer &&
-                                      //  touched.customer &&
-                                      //  errors.customer
-                                      //}
-                                      //error={errors.customer && touched.customer}
-                                    />
-                                    <span className={classes.errorMessage}>
-                                      <ErrorMessage
-                                        name={`people[${index}].name`}
-                                      />
-                                    </span>
-                                  </Grid>
-                                  <Grid
-                                    item
-                                    xs={3}
-                                    className={classes.textField}
-                                  >
-                                    <TextField
-                                      name={`people[${index}].description`}
-                                      value={r.description}
-                                      onChange={handleChange}
-                                      onBlur={handleBlur}
-                                      helperText={
-                                        errors.description &&
-                                        touched.description &&
-                                        errors.description
-                                      }
-                                      className={classes.textField2}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={1}>
-                                    <TextField
-                                      name={`people[${index}].qty`}
-                                      value={r.qty}
-                                      type="number"
-                                      onChange={handleChange}
-                                      onBlur={handleBlur}
-                                      helperText={
-                                        errors.qty && touched.qty && errors.qty
-                                      }
-                                      className={classes.textField}
-                                    />
-                                    <span className={classes.errorMessage}>
-                                      <ErrorMessage
-                                        name={`people[${index}].qty`}
-                                      />
-                                    </span>
-                                  </Grid>
-                                  <Grid item xs={1}>
-                                    <TextField
-                                      name={`people[${index}].unitPrice`}
-                                      value={r.unitPrice}
-                                      type="number"
-                                      onChange={handleChange}
-                                      onBlur={handleBlur}
-                                      helperText={
-                                        errors.unitPrice &&
-                                        touched.unitPrice &&
-                                        errors.unitPrice
-                                      }
-                                      className={classes.textField}
-                                    />
-                                    <span className={classes.errorMessage}>
-                                      <ErrorMessage
-                                        name={`people[${index}].unitPrice`}
-                                      />
-                                    </span>
-                                  </Grid>
-                                  <Grid item xs={2}>
-                                    <ReactSelect
-                                      label="Tax Rate"
-                                      name={`people[${index}].taxRate`}
-                                      type="text"
-                                      options={taxRates}
-                                      value={r.taxRate}
-                                    />
-                                    <span className={classes.errorMessage}>
-                                      <ErrorMessage
-                                        name={`people[${index}].taxRate`}
-                                      />
-                                    </span>
-                                  </Grid>
-                                  <Grid item xs={1}>
-                                    <TextField
-                                      name={`people[${index}].amount`}
-                                      value={r.qty * r.unitPrice}
-                                      type="number"
-                                      onChange={handleChange}
-                                      onBlur={handleBlur}
-                                      helperText={
-                                        errors.amount &&
-                                        touched.amount &&
-                                        errors.amount
-                                      }
-                                      className={classes.textField}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={1}>
-                                    <ReactSelect
-                                      label="Tracking"
-                                      name={`people[${index}].tracking`}
-                                      type="text"
-                                      options={trackings}
-                                      value={r.tracking}
-                                    />
-                                    <span className={classes.errorMessage}>
-                                      <ErrorMessage
-                                        name={`people[${index}].tracking`}
-                                      />
-                                    </span>
-                                  </Grid>
-                                  <Grid item xs={1}>
-                                    {r.id}
-                                    <Button
-                                      variant="contained"
-                                      color="secondary"
-                                      className={classes.deleteButton}
-                                      startIcon={<DeleteIcon />}
-                                      onClick={() =>
-                                        handleDeleteConfirmation(r.id)
-                                      }
-                                    >
-                                      Delete
-                                    </Button>
-                                  </Grid>
-                                </Grid>
-                              </>
-                            ))}
-                            <br></br>
-                            <Button
-                              type="button"
-                              variant="contained"
-                              color="primary"
-                              onClick={() =>
-                                push({
-                                  id: setItemCount(itemCount - 1),
-                                  name: "",
-                                  description: "",
-                                  qty: null,
-                                  unitPrice: null,
-                                  taxRate: null,
-                                  tracking: null,
-                                })
-                              }
-                            >
-                              Add New Row
-                            </Button>
-                          </>
-                        )}
-                      </FieldArray>
-                    </Grid>
-                  </Grid>
-
                   <Grid
                     item
                     lg={12}
@@ -781,6 +720,16 @@ const SalesInvoice = (props) => {
                     xs={12}
                     className={classes.submitButton}
                   >
+                    <Button
+                      type="button"
+                      variant="contained"
+                      color="primary"
+                      onClick={AddItem}
+                      // disabled={isSubmitting}
+                    >
+                      Add New Row
+                    </Button>
+
                     <Button
                       type="submit"
                       variant="contained"
