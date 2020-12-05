@@ -293,7 +293,7 @@ const SalesInvoice = (props) => {
     dueDate: new Date(),
     terms: "",
     reference: "",
-    people: [{ name: null, description: "", qty: null, unitPrice: null, taxRate: null, tracking: null }],
+    people: [{ name: null, description: "", qty: "", unitPrice: "", taxRate: null, tracking: null }],
   };
 
   const validationSchema = Yup.object().shape({
