@@ -115,18 +115,24 @@ const SalesInvoice = (props) => {
 
   const [rowId, setRowId] = useState(-1);
 
-  const removeRow = (id) => {
-    var result = $.grep(
-      inputList,
+  const removeRow = (id, values) => {
+    //values.items = []
+    //setDeleteItem(null)
+    //return
+    const result = $.grep(
+      values.items,
       function (n, i) {
         return n.id !== id;
       },
       false
     );
-    setInputList(result);
-    console.log(result);
+    values.items = result;
+    setDeleteItem(result);
+    setDeleteItem(null)
     setOpenDelete(false);
   };
+
+  
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -141,9 +147,12 @@ const SalesInvoice = (props) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
 
-  const handleDeleteConfirmation = (id) => {
+  const [deleteItem, setDeleteItem] = useState({id:"", values:[]});
+
+
+  const handleDeleteConfirmation = (values) => {
     setOpenDelete(true);
-    setDeleteItemId(id);
+    //setDeleteItemId({});
   };
 
   const [itemCount, setItemCount] = useState(-2);
@@ -293,17 +302,27 @@ const SalesInvoice = (props) => {
     dueDate: new Date(),
     terms: "",
     reference: "",
-    people: [{ name: null, description: "", qty: "", unitPrice: "", taxRate: null, tracking: null }],
+    items: [
+      {
+        id: -1,
+        salesItem: null,
+        description: "",
+        qty: "",
+        unitPrice: "",
+        taxRateItem: null,
+        trackingItem: null,
+      },
+    ],
   };
 
   const validationSchema = Yup.object().shape({
     invoiceNo: Yup.string().required("Enter Invoice No."),
     customer: Yup.string().nullable().required("Enter Customer"),
-    people: Yup.array().of(
+    items: Yup.array().of(
       Yup.object().shape({
-        name: Yup.string().nullable().required("Sales Item is required"),
-        taxRate: Yup.string().nullable().required("Tax Rate is required"),
-        tracking: Yup.string().nullable().required("Tracking is required"),
+        salesItem: Yup.string().nullable().required("Sales Item is required"),
+        taxRateItem: Yup.string().nullable().required("Tax Rate is required"),
+        trackingItem: Yup.string().nullable().required("Tracking is required"),
         //description: Yup.string()
         //  .nullable()
         //  .required("Description is required"),
@@ -325,72 +344,9 @@ const SalesInvoice = (props) => {
 
         validationSchema={validationSchema}
         onSubmit={(values, { resetForm }) => {
-          for (var i = 0; i < inputList.length; i++) {
-            //this["values.salesItem" + i] = values.salesItem0;
-
-            //console.log(values.salesItem0)
-
-            inputList[i].qty = Number(inputList[i].qty);
-            inputList[i].unitPrice = Number(inputList[i].unitPrice);
-
-            //window["salesItem" + i] = values.salesItem;
-            //console.log(values.salesItem0.value)
-            //console.log(window["salesItem" + i]);
-            var salesItem = window["salesItemId" + i];
-            var taxRate = window["taxRateId" + i];
-            var tracking = window["trackingId" + i];
-
-            //console.log($("input").val())
-            //var y = $("input").find(x);
-            //console.log(x.lastChild.defaultValue);
-            //console.log(x.innerText);
-
-            var salesItemValue = salesItem.lastChild.defaultValue;
-            //var salesItemLabel = salesItem.innerText;
-
-            var taxRateValueId = taxRate.lastChild.defaultValue;
-            //var taxRateLabel = taxRate.innerText;
-
-            var trackingValue = tracking.lastChild.defaultValue;
-            //var trackingLabel = tracking.innerText;
-
-            inputList[i].salesItemId = Number(salesItemValue);
-            inputList[i].taxRate = 0;
-            inputList[i].taxRateId = Number(taxRateValueId);
-            inputList[i].trackingId = Number(trackingValue);
-
-            //inputList[i].salesItem.value = salesItemValue;
-            //inputList[i].salesItem.label = salesItemLabel;
-
-            //inputList[i].taxRate.value = taxRateValue;
-            //inputList[i].taxRate.label = taxRateLabel;
-
-            //inputList[i].tracking.value = trackingValue;
-            //inputList[i].tracking.label = trackingLabel;
-
-            //console.log(inputList[i].description)
-            //const key = `values.salesItem${i}`;
-            //console.log(key.value);
-            //console.log(`values.salesItem${0}`);
-            //console.log("si: " + (`values.salesItem${0}`).value);
-          }
-
-          const salesInvoice = {
-            billingAddress: values.billingAddress,
-            customer: values.customer.value,
-            date: values.date,
-            dueDate: values.dueDate,
-            invoiceNo: values.invoiceNo,
-            reference: values.reference,
-            terms: values.terms,
-            items: inputList,
-          };
-
-          //console.log(salesInvoice)
-
           fetch("https://localhost:44302/api/sales/addaccount", {
             method: "POST",
-            body: JSON.stringify(salesInvoice),
+            body: JSON.stringify(values),
             headers: {
               "Content-Type": "application/json",
             },
@@ -602,11 +558,11 @@ const SalesInvoice = (props) => {
 
                   <Grid container justify="space-around" direction="row">
                     <Grid item xs={12}>
-                      <FieldArray name="people">
+                      <FieldArray name="items">
                         {({ push, remove, touched }) => (
                           <>
-                            {values.people.map((r, index) => (
-                              <>
+                            {values.items.map((r, index) => (
+                              <div key={index}>
                                 <Grid
                                   container
                                   justify="space-around"
@@ -615,10 +571,10 @@ const SalesInvoice = (props) => {
                                   <Grid item xs={2}>
                                     <ReactSelect
                                       label="Customer"
-                                      name={`people[${index}].name`}
+                                      name={`items[${index}].salesItem`}
                                       type="text"
                                       options={salesItems}
-                                      value={r.name}
+                                      value={r.salesItem}
                                       //helperText={
                                       //  errors.customer &&
                                       //  touched.customer &&
@@ -628,7 +584,7 @@ const SalesInvoice = (props) => {
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
-                                        name={`people[${index}].name`}
+                                        name={`items[${index}].salesItem`}
                                       />
                                     </span>
                                   </Grid>
@@ -638,7 +594,7 @@ const SalesInvoice = (props) => {
                                     className={classes.textField}
                                   >
                                     <TextField
-                                      name={`people[${index}].description`}
+                                      name={`items[${index}].description`}
                                       value={r.description}
                                       onChange={handleChange}
                                       onBlur={handleBlur}
@@ -652,7 +608,7 @@ const SalesInvoice = (props) => {
                                   </Grid>
                                   <Grid item xs={1}>
                                     <TextField
-                                      name={`people[${index}].qty`}
+                                      name={`items[${index}].qty`}
                                       value={r.qty}
                                       type="number"
                                       onChange={handleChange}
@@ -664,13 +620,13 @@ const SalesInvoice = (props) => {
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
-                                        name={`people[${index}].qty`}
+                                        name={`items[${index}].qty`}
                                       />
                                     </span>
                                   </Grid>
                                   <Grid item xs={1}>
                                     <TextField
-                                      name={`people[${index}].unitPrice`}
+                                      name={`items[${index}].unitPrice`}
                                       value={r.unitPrice}
                                       type="number"
                                       onChange={handleChange}
@@ -684,27 +640,27 @@ const SalesInvoice = (props) => {
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
-                                        name={`people[${index}].unitPrice`}
+                                        name={`items[${index}].unitPrice`}
                                       />
                                     </span>
                                   </Grid>
                                   <Grid item xs={2}>
                                     <ReactSelect
                                       label="Tax Rate"
-                                      name={`people[${index}].taxRate`}
+                                      name={`items[${index}].taxRateItem`}
                                       type="text"
                                       options={taxRates}
-                                      value={r.taxRate}
+                                      value={r.taxRateItem}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
-                                        name={`people[${index}].taxRate`}
+                                        name={`items[${index}].taxRateItem`}
                                       />
                                     </span>
                                   </Grid>
                                   <Grid item xs={1}>
                                     <TextField
-                                      name={`people[${index}].amount`}
+                                      name={`items[${index}].amount`}
                                       value={r.qty * r.unitPrice}
                                       type="number"
                                       onChange={handleChange}
@@ -720,14 +676,14 @@ const SalesInvoice = (props) => {
                                   <Grid item xs={1}>
                                     <ReactSelect
                                       label="Tracking"
-                                      name={`people[${index}].tracking`}
+                                      name={`items[${index}].trackingItem`}
                                       type="text"
                                       options={trackings}
-                                      value={r.tracking}
+                                      value={r.trackingItem}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
-                                        name={`people[${index}].tracking`}
+                                        name={`items[${index}].trackingItem`}
                                       />
                                     </span>
                                   </Grid>
@@ -739,31 +695,37 @@ const SalesInvoice = (props) => {
                                       className={classes.deleteButton}
                                       startIcon={<DeleteIcon />}
                                       onClick={() =>
-                                        handleDeleteConfirmation(r.id)
+                                      {
+                                        setDeleteItem({id: r.id, values: values}) 
+                                        handleDeleteConfirmation(values
+                                        )
+                                      }
+                                       //removeRow(r.id,values)
                                       }
                                     >
                                       Delete
                                     </Button>
                                   </Grid>
                                 </Grid>
-                              </>
+                              </div>
                             ))}
                             <br></br>
                             <Button
                               type="button"
                               variant="contained"
                               color="primary"
-                              onClick={() =>
+                              onClick={() => {
+                                setItemCount(itemCount - 1)
                                 push({
-                                  id: setItemCount(itemCount - 1),
-                                  name: "",
+                                  id: itemCount ,
+                                  salesItem: "",
                                   description: "",
-                                  qty: null,
-                                  unitPrice: null,
-                                  taxRate: null,
-                                  tracking: null,
-                                })
-                              }
+                                  qty: "",
+                                  unitPrice: "",
+                                  taxRateItem: "",
+                                  trackingItem: "",
+                                });
+                              }}
                             >
                               Add New Row
                             </Button>
@@ -820,7 +782,7 @@ const SalesInvoice = (props) => {
               Cancel
             </Button>
             <Button
-              onClick={() => removeRow(deleteItemId)}
+              onClick={() => { removeRow(deleteItem.id, deleteItem.values) }}
               color="primary"
               autoFocus
             >
