@@ -9,6 +9,7 @@ import {
   InputLabel,
   IconButton,
   useTheme,
+  FormControl,
 } from "@material-ui/core";
 import { Formik, Form, ErrorMessage, FieldArray, Field } from "formik";
 import * as Yup from "yup";
@@ -33,6 +34,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import NumberFormat from "react-number-format";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -46,31 +48,37 @@ const useStyles = makeStyles((theme) =>
         width: "100%",
         paddingTop: "0px",
         zIndex: "0",
-        //textAlign: "center",
+        textAlign: "center",
       },
     },
     textField2: {
-      width: "100%",
-      //paddingTop: ".5px",
-      //marginTop: "2px"
-    },
-    textFieldReadOnly: {
       "& > *": {
         width: "100%",
-        zIndex: "-999",
         //paddingTop: ".5px",
         //marginTop: "2px"
       },
     },
-    reactSelect: {
-      paddingTop: "8px",
-      //zIndex: "5",
+    ReactSelect: {
+      paddingTop: "9.5px",
+      zIndex: "5",
+      height:"12px"
     },
     rowLines: {
       maxWidth: "100%",
     },
     myTable: {
       width: "500px",
+    },
+    number: {
+      paddingTop: "12px",
+      textAlign: "left",
+    },
+    hideField: {
+      display: "none",
+    },
+    horizontalLine: {
+      marginTop: "5px",
+      textAlign: "left",
     },
     submitButton: {
       marginTop: "24px",
@@ -139,10 +147,6 @@ const SalesInvoice = (props) => {
     setDeleteItem(null);
     setOpenDelete(false);
   };
-
-  const handleChangeAmount = (values) => {
-    console.log(values);
-  }
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -320,7 +324,6 @@ const SalesInvoice = (props) => {
         unitPrice: "",
         taxRateItem: null,
         trackingItem: null,
-        //amount: ""
       },
     ],
   };
@@ -341,6 +344,11 @@ const SalesInvoice = (props) => {
       })
     ),
   });
+
+  const subTotal = (name) => {
+    console.log(name);
+    console.log($("#" + name).val());
+  };
 
   return (
     <div className={classes.root}>
@@ -421,9 +429,7 @@ const SalesInvoice = (props) => {
                       name="customer"
                       type="text"
                       options={subsidiaryLedgerAccounts}
-                      className={classes.reactSelect}
                       value={values.customer}
-                      placeholder="Select Customer..."
                       helperText={
                         errors.customer && touched.customer && errors.customer
                       }
@@ -444,7 +450,7 @@ const SalesInvoice = (props) => {
                     <TextField
                       label="Billing Address"
                       name="billingAddress"
-                      //className={classes.textField}
+                      className={classes.textField}
                       value={values.billingAddress}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -587,8 +593,13 @@ const SalesInvoice = (props) => {
                                       type="text"
                                       options={salesItems}
                                       value={r.salesItem}
-                                      placeholder="Select Sales Item..."
-                                      className={classes.reactSelect}
+                                      className={classes.ReactSelect}
+                                      //helperText={
+                                      //  errors.customer &&
+                                      //  touched.customer &&
+                                      //  errors.customer
+                                      //}
+                                      //error={errors.customer && touched.customer}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -599,7 +610,7 @@ const SalesInvoice = (props) => {
                                   <Grid
                                     item
                                     xs={3}
-                                    className={classes.textField}
+                                    //className={classes.textField}
                                   >
                                     <TextField
                                       name={`items[${index}].description`}
@@ -611,7 +622,8 @@ const SalesInvoice = (props) => {
                                         touched.description &&
                                         errors.description
                                       }
-                                      className={classes.textField2}
+                                      //className={classes.textField}
+                                      fullWidth
                                       margin="dense"
                                       variant="outlined"
                                       label="Description"
@@ -619,6 +631,7 @@ const SalesInvoice = (props) => {
                                   </Grid>
                                   <Grid item xs={1}>
                                     <TextField
+                                      label="Quantity"
                                       name={`items[${index}].qty`}
                                       value={r.qty}
                                       type="number"
@@ -627,10 +640,8 @@ const SalesInvoice = (props) => {
                                       helperText={
                                         errors.qty && touched.qty && errors.qty
                                       }
-                                      className={classes.textField}
                                       margin="dense"
                                       variant="outlined"
-                                      label="Quantity"
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -640,6 +651,7 @@ const SalesInvoice = (props) => {
                                   </Grid>
                                   <Grid item xs={1}>
                                     <TextField
+                                      label="Unit Price"
                                       name={`items[${index}].unitPrice`}
                                       value={r.unitPrice}
                                       type="number"
@@ -650,10 +662,8 @@ const SalesInvoice = (props) => {
                                         touched.unitPrice &&
                                         errors.unitPrice
                                       }
-                                      className={classes.textField}
                                       margin="dense"
                                       variant="outlined"
-                                      label="Unit Price"
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -668,8 +678,7 @@ const SalesInvoice = (props) => {
                                       type="text"
                                       options={taxRates}
                                       value={r.taxRateItem}
-                                      placeholder="Select Tax Rate..."
-                                      className={classes.reactSelect}
+                                      className={classes.ReactSelect}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -679,25 +688,27 @@ const SalesInvoice = (props) => {
                                   </Grid>
                                   <Grid item xs={1}>
                                     <TextField
-                                      name={`items[${index}].amount`}
+                                      id="amount0"
+                                      name="amount0"
                                       value={r.qty * r.unitPrice}
-                                      type="number"
-                                      onChange={() => alert("a")}
+                                      //type="number"
+                                      onChange={handleChange}
                                       onBlur={handleBlur}
                                       helperText={
                                         errors.amount &&
                                         touched.amount &&
                                         errors.amount
                                       }
-                                      margin="dense"
-                                      className={classes.textFieldReadOnly}
-                                      InputProps={{
-                                        readOnly: true,
-                                      }}
-                                      label="Sub Total"
-                                      size="small"
-                                      variant="outlined"
+                                      className={classes.hideField}
                                     />
+                                    <div className={classes.number}>
+                                      <NumberFormat
+                                        value={r.qty * r.unitPrice}
+                                        displayType={"text"}
+                                        thousandSeparator={true}
+                                        decimalScale={2}
+                                      />
+                                    </div>
                                   </Grid>
                                   <Grid item xs={1}>
                                     <ReactSelect
@@ -706,8 +717,7 @@ const SalesInvoice = (props) => {
                                       type="text"
                                       options={trackings}
                                       value={r.trackingItem}
-                                      placeholder="Select Tracking Item..."
-                                      className={classes.reactSelect}
+                                      className={classes.ReactSelect}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -757,7 +767,6 @@ const SalesInvoice = (props) => {
                                   unitPrice: "",
                                   taxRateItem: "",
                                   trackingItem: "",
-                                  //amount: ""
                                 });
                               }}
                             >
@@ -769,14 +778,7 @@ const SalesInvoice = (props) => {
                     </Grid>
                   </Grid>
 
-                  <Grid
-                    item
-                    lg={12}
-                    md={12}
-                    sm={12}
-                    xs={12}
-                    className={classes.submitButton}
-                  >
+                  <Grid item xs={9} className={classes.submitButton}>
                     <Button
                       type="submit"
                       variant="contained"
@@ -785,6 +787,10 @@ const SalesInvoice = (props) => {
                     >
                       Submit
                     </Button>
+                  </Grid>
+
+                  <Grid item xs={3} className={classes.textField}>
+                    Sub Total: <label>84324</label>
                   </Grid>
                 </Grid>
               </Form>

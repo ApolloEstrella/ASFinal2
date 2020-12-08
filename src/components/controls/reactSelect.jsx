@@ -42,9 +42,29 @@ const ReactSelect = ({ options, label, value, ...props }) => {
     setFieldTouched(props.name, true);
   }
 
+const customStyles = {
+  control: (provided) => ({
+    ...provided,
+    minHeight: "30px",
+  }),
+  indicatorsContainer: (provided) => ({
+    ...provided,
+    height: "38px",
+  }),
+  clearIndicator: (provided) => ({
+    ...provided,
+    padding: "5px",
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    padding: "5px",
+  }),
+};
+
   return (
     <React.Fragment>
       <CreatableSelect
+        styles={customStyles}
         options={options}
         {...field}
         {...props}

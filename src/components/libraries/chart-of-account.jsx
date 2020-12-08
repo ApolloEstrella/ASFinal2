@@ -327,6 +327,7 @@ const ChartOfAccounts = () => {
                               : "Enter Type."}
                           </FormHelperText>
                         </Grid>
+                           
                         <Grid item xs={12} className={classes.textField}>
                           <TextField
                             name="title"

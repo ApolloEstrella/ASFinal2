@@ -42,28 +42,19 @@ const useStyles = makeStyles((theme) =>
       margin: "0 auto",
     },
     textField: {
-      "& > *": {
         width: "100%",
         paddingTop: "0px",
-        zIndex: "0",
-        //textAlign: "center",
-      },
+        zIndex: "0"
     },
     textField2: {
-      width: "100%",
-      //paddingTop: ".5px",
-      //marginTop: "2px"
-    },
-    textFieldReadOnly: {
-      "& > *": {
+      
         width: "100%",
-        zIndex: "-999",
         //paddingTop: ".5px",
         //marginTop: "2px"
-      },
+      
     },
     reactSelect: {
-      paddingTop: "8px",
+      paddingTop: "9.5px",
       //zIndex: "5",
     },
     rowLines: {
@@ -76,7 +67,6 @@ const useStyles = makeStyles((theme) =>
       marginTop: "24px",
     },
     deleteButton: {
-      marginTop: "9.5px",
       marginLeft: "15px",
     },
     title: { textAlign: "center" },
@@ -136,13 +126,11 @@ const SalesInvoice = (props) => {
     );
     values.items = result;
     setDeleteItem(result);
-    setDeleteItem(null);
+    setDeleteItem(null)
     setOpenDelete(false);
   };
 
-  const handleChangeAmount = (values) => {
-    console.log(values);
-  }
+  
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -157,7 +145,8 @@ const SalesInvoice = (props) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
 
-  const [deleteItem, setDeleteItem] = useState({ id: "", values: [] });
+  const [deleteItem, setDeleteItem] = useState({id:"", values:[]});
+
 
   const handleDeleteConfirmation = (values) => {
     setOpenDelete(true);
@@ -320,7 +309,6 @@ const SalesInvoice = (props) => {
         unitPrice: "",
         taxRateItem: null,
         trackingItem: null,
-        //amount: ""
       },
     ],
   };
@@ -421,9 +409,7 @@ const SalesInvoice = (props) => {
                       name="customer"
                       type="text"
                       options={subsidiaryLedgerAccounts}
-                      className={classes.reactSelect}
                       value={values.customer}
-                      placeholder="Select Customer..."
                       helperText={
                         errors.customer && touched.customer && errors.customer
                       }
@@ -444,7 +430,7 @@ const SalesInvoice = (props) => {
                     <TextField
                       label="Billing Address"
                       name="billingAddress"
-                      //className={classes.textField}
+                      className={classes.textField}
                       value={values.billingAddress}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -682,21 +668,14 @@ const SalesInvoice = (props) => {
                                       name={`items[${index}].amount`}
                                       value={r.qty * r.unitPrice}
                                       type="number"
-                                      onChange={() => alert("a")}
+                                      onChange={handleChange}
                                       onBlur={handleBlur}
                                       helperText={
                                         errors.amount &&
                                         touched.amount &&
                                         errors.amount
                                       }
-                                      margin="dense"
-                                      className={classes.textFieldReadOnly}
-                                      InputProps={{
-                                        readOnly: true,
-                                      }}
-                                      label="Sub Total"
-                                      size="small"
-                                      variant="outlined"
+                                      className={classes.textField}
                                     />
                                   </Grid>
                                   <Grid item xs={1}>
@@ -757,7 +736,6 @@ const SalesInvoice = (props) => {
                                   unitPrice: "",
                                   taxRateItem: "",
                                   trackingItem: "",
-                                  //amount: ""
                                 });
                               }}
                             >
@@ -816,9 +794,7 @@ const SalesInvoice = (props) => {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                removeRow(deleteItem.id, deleteItem.values);
-              }}
+              onClick={() => { removeRow(deleteItem.id, deleteItem.values) }}
               color="primary"
               autoFocus
             >
