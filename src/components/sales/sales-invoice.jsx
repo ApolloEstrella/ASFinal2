@@ -33,6 +33,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import NumberFormat from "react-number-format";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -46,20 +47,15 @@ const useStyles = makeStyles((theme) =>
         width: "100%",
         paddingTop: "0px",
         zIndex: "0",
-        //textAlign: "center",
       },
     },
     textField2: {
       width: "100%",
-      //paddingTop: ".5px",
-      //marginTop: "2px"
     },
     textFieldReadOnly: {
       "& > *": {
         width: "100%",
         zIndex: "-999",
-        //paddingTop: ".5px",
-        //marginTop: "2px"
       },
     },
     reactSelect: {
@@ -71,6 +67,11 @@ const useStyles = makeStyles((theme) =>
     },
     myTable: {
       width: "500px",
+    },
+    totalAmount: {
+      marginTop: "0px",
+      paddingTop: "0px",
+      textAlign: "left"
     },
     submitButton: {
       marginTop: "24px",
@@ -123,10 +124,9 @@ const SalesInvoice = (props) => {
 
   const [rowId, setRowId] = useState(-1);
 
+  var [subTotal, setSubTotal] = useState(0);
+
   const removeRow = (id, values) => {
-    //values.items = []
-    //setDeleteItem(null)
-    //return
     const result = $.grep(
       values.items,
       function (n, i) {
@@ -141,7 +141,12 @@ const SalesInvoice = (props) => {
   };
 
   const handleChangeAmount = (values) => {
-    console.log(values);
+    subTotal = 0;
+    values.items.map((r, index) => (
+       subTotal = subTotal + (r.qty * r.unitPrice)
+    ));
+    setSubTotal(subTotal);
+    console.log(subTotal);
   }
 
   const theme = useTheme();
@@ -248,7 +253,7 @@ const SalesInvoice = (props) => {
   const [quantity, setQuantity] = React.useState({
     qty: 0,
   });
-
+ 
   const [inputList, setInputList] = useState([]);
 
   const AddItem = () => {
@@ -366,7 +371,7 @@ const SalesInvoice = (props) => {
               resetForm(initialValues);
               //setLoadSubsidiaryLedger(true);
               setCustomerValue(null);
-
+              setSubTotal(0)
               //setCustomerValue(values.customer);
 
               //setInputList([]);
@@ -622,7 +627,12 @@ const SalesInvoice = (props) => {
                                       name={`items[${index}].qty`}
                                       value={r.qty}
                                       type="number"
-                                      onChange={handleChange}
+                                      onChange={(e) => {
+                                        handleChange(e);
+                                        values.items[index].qty =
+                                          e.currentTarget.value;
+                                        handleChangeAmount(values);
+                                      }}
                                       onBlur={handleBlur}
                                       helperText={
                                         errors.qty && touched.qty && errors.qty
@@ -643,7 +653,12 @@ const SalesInvoice = (props) => {
                                       name={`items[${index}].unitPrice`}
                                       value={r.unitPrice}
                                       type="number"
-                                      onChange={handleChange}
+                                      onChange={(e) => {
+                                        handleChange(e);
+                                        values.items[index].unitPrice =
+                                          e.currentTarget.value;
+                                        handleChangeAmount(values);
+                                      }}
                                       onBlur={handleBlur}
                                       helperText={
                                         errors.unitPrice &&
@@ -743,26 +758,76 @@ const SalesInvoice = (props) => {
                               </div>
                             ))}
                             <br></br>
-                            <Button
-                              type="button"
-                              variant="contained"
-                              color="primary"
-                              onClick={() => {
-                                setItemCount(itemCount - 1);
-                                push({
-                                  id: itemCount,
-                                  salesItem: "",
-                                  description: "",
-                                  qty: "",
-                                  unitPrice: "",
-                                  taxRateItem: "",
-                                  trackingItem: "",
-                                  //amount: ""
-                                });
-                              }}
+                            <Grid
+                              container
+                              justify="space-around"
+                              direction="row"
                             >
-                              Add New Row
-                            </Button>
+                              <Grid item xs={9}>
+                                <Button
+                                  type="button"
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() => {
+                                    setItemCount(itemCount - 1);
+                                    push({
+                                      id: itemCount,
+                                      salesItem: "",
+                                      description: "",
+                                      qty: "",
+                                      unitPrice: "",
+                                      taxRateItem: "",
+                                      trackingItem: "",
+                                      //amount: ""
+                                    });
+                                  }}
+                                >
+                                  Add New Row
+                                </Button>
+                              </Grid>
+                              <Grid item xs={1}>
+                                <h1 className={classes.totalAmount}>
+                                  Sub Total:
+                                </h1>
+                              </Grid>
+                              <Grid item xs={2}>
+                                <h1 className={classes.totalAmount}>
+                                  <NumberFormat
+                                    value={subTotal}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                  />
+                                </h1>
+                              </Grid>
+                              <Grid item xs={9}></Grid>
+                              <Grid item xs={1}>
+                                <h1 className={classes.totalAmount}>
+                                  Sales Tax:
+                                </h1>
+                              </Grid>
+                              <Grid item xs={2}>
+                                <h1 className={classes.totalAmount}>
+                                  <NumberFormat
+                                    value={0}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                  />
+                                </h1>
+                              </Grid>
+                              <Grid item xs={9}></Grid>
+                              <Grid item xs={1}>
+                                <h1 className={classes.totalAmount}>TOTAL :</h1>
+                              </Grid>
+                              <Grid item xs={2}>
+                                <h1 className={classes.totalAmount}>
+                                  <NumberFormat
+                                    value={subTotal}
+                                    displayType={"text"}
+                                    thousandSeparator={true}
+                                  />
+                                </h1>
+                              </Grid>
+                            </Grid>
                           </>
                         )}
                       </FieldArray>
@@ -771,10 +836,10 @@ const SalesInvoice = (props) => {
 
                   <Grid
                     item
-                    lg={12}
-                    md={12}
-                    sm={12}
-                    xs={12}
+                    lg={10}
+                    md={10}
+                    sm={10}
+                    xs={10}
                     className={classes.submitButton}
                   >
                     <Button
@@ -786,6 +851,14 @@ const SalesInvoice = (props) => {
                       Submit
                     </Button>
                   </Grid>
+                  <Grid
+                    item
+                    lg={2}
+                    md={2}
+                    sm={2}
+                    xs={2}
+                    className={classes.submitButton}
+                  ></Grid>
                 </Grid>
               </Form>
             </>
@@ -818,6 +891,7 @@ const SalesInvoice = (props) => {
             <Button
               onClick={() => {
                 removeRow(deleteItem.id, deleteItem.values);
+                handleChangeAmount(deleteItem.values);
               }}
               color="primary"
               autoFocus
