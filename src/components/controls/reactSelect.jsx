@@ -16,12 +16,12 @@ import {
   useTheme,
 } from "@material-ui/core";
 
-const ReactSelect = ({ options, label, value, ...props }) => {
+const ReactSelect = ({ options, label, value, myValues, ...props }) => {
   //console.log("value=> " + value.value + " label=>" + value.label);
   const { setFieldValue, setFieldTouched } = useFormikContext();
   const [field, meta] = useField(props);
   const [open, toggleOpen] = useState(false);
-
+  const { handleChangeAmount } = props;
   const handleClose = () => {
     toggleOpen(false);
   };
@@ -33,6 +33,11 @@ const ReactSelect = ({ options, label, value, ...props }) => {
    */
   function handleOptionChange(selection) {
     setFieldValue(props.name, selection);
+    if (myValues !== undefined) handleBake(myValues, selection, props.name);
+  }
+
+  function handleBake(evt, selection) {
+    props.functionBake(evt, selection, props.name); // calling function from parent class and giving argument as a prop
   }
 
   /**
@@ -42,24 +47,24 @@ const ReactSelect = ({ options, label, value, ...props }) => {
     setFieldTouched(props.name, true);
   }
 
-const customStyles = {
-  control: (provided) => ({
-    ...provided,
-    minHeight: "30px",
-  }),
-  indicatorsContainer: (provided) => ({
-    ...provided,
-    height: "38px",
-  }),
-  clearIndicator: (provided) => ({
-    ...provided,
-    padding: "5px",
-  }),
-  dropdownIndicator: (provided) => ({
-    ...provided,
-    padding: "5px",
-  }),
-};
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      minHeight: "30px",
+    }),
+    indicatorsContainer: (provided) => ({
+      ...provided,
+      height: "38px",
+    }),
+    clearIndicator: (provided) => ({
+      ...provided,
+      padding: "5px",
+    }),
+    dropdownIndicator: (provided) => ({
+      ...provided,
+      padding: "5px",
+    }),
+  };
 
   return (
     <React.Fragment>
@@ -73,7 +78,9 @@ const customStyles = {
         onCreateOption={() => toggleOpen(true)}
         //value={options.find((obj) => obj  === value)}
         //value={options.find((obj) => obj.value === value)}
-        value={value === null ? null : options.find((obj) => obj.value === value)}
+        value={
+          value === null ? null : options.find((obj) => obj.value === value)
+        }
         isClearable
       />
       {meta.touched && meta.error ? (

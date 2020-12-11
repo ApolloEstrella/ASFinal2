@@ -34,6 +34,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import NumberFormat from "react-number-format";
+import { SignalCellularNull } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -71,7 +72,7 @@ const useStyles = makeStyles((theme) =>
     totalAmount: {
       marginTop: "0px",
       paddingTop: "0px",
-      textAlign: "left"
+      textAlign: "left",
     },
     submitButton: {
       marginTop: "24px",
@@ -111,6 +112,8 @@ const SalesInvoice = (props) => {
     },
   ]);
 
+  var [totalTaxes, setTotalTaxes] = useState();
+
   const [trackings, getTrackings] = useState([
     {
       Id: 0,
@@ -123,6 +126,14 @@ const SalesInvoice = (props) => {
   const [rows, setRow] = useState([]);
 
   const [rowId, setRowId] = useState(-1);
+
+  const useForceUpdate = () => {
+    const [count, setCount] = useState(0);
+    const increment = () => setCount((prevCount) => prevCount + 1);
+    return [increment, count];
+  };
+
+  const [forceUpdate] = useForceUpdate();
 
   var [subTotal, setSubTotal] = useState(0);
 
@@ -140,14 +151,54 @@ const SalesInvoice = (props) => {
     setOpenDelete(false);
   };
 
-  const handleChangeAmount = (values) => {
-    subTotal = 0;
-    values.items.map((r, index) => (
-       subTotal = subTotal + (r.qty * r.unitPrice)
-    ));
+  function handleChangeAmount2(values) {
+    setSubTotal(0);
+    setTotalTaxes(0);
+    setTotalAmount(0);
+    var rate = 0;
+    values.items.forEach(function (item) {
+      if (item.taxRateItem !== null)
+        rate = taxRates.find((x) => x.value === item.taxRateItem.value);
+
+      var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
+      totalTaxes = totalTaxes + taxRate;
+      subTotal = subTotal + taxRate + item.qty * item.unitPrice;
+      totalAmount = totalAmount + subTotal;
+    });
     setSubTotal(subTotal);
-    console.log(subTotal);
+    setTotalTaxes(totalTaxes);
+    setTotalAmount(totalAmount);
   }
+
+  const handleChangeAmount = (values, value, name) => {
+    subTotal = 0;
+    totalTaxes = 0;
+    totalAmount = 0;
+    var rate = 0;
+    // eslint-disable-next-line array-callback-return
+    values.items.map((item, index) => {
+      if (name !== undefined) {
+        if (name.indexOf(index) !== -1) {
+          item.taxRateItem = value;
+        }
+      }
+      rate =
+        item.taxRateItem !== null
+          ? taxRates.find((x) => x.value === item.taxRateItem.value)
+          : null;
+      var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
+      //totalTaxes = totalTaxes + taxRate;
+      
+      subTotal = subTotal + (Number(item.qty) * Number(item.unitPrice));
+
+      totalTaxes = totalTaxes + (subTotal * (taxRate))
+
+      //totalAmount = subTotal + totalTaxes  
+    });
+    setSubTotal(subTotal);
+    setTotalTaxes(totalTaxes)
+    setTotalAmount(subTotal + totalTaxes)
+  };
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -253,7 +304,7 @@ const SalesInvoice = (props) => {
   const [quantity, setQuantity] = React.useState({
     qty: 0,
   });
- 
+
   const [inputList, setInputList] = useState([]);
 
   const AddItem = () => {
@@ -277,6 +328,8 @@ const SalesInvoice = (props) => {
     //  $("#firstName").val() + $("#lastName").val()
     //);
   };
+
+  var [totalAmount, setTotalAmount] = useState(0);
 
   const handleInputChange2 = (inputValue, actionMeta) => {
     console.group("Input Changed");
@@ -321,8 +374,8 @@ const SalesInvoice = (props) => {
         id: -1,
         salesItem: null,
         description: "",
-        qty: "",
-        unitPrice: "",
+        qty: 0,
+        unitPrice: 0,
         taxRateItem: null,
         trackingItem: null,
         //amount: ""
@@ -371,7 +424,9 @@ const SalesInvoice = (props) => {
               resetForm(initialValues);
               //setLoadSubsidiaryLedger(true);
               setCustomerValue(null);
-              setSubTotal(0)
+              setSubTotal(subTotal);
+              setTotalTaxes(totalTaxes);
+              setTotalAmount(subTotal + totalTaxes);
               //setCustomerValue(values.customer);
 
               //setInputList([]);
@@ -594,6 +649,7 @@ const SalesInvoice = (props) => {
                                       value={r.salesItem}
                                       placeholder="Select Sales Item..."
                                       className={classes.reactSelect}
+                                      handleChangeAmount={() => alert("abc")}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -685,6 +741,9 @@ const SalesInvoice = (props) => {
                                       value={r.taxRateItem}
                                       placeholder="Select Tax Rate..."
                                       className={classes.reactSelect}
+                                      //handleChangeAmount={handleChangeAmount(values)}
+                                      myValues={values}
+                                      functionBake={handleChangeAmount}
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -772,14 +831,16 @@ const SalesInvoice = (props) => {
                                     setItemCount(itemCount - 1);
                                     push({
                                       id: itemCount,
-                                      salesItem: "",
+                                      salesItem: null,
                                       description: "",
-                                      qty: "",
-                                      unitPrice: "",
-                                      taxRateItem: "",
-                                      trackingItem: "",
+                                      qty: 0,
+                                      unitPrice: 0,
+                                      taxRateItem: null,
+                                      trackingItem: null,
                                       //amount: ""
                                     });
+                                    handleChangeAmount(values);
+                                    forceUpdate();
                                   }}
                                 >
                                   Add New Row
@@ -808,7 +869,7 @@ const SalesInvoice = (props) => {
                               <Grid item xs={2}>
                                 <h1 className={classes.totalAmount}>
                                   <NumberFormat
-                                    value={0}
+                                    value={totalTaxes}
                                     displayType={"text"}
                                     thousandSeparator={true}
                                   />
@@ -821,7 +882,7 @@ const SalesInvoice = (props) => {
                               <Grid item xs={2}>
                                 <h1 className={classes.totalAmount}>
                                   <NumberFormat
-                                    value={subTotal}
+                                    value={totalAmount}
                                     displayType={"text"}
                                     thousandSeparator={true}
                                   />
@@ -892,6 +953,7 @@ const SalesInvoice = (props) => {
               onClick={() => {
                 removeRow(deleteItem.id, deleteItem.values);
                 handleChangeAmount(deleteItem.values);
+                forceUpdate();
               }}
               color="primary"
               autoFocus

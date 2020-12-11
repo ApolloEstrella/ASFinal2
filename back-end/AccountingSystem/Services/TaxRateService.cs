@@ -17,8 +17,8 @@ namespace AccountingSystem.Services
         public List<TaxRateModel> GetTaxRates()
         {
             return (from a in _serverContext.TaxRates
-                    select new { a.Id, a.Description }).ToList()
-                     .Select(x => new TaxRateModel { value = x.Id, label = x.Description }).OrderBy(x => x.label).ToList();
+                    select new { a.Id, a.Description, a.Rate }).ToList()
+                     .Select(x => new TaxRateModel { value = x.Id, label = x.Description, rate = x.Rate }).OrderBy(x => x.label).ToList();
 
         }
 
