@@ -8,5 +8,6 @@ namespace AccountingSystem.Services.Interfaces
     {
         List<CustomerInvoiceModel> GetSalesInvoice();
         int AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel);
+        int AddUploadFiles(int id, FileModel files);
     }
 }

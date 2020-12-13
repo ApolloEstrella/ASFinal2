@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace AccountingSystem.Models
         public short Terms { get; set; }
         public string Reference { get; set; }
         public List<CustomerInvoiceItemModel> Items { get; set; }
+       // public IFormFileCollection Files { get; set; }
     }
 
     public class Customer

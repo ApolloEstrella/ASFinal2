@@ -26,6 +26,7 @@ namespace AccountingSystem.Data.Entities
         public virtual DbSet<SubsidiaryLedgerAccountName> SubsidiaryLedgerAccountNames { get; set; }
         public virtual DbSet<TaxRate> TaxRates { get; set; }
         public virtual DbSet<Tracking> Trackings { get; set; }
+        public virtual DbSet<UploadedFile> UploadedFiles { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -270,6 +271,26 @@ namespace AccountingSystem.Data.Entities
                 entity.Property(e => e.Description)
                     .HasMaxLength(50)
                     .HasColumnName("description");
+            });
+
+            modelBuilder.Entity<UploadedFile>(entity =>
+            {
+                entity.ToTable("uploaded_file");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+
+                entity.Property(e => e.Path)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnName("path");
+
+                entity.HasOne(d => d.LedgerMaster)
+                    .WithMany(p => p.UploadedFiles)
+                    .HasForeignKey(d => d.LedgerMasterId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ledger_master_id");
             });
 
             modelBuilder.Entity<User>(entity =>

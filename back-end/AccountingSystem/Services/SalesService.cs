@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
 using AccountingSystem.Services.Interfaces;
 using AccountingSystem.Data.Entities;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace AccountingSystem.Services
             _serverContext.Database.BeginTransactionAsync();
             try
             {
-                LedgerMaster ledgerMaster = new LedgerMaster(customerInvoiceModel.BillingAddress);
+                LedgerMaster ledgerMaster = new LedgerMaster();
                 ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value;
                 ledgerMaster.InvoiceBillingAddress = customerInvoiceModel.BillingAddress;
                 ledgerMaster.InvoiceNo = customerInvoiceModel.InvoiceNo;
@@ -52,7 +52,7 @@ namespace AccountingSystem.Services
                     ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
                     _serverContext.LedgerDetails.Add(ledgerDetail);
                     _serverContext.SaveChanges();
-                }                
+                }
                 Id = ledgerMaster.Id;
                 _serverContext.Database.CommitTransaction();
             }
@@ -61,6 +61,25 @@ namespace AccountingSystem.Services
                 _serverContext.Database.RollbackTransaction();
             }
             return Id;
+        }
+
+        public int AddUploadFiles(int id, FileModel files)
+        {
+            for (int i = 0; i < files.Files.Count; i++)
+            {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", files.Files[i].FileName);
+                using (Stream stream = new FileStream(path, FileMode.Create))
+                {
+                    files.Files[i].CopyTo(stream);
+                    UploadedFile uploadedFile = new UploadedFile();
+                    uploadedFile.Id = 0;
+                    uploadedFile.LedgerMasterId = id;
+                    uploadedFile.Path = path;
+                    _serverContext.UploadedFiles.Add(uploadedFile);
+                    _serverContext.SaveChanges();
+                }
+            }
+            return 1;
         }
     }
 }

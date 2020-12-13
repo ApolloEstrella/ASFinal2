@@ -6,20 +6,12 @@ import {
   makeStyles,
   createStyles,
   useMediaQuery,
-  InputLabel,
-  IconButton,
   useTheme,
 } from "@material-ui/core";
 import { Formik, Form, ErrorMessage, FieldArray, Field } from "formik";
 import * as Yup from "yup";
 import ReactSelect from "../controls/reactSelect";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
+import UploadFile from "../controls/uploadFile";
 import $ from "jquery";
 import DeleteIcon from "@material-ui/icons/Delete";
 import "date-fns";
@@ -34,7 +26,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import NumberFormat from "react-number-format";
-import { SignalCellularNull } from "@material-ui/icons";
+import "react-dropzone-uploader/dist/styles.css";
+import { useDropzone } from "react-dropzone";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -121,21 +114,19 @@ const SalesInvoice = (props) => {
     },
   ]);
 
-  const [customerValue, setCustomerValue] = useState();
-
-  const [rows, setRow] = useState([]);
-
-  const [rowId, setRowId] = useState(-1);
-
-  const useForceUpdate = () => {
-    const [count, setCount] = useState(0);
-    const increment = () => setCount((prevCount) => prevCount + 1);
-    return [increment, count];
-  };
-
-  const [forceUpdate] = useForceUpdate();
-
   var [subTotal, setSubTotal] = useState(0);
+
+  const [files, setFiles] = React.useState([]);
+  const onDrop = React.useCallback((acceptedFiles) => {
+    setFiles((prev) => [...prev, ...acceptedFiles]);
+  }, []);
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+  var fileList = files.map((file) => (
+    <li key={file.path}>
+      {file.path} - {file.size} bytes
+    </li>
+  ));
 
   const removeRow = (id, values) => {
     const result = $.grep(
@@ -150,25 +141,6 @@ const SalesInvoice = (props) => {
     setDeleteItem(null);
     setOpenDelete(false);
   };
-
-  function handleChangeAmount2(values) {
-    setSubTotal(0);
-    setTotalTaxes(0);
-    setTotalAmount(0);
-    var rate = 0;
-    values.items.forEach(function (item) {
-      if (item.taxRateItem !== null)
-        rate = taxRates.find((x) => x.value === item.taxRateItem.value);
-
-      var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
-      totalTaxes = totalTaxes + taxRate;
-      subTotal = subTotal + taxRate + item.qty * item.unitPrice;
-      totalAmount = totalAmount + subTotal;
-    });
-    setSubTotal(subTotal);
-    setTotalTaxes(totalTaxes);
-    setTotalAmount(totalAmount);
-  }
 
   const handleChangeAmount = (values, value, name) => {
     subTotal = 0;
@@ -187,25 +159,18 @@ const SalesInvoice = (props) => {
           ? taxRates.find((x) => x.value === item.taxRateItem.value)
           : null;
       var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
-      //totalTaxes = totalTaxes + taxRate;
-      
-      subTotal = subTotal + (Number(item.qty) * Number(item.unitPrice));
-
-      totalTaxes = totalTaxes + (subTotal * (taxRate))
-
-      //totalAmount = subTotal + totalTaxes  
+      subTotal = subTotal + Number(item.qty) * Number(item.unitPrice);
+      totalTaxes = totalTaxes + subTotal * taxRate;
     });
     setSubTotal(subTotal);
-    setTotalTaxes(totalTaxes)
-    setTotalAmount(subTotal + totalTaxes)
+    setTotalTaxes(totalTaxes);
+    setTotalAmount(subTotal + totalTaxes);
   };
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const editRow = (row) => {};
   const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
-
   const [loadSalesItems, setLoadSalesItems] = useState(false);
   const [loadTaxRates, setLoadTaxRates] = useState(false);
   const [loadTrackings, setLoadTrackings] = useState(false);
@@ -217,7 +182,6 @@ const SalesInvoice = (props) => {
 
   const handleDeleteConfirmation = (values) => {
     setOpenDelete(true);
-    //setDeleteItemId({});
   };
 
   const [itemCount, setItemCount] = useState(-2);
@@ -231,7 +195,6 @@ const SalesInvoice = (props) => {
     })
       .then((results) => results.json())
       .then((data) => {
-        //console.log(data);
         getSubsidiaryLedgerAccounts(data);
       })
       .catch(function (error) {
@@ -248,7 +211,6 @@ const SalesInvoice = (props) => {
     })
       .then((results) => results.json())
       .then((data) => {
-        //console.log(data);
         getSalesItems(data);
       })
       .catch(function (error) {
@@ -282,7 +244,6 @@ const SalesInvoice = (props) => {
     })
       .then((results) => results.json())
       .then((data) => {
-        //console.log(data);
         getTrackings(data);
       })
       .catch(function (error) {
@@ -290,66 +251,7 @@ const SalesInvoice = (props) => {
       });
   }, [loadTrackings]);
 
-  const handleItemChange = (e) => {
-    // alert(e.target.value)
-    // $("#" + p1).val(e.target.value);
-    const value = e.target[e.target.type === "checkbox" ? "checked" : "value"];
-    const name = e.target.name;
-
-    //props.onFilter({
-    //  [name]: value,
-    //});
-  };
-
-  const [quantity, setQuantity] = React.useState({
-    qty: 0,
-  });
-
-  const [inputList, setInputList] = useState([]);
-
-  const AddItem = () => {
-    setItemCount(itemCount - 1);
-    setInputList([
-      ...inputList,
-      {
-        id: itemCount,
-        name: "",
-      },
-    ]);
-  };
-
-  // handle input change
-  const handleInputChange = (e, index) => {
-    const { name, value } = e.target;
-    //const list = [...inputList];
-    //list[index][name] = value;
-    //setInputList(list);
-    //$("#fullName").val(
-    //  $("#firstName").val() + $("#lastName").val()
-    //);
-  };
-
   var [totalAmount, setTotalAmount] = useState(0);
-
-  const handleInputChange2 = (inputValue, actionMeta) => {
-    console.group("Input Changed");
-    console.log(inputValue);
-    console.log(`action: ${actionMeta.action}`);
-    console.groupEnd();
-  };
-
-  const [me, setNewValue] = useState({ value: 0, label: "" });
-
-  const handleChangeMe = (newValue, actionMeta) => {
-    console.group("Value Changed");
-    console.log(newValue);
-    console.log(`action: ${actionMeta.action}`);
-    console.groupEnd();
-    //this.setState({ value: newValue });
-    setNewValue({ value: newValue.value, label: newValue.label });
-  };
-  const [selectedDate, setSelectedDate] = React.useState();
-  const [selectedDueDate, setSelectedDueDate] = React.useState();
 
   const [open, toggleOpen] = useState(false);
   const handleClose = () => {
@@ -378,9 +280,8 @@ const SalesInvoice = (props) => {
         unitPrice: 0,
         taxRateItem: null,
         trackingItem: null,
-        //amount: ""
       },
-    ],
+    ] 
   };
 
   const validationSchema = Yup.object().shape({
@@ -391,9 +292,6 @@ const SalesInvoice = (props) => {
         salesItem: Yup.string().nullable().required("Sales Item is required"),
         taxRateItem: Yup.string().nullable().required("Tax Rate is required"),
         trackingItem: Yup.string().nullable().required("Tracking is required"),
-        //description: Yup.string()
-        //  .nullable()
-        //  .required("Description is required"),
         qty: Yup.string().nullable().required("Quantity is required"),
         unitPrice: Yup.string().nullable().required("Unit Price is required"),
       })
@@ -404,14 +302,9 @@ const SalesInvoice = (props) => {
     <div className={classes.root}>
       <Formik
         initialValues={initialValues}
-        //validationSchema={Yup.object().shape({
-        //  invoiceNo: Yup.string().required("Enter Invoice No."),
-        //  customer: Yup.string().nullable().required("Enter Customer"),
-        //
-        //})}
-
         validationSchema={validationSchema}
         onSubmit={(values, { resetForm }) => {
+          values.files = files;
           fetch("https://localhost:44302/api/sales/addaccount", {
             method: "POST",
             body: JSON.stringify(values),
@@ -421,43 +314,36 @@ const SalesInvoice = (props) => {
           })
             .then((results) => results.json())
             .then((data) => {
-              resetForm(initialValues);
-              //setLoadSubsidiaryLedger(true);
-              setCustomerValue(null);
-              setSubTotal(subTotal);
-              setTotalTaxes(totalTaxes);
-              setTotalAmount(subTotal + totalTaxes);
-              //setCustomerValue(values.customer);
-
-              //setInputList([]);
-              console.log("successful");
+              var formData = new FormData();
+              for (let i = 0; i < files.length; i++) {
+                formData.append("Files", files[i]);
+              }   
+              formData.append("id", Number(data));
+              fetch("https://localhost:44302/api/sales/AddUploadedFiles", {
+                method: "POST",
+                body: formData
+              })
+                .then((results) => results.json())
+                .then((data) => {
+                  resetForm(initialValues);
+                  fileList = []
+                  subTotal = 0;
+                  totalTaxes = 0;
+                  totalAmount = 0;
+                  setSubTotal(0);
+                  setTotalTaxes(0);
+                  setTotalAmount(0);
+                  console.log("successful");
+                })
+                .catch(function (error) {
+                  console.log("network error");
+                });              
             })
             .catch(function (error) {
               console.log("network error");
             })
             .finally(function () {});
-
-          //console.log(inputList);
-          //console.log({ values });
-          //console.log({inputList})
-          // console.log(JSON.stringify(values));
         }}
-        /* validationSchema={Yup.object().shape({
-          //email: Yup.string().email().required("Enter valid email-id"),
-          customer: Yup.string().required("Please enter full name"),
-           password: Yup.string()
-            .matches(
-              /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()]).{8,20}\S$/
-            )
-            .required(
-              "Please valid password. One uppercase, one lowercase, one special character and no spaces"
-            ),
-          confirmPassword: Yup.string()
-            .required("Required")
-            .test("password-match", "Password musth match", function (value) {
-              return this.parent.password === value;
-            }), 
-        })} */
       >
         {(props) => {
           const {
@@ -466,7 +352,6 @@ const SalesInvoice = (props) => {
             errors,
             handleBlur,
             handleChange,
-            //handleItemChange,
             isSubmitting,
           } = props;
           return (
@@ -504,7 +389,6 @@ const SalesInvoice = (props) => {
                     <TextField
                       label="Billing Address"
                       name="billingAddress"
-                      //className={classes.textField}
                       value={values.billingAddress}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -602,31 +486,6 @@ const SalesInvoice = (props) => {
                       }
                     />
                   </Grid>
-
-                  {/*  <Grid container justify="space-around" direction="row">
-                    <Grid item xs={2}>
-                      Sales Item
-                    </Grid>
-                    <Grid item xs={3}>
-                      Description
-                    </Grid>
-                    <Grid item xs={1}>
-                      Quantity
-                    </Grid>
-                    <Grid item xs={1}>
-                      Unit Price
-                    </Grid>
-                    <Grid item xs={2}>
-                      Tax Rate
-                    </Grid>
-                    <Grid item xs={1}>
-                      Amount
-                    </Grid>
-                    <Grid item xs={1}>
-                      Tracking
-                    </Grid>
-                    <Grid item xs={1}></Grid>
-                  </Grid> */}
 
                   <Grid container justify="space-around" direction="row">
                     <Grid item xs={12}>
@@ -741,7 +600,6 @@ const SalesInvoice = (props) => {
                                       value={r.taxRateItem}
                                       placeholder="Select Tax Rate..."
                                       className={classes.reactSelect}
-                                      //handleChangeAmount={handleChangeAmount(values)}
                                       myValues={values}
                                       functionBake={handleChangeAmount}
                                     />
@@ -756,13 +614,6 @@ const SalesInvoice = (props) => {
                                       name={`items[${index}].amount`}
                                       value={r.qty * r.unitPrice}
                                       type="number"
-                                      onChange={() => alert("a")}
-                                      onBlur={handleBlur}
-                                      helperText={
-                                        errors.amount &&
-                                        touched.amount &&
-                                        errors.amount
-                                      }
                                       margin="dense"
                                       className={classes.textFieldReadOnly}
                                       InputProps={{
@@ -840,7 +691,6 @@ const SalesInvoice = (props) => {
                                       //amount: ""
                                     });
                                     handleChangeAmount(values);
-                                    forceUpdate();
                                   }}
                                 >
                                   Add New Row
@@ -857,6 +707,8 @@ const SalesInvoice = (props) => {
                                     value={subTotal}
                                     displayType={"text"}
                                     thousandSeparator={true}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
                                   />
                                 </h1>
                               </Grid>
@@ -872,6 +724,8 @@ const SalesInvoice = (props) => {
                                     value={totalTaxes}
                                     displayType={"text"}
                                     thousandSeparator={true}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
                                   />
                                 </h1>
                               </Grid>
@@ -885,6 +739,8 @@ const SalesInvoice = (props) => {
                                     value={totalAmount}
                                     displayType={"text"}
                                     thousandSeparator={true}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
                                   />
                                 </h1>
                               </Grid>
@@ -894,7 +750,21 @@ const SalesInvoice = (props) => {
                       </FieldArray>
                     </Grid>
                   </Grid>
-
+                  <Grid item lg={12} md={12} sm={12} xs={12}>
+                    <section className="container">
+                      <div {...getRootProps({ className: "dropzone" })}>
+                        <input {...getInputProps()} />
+                        <p>
+                          Drag 'n' drop some files here, or click to select
+                          files
+                        </p>
+                      </div>
+                      <aside>
+                        <h4>Files</h4>
+                        <ul>{fileList}</ul>
+                      </aside>
+                    </section>
+                  </Grid>
                   <Grid
                     item
                     lg={10}
@@ -953,7 +823,6 @@ const SalesInvoice = (props) => {
               onClick={() => {
                 removeRow(deleteItem.id, deleteItem.values);
                 handleChangeAmount(deleteItem.values);
-                forceUpdate();
               }}
               color="primary"
               autoFocus

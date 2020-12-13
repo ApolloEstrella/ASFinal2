@@ -7,9 +7,10 @@ namespace AccountingSystem.Data.Entities
 {
     public partial class LedgerMaster
     {
-        public LedgerMaster(string InvoiceBillingAddress)
+        public LedgerMaster()
         {
             LedgerDetails = new HashSet<LedgerDetail>();
+            UploadedFiles = new HashSet<UploadedFile>();
         }
 
         public int Id { get; set; }
@@ -23,5 +24,6 @@ namespace AccountingSystem.Data.Entities
         public string TransactionType { get; set; }
 
         public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }
+        public virtual ICollection<UploadedFile> UploadedFiles { get; set; }
     }
 }

@@ -39,6 +39,7 @@ namespace AccountingSystem
 
 
 
+
             services.AddControllers();
             services.AddDbContext<accounting_systemContext>(options => options.UseSqlServer("Server=DESKTOP-GT4AAMB;Database=accounting_system;Trusted_Connection=True;"));
             services.AddScoped<IAccountService, AccountService>();

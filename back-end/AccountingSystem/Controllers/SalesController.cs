@@ -1,7 +1,10 @@
 ﻿using AccountingSystem.Services.Interfaces;
-using AccountingSystem.Data.Entities;
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using AccountingSystem.Models;
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace AccountingSystem.Controllers
 {
@@ -19,6 +22,13 @@ namespace AccountingSystem.Controllers
         public ActionResult AddAccount([FromBody] CustomerInvoiceModel customerInvoiceModel)
         {
             return Ok(_salesService.AddSalesInvoice(customerInvoiceModel));
+        }
+
+        [HttpPost]
+        public ActionResult AddUploadedFiles([FromForm] FileModel files)
+        {
+
+            return Ok(_salesService.AddUploadFiles(files.Id, files));
         }
     }
 }
