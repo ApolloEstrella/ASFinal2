@@ -28,6 +28,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import NumberFormat from "react-number-format";
 import "react-dropzone-uploader/dist/styles.css";
 import { useDropzone } from "react-dropzone";
+import { compareSync } from "bcryptjs";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -87,6 +88,7 @@ const SalesInvoice = (props) => {
     {
       Id: 0,
       name: "",
+      address: "",
     },
   ]);
 
@@ -178,6 +180,8 @@ const SalesInvoice = (props) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
 
+const [counter, setCounter] = React.useState(0);
+
   const [deleteItem, setDeleteItem] = useState({ id: "", values: [] });
 
   const handleDeleteConfirmation = (values) => {
@@ -195,12 +199,13 @@ const SalesInvoice = (props) => {
     })
       .then((results) => results.json())
       .then((data) => {
+        //console.log(data)
         getSubsidiaryLedgerAccounts(data);
       })
       .catch(function (error) {
         console.log("network error");
       });
-  }, [loadSubsidiaryLedger]);
+  }, [counter]);
 
   useEffect(() => {
     fetch("https://localhost:44302/api/IncomeItem/get", {
@@ -284,7 +289,19 @@ const SalesInvoice = (props) => {
     ] 
   };
 
+function changeValue(input, value) {
+  var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    "value"
+  ).set;
+  nativeInputValueSetter.call(input, value);
+  var inputEvent = new Event("input", { bubbles: true });
+  input.dispatchEvent(inputEvent);
+}
+
+
   const validationSchema = Yup.object().shape({
+    billingAddress: Yup.string().required("Enter Billing Address."),
     invoiceNo: Yup.string().required("Enter Invoice No."),
     customer: Yup.string().nullable().required("Enter Customer"),
     items: Yup.array().of(
@@ -326,7 +343,7 @@ const SalesInvoice = (props) => {
                 .then((results) => results.json())
                 .then((data) => {
                   resetForm(initialValues);
-                  fileList = []
+                  fileList = [null]
                   subTotal = 0;
                   totalTaxes = 0;
                   totalAmount = 0;
@@ -353,7 +370,16 @@ const SalesInvoice = (props) => {
             handleBlur,
             handleChange,
             isSubmitting,
+            setFieldValue
           } = props;
+
+          const loadBillingAddress = (id) => {
+            const sL = subsidiaryLedgerAccounts.find(x => x.value === id)
+            setFieldValue("billingAddress", sL.address);
+            setFieldValue("billingAddress", sL.address === null ? "" : sL.address)
+          }
+
+
           return (
             <>
               <Form>
@@ -368,6 +394,9 @@ const SalesInvoice = (props) => {
                       options={subsidiaryLedgerAccounts}
                       className={classes.reactSelect}
                       value={values.customer}
+                      accountType="INV"
+                      refreshSL={() => setCounter(counter + 1)}
+                      loadBillingAddress={(id) => loadBillingAddress(id)}
                       placeholder="Select Customer..."
                       helperText={
                         errors.customer && touched.customer && errors.customer
@@ -388,15 +417,17 @@ const SalesInvoice = (props) => {
                   >
                     <TextField
                       label="Billing Address"
+                      id="billingAddress"
                       name="billingAddress"
                       value={values.billingAddress}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       helperText={
-                        errors.description &&
-                        touched.description &&
-                        errors.description
+                        errors.billingAddress &&
+                        touched.billingAddress &&
+                        errors.billingAddress
                       }
+                      error={errors.billingAddress && touched.billingAddress}
                       margin="normal"
                       multiline
                       rows={4}

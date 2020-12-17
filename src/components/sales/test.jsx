@@ -1,64 +1,68 @@
-import React from "react";
+import React, {useState} from "react";
 import ReactDOM from "react-dom";
-import { useDropzone } from "react-dropzone";
+//Using React 16.0.0 as per script loaded in Settings
+class NameForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: 'pol'};
 
-//import "./styles.css";
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
 
-function Basic(props) {
-  const [files, setFiles] = React.useState([]);
-  const onDrop = React.useCallback((acceptedFiles) => {
-    setFiles((prev) => [...prev, ...acceptedFiles]);
-  }, []);
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  handleChange(event) {
+    alert(event.target.value)
+    this.setState({value: event.target.value});
+  }
 
-  const fileList = files.map((file) => (
-    <li key={file.path}>
-      {file.path} - {file.size} bytes
-    </li>
-  ));
+  handleSubmit(event) {
+    alert('The value submitted: ' + this.state.value);
+    event.preventDefault();
+  }
 
-  const sendFileToServer = () => {
-    var formData = new FormData();
-    //formData.append("formFile", files[0]);
-    //formData.append("fileName", files[0].name);
-    //formData.append("FileNames", JSON.stringify(files));
-    //formData.append("Files", files);
+  handleTest() {
+    this.setState({ value: "event.target.value" });
+  }
 
-    for (let i = 0; i < files.length; i++) {
-      formData.append("Files", files[i]);
-    }
-
-    formData.append("id", 123)
-
-    fetch("https://localhost:44302/api/sales/AddUploadedFiles", {
-      method: "POST",
-      body: formData,
-    })
-      .then((results) => results.json())
-      .then((data) => {})
-      .catch(function (error) {
-        console.log("network error");
-      })
-      .finally(function () {});
-  };
-
-  return (
-    <form onSubmit={sendFileToServer}>
-      <section className="container">
-        <div {...getRootProps({ className: "dropzone" })}>
-          <input {...getInputProps()} />
-          <p>Drag 'n' drop some files here, or click to select files</p>
-        </div>
-        <aside>
-          <h4>Files</h4>
-          <ul>{fileList}</ul>
-        </aside>
+  render() {
+    return (
+      <form>
+        <button onClick={()=>this.handleTest()}>test</button>
+        <div>Rendered with React 16.0.0</div>
+        <div>Outside the React scope, with JS input has preset value</div>
         <div>
-          <button type="submit">Save</button>
+          Click submit to see if value is set by JS. Entering value manually
+          will change the value of input.
         </div>
-      </section>
-    </form>
-  );
+        <input
+          type="text"
+          id="myinput"
+          value={this.state.value}
+          onChange={this.handleChange}
+        />
+
+        <input type="button" value="Submit" />
+      </form>
+    );
+  }
 }
 
-export default Basic;
+ReactDOM.render(
+  <NameForm />,
+  document.getElementById('root')
+);
+
+//Outside the React scope
+var input = document.getElementById('myinput');
+var event = new Event('input', { bubbles: true});
+//Toggling simulated=false or true and will not trigger the value change
+event.simulated = true;
+input.value = 'JS set Value';
+input.defaultValue = 'JS set Value';
+input.dispatchEvent(event);
+
+
+
+
+
+export default NameForm;

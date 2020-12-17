@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import CreatableSelect from "react-select/creatable";
-import { useFormikContext, useField } from "formik";
+import { Formik, Form, ErrorMessage, useFormikContext, useField } from "formik";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -16,37 +16,14 @@ import {
   useTheme,
 } from "@material-ui/core";
 
-const ReactSelect = ({ options, label, value, myValues, ...props }) => {
-  //console.log("value=> " + value.value + " label=>" + value.label);
-  const { setFieldValue, setFieldTouched } = useFormikContext();
-  const [field, meta] = useField(props);
-  const [open, toggleOpen] = useState(false);
-  const { handleChangeAmount } = props;
-  const handleClose = () => {
-    toggleOpen(false);
-  };
-  const [dialogValue, setDialogValue] = useState({
-    name: "",
-  });
-  /**
-   * Will manually set the value belong to the name props in the Formik form using setField
-   */
-  function handleOptionChange(selection) {
-    setFieldValue(props.name, selection);
-    if (myValues !== undefined) handleBake(myValues, selection, props.name);
-  }
-
-  function handleBake(evt, selection) {
-    props.functionBake(evt, selection, props.name); // calling function from parent class and giving argument as a prop
-  }
-
-  /**
-   * Manually updated the touched property for the field in Formik
-   */
-  function updateBlur() {
-    setFieldTouched(props.name, true);
-  }
-
+const ReactSelect = ({
+  options,
+  label,
+  value,
+  myValues,
+  accountType,
+  ...props
+}) => {
   const customStyles = {
     control: (provided) => ({
       ...provided,
@@ -66,6 +43,73 @@ const ReactSelect = ({ options, label, value, myValues, ...props }) => {
     }),
   };
 
+  const { setFieldValue, setFieldTouched } = useFormikContext();
+  const [field, meta] = useField(props);
+  const [open, toggleOpen] = useState(false);
+  const { handleChangeAmount } = props;
+  const handleClose = () => {
+    setBillingAddress({ address: "" });
+    toggleOpen(false);
+  };
+  const [dialogValue, setDialogValue] = useState({
+    name: "",
+    billingAddress: ""
+  });
+
+  const [billingAddress, setBillingAddress] = useState({
+    address: "",
+  });
+  /**
+   * Will manually set the value belong to the name props in the Formik form using setField
+   */
+  function handleOptionChange(selection) {
+    setFieldValue(props.name, selection);
+    setDialogValue(selection.label);
+    if (accountType === "INV") loadBillingAddress(selection.value);
+    if (myValues !== undefined) handleBake(myValues, selection, props.name);
+  }
+
+  function handleBake(evt, selection) {
+    props.functionBake(evt, selection, props.name); // calling function from parent class and giving argument as a prop
+  }
+
+  function loadSubsidiaryLedger() {
+    props.refreshSL();
+  }
+
+  function loadBillingAddress(id) {
+    props.loadBillingAddress(id);
+  }
+  /**
+   * Manually updated the touched property for the field in Formik
+   */
+  function updateBlur() {
+    setFieldTouched(props.name, true);
+  }
+
+  function handleNewCustomer() {
+    fetch("https://localhost:44302/api/subsidiaryledger/addaccount", {
+      method: "POST",
+      body: JSON.stringify({
+        id: 0,
+        name: dialogValue.name,
+        address: billingAddress.address,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        loadSubsidiaryLedger();
+        handleClose();
+      });
+  }
+   
+  const initialCustomerValues = {
+    name: dialogValue.name,
+    billingAddress: ""
+  }
   return (
     <React.Fragment>
       <CreatableSelect
@@ -73,9 +117,13 @@ const ReactSelect = ({ options, label, value, myValues, ...props }) => {
         options={options}
         {...field}
         {...props}
+        //formatCreateLabel={(inputValue) => setDialogValue(inputValue)}
         onBlur={updateBlur}
         onChange={handleOptionChange}
-        onCreateOption={() => toggleOpen(true)}
+        onCreateOption={(inputValue) => {
+          setDialogValue({ name: inputValue });
+          toggleOpen(true);
+        }}
         //value={options.find((obj) => obj  === value)}
         //value={options.find((obj) => obj.value === value)}
         value={
@@ -86,13 +134,12 @@ const ReactSelect = ({ options, label, value, myValues, ...props }) => {
       {meta.touched && meta.error ? (
         <span className="custom-input-error">{meta.error.value}</span>
       ) : null}
-
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="form-dialog-title"
-      >
-        <form>
+      <Formik>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="form-dialog-title"
+        >
           <DialogTitle id="form-dialog-title">Add a new Customer</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -102,6 +149,7 @@ const ReactSelect = ({ options, label, value, myValues, ...props }) => {
               autoFocus
               margin="dense"
               id="name"
+              name="name"
               fullWidth
               value={dialogValue.name}
               onChange={(event) =>
@@ -113,17 +161,39 @@ const ReactSelect = ({ options, label, value, myValues, ...props }) => {
               label="name"
               type="text"
             />
+            <TextField
+              id="billingAddress"
+              label="Billing Address"
+              name="billingAddress"
+              value={billingAddress.address}
+              onChange={(event) =>
+                setBillingAddress({
+                  ...setBillingAddress,
+                  address: event.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              rowsMax={4}
+              variant="outlined"
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="primary">
               Cancel
             </Button>
-            <Button type="submit" color="primary">
+            <Button
+              type="button"
+              onClick={() => handleNewCustomer()}
+              color="primary"
+            >
               Add
             </Button>
           </DialogActions>
-        </form>
-      </Dialog>
+        </Dialog>
+      </Formik>
     </React.Fragment>
   );
 };

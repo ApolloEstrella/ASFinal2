@@ -239,6 +239,10 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.Address)
+                    .HasMaxLength(1000)
+                    .HasColumnName("address");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100)

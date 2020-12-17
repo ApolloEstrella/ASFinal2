@@ -76,7 +76,6 @@ D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\n
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\AccountingSystem.pdb
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\appsettings.Development.json
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\appsettings.json
-D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Properties\launchSettings.json
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\AccountingSystem.exe
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\AccountingSystem.deps.json
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\AccountingSystem.runtimeconfig.json
@@ -136,3 +135,4 @@ D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\n
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\staticwebassets\AccountingSystem.StaticWebAssets.Manifest.cache
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\staticwebassets\AccountingSystem.StaticWebAssets.xml
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\AccountingSystem.genruntimeconfig.cache
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\scopedcss\bundle\AccountingSystem.styles.css

@@ -16,8 +16,8 @@ namespace AccountingSystem.Services
         public List<SubsidiaryLedgerModel> GetSubsidiaryLedger()
         {
             return (from a in _serverContext.SubsidiaryLedgerAccountNames
-                    select new { a.Id, a.Name}).ToList()
-                     .Select(x => new SubsidiaryLedgerModel { value = x.Id, label = x.Name  }).OrderBy(x => x.label).ToList();
+                    select new { a.Id, a.Name, a.Address}).ToList()
+                     .Select(x => new SubsidiaryLedgerModel { value = x.Id, label = x.Name, address = x.Address   }).OrderBy(x => x.label).ToList();
         }
  
         public int AddAccount(SubsidiaryLedgerAccountName account)
