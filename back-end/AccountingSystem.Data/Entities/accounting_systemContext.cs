@@ -151,11 +151,6 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.InvoiceSalesItemId).HasColumnName("invoice_sales_item_id");
 
-                entity.Property(e => e.InvoiceTaxRate)
-                    .HasColumnType("numeric(5, 2)")
-                    .HasColumnName("invoice_tax_rate")
-                    .HasAnnotation("Relational:ColumnType", "numeric(5, 2)");
-
                 entity.Property(e => e.InvoiceTaxRateId).HasColumnName("invoice_tax_rate_id");
 
                 entity.Property(e => e.InvoiceTrackingId).HasColumnName("invoice_tracking_id");
@@ -173,7 +168,7 @@ namespace AccountingSystem.Data.Entities
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_invoice_sales_item_id");
 
-                entity.HasOne(d => d.InvoiceTaxRateNavigation)
+                entity.HasOne(d => d.InvoiceTaxRate)
                     .WithMany(p => p.LedgerDetails)
                     .HasForeignKey(d => d.InvoiceTaxRateId)
                     .OnDelete(DeleteBehavior.ClientSetNull)

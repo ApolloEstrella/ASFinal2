@@ -14,12 +14,11 @@ namespace AccountingSystem.Data.Entities
         public int InvoiceQuantity { get; set; }
         public decimal InvoiceUnitPrice { get; set; }
         public int InvoiceTaxRateId { get; set; }
-        public decimal InvoiceTaxRate { get; set; }
         public int InvoiceTrackingId { get; set; }
         public int ChartOfAccountId { get; set; }
 
         public virtual IncomeItem InvoiceSalesItem { get; set; }
-        public virtual TaxRate InvoiceTaxRateNavigation { get; set; }
+        public virtual TaxRate InvoiceTaxRate { get; set; }
         public virtual Tracking InvoiceTracking { get; set; }
         public virtual LedgerMaster LedgerMaster { get; set; }
     }

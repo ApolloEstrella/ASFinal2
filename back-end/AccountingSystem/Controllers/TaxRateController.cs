@@ -22,7 +22,7 @@ namespace AccountingSystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post(TaxRate account)
+        public IActionResult AddAccount(TaxRate account)
         {
             return Ok(_taxRateService.AddAccount(account));
         }

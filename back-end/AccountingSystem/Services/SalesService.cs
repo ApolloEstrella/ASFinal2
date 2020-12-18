@@ -47,7 +47,7 @@ namespace AccountingSystem.Services
                     ledgerDetail.InvoiceDescription = item.Description;
                     ledgerDetail.InvoiceQuantity = item.Qty;
                     ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
-                    ledgerDetail.InvoiceTaxRate = item.TaxRateItem.Value;
+                    //ledgerDetail.InvoiceTaxRate = item.TaxRateItem.Value;
                     ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
                     ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
                     _serverContext.LedgerDetails.Add(ledgerDetail);

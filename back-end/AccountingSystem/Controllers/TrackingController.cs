@@ -22,7 +22,7 @@ namespace AccountingSystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post(Tracking account)
+        public IActionResult AddAccount(Tracking account)
         {
             return Ok(_trackingService.AddAccount(account));
             

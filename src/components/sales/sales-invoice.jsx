@@ -107,6 +107,12 @@ const SalesInvoice = (props) => {
     },
   ]);
 
+  //const [tracking, getTracking] = useState([
+  //  {
+  //    description: ""
+  //  },
+  //]);
+
   var [totalTaxes, setTotalTaxes] = useState();
 
   const [trackings, getTrackings] = useState([
@@ -145,9 +151,9 @@ const SalesInvoice = (props) => {
   };
 
   const handleChangeAmount = (values, value, name) => {
-    subTotal = 0;
-    totalTaxes = 0;
-    totalAmount = 0;
+    var subTotal = 0;
+    var totalTaxes = 0;
+    var totalAmount = 0;
     var rate = 0;
     // eslint-disable-next-line array-callback-return
     values.items.map((item, index) => {
@@ -161,12 +167,15 @@ const SalesInvoice = (props) => {
           ? taxRates.find((x) => x.value === item.taxRateItem.value)
           : null;
       var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
-      subTotal = subTotal + Number(item.qty) * Number(item.unitPrice);
+      subTotal = subTotal + (item.qty * item.unitPrice);
       totalTaxes = totalTaxes + subTotal * taxRate;
+      totalAmount = totalAmount + subTotal + totalTaxes;
     });
     setSubTotal(subTotal);
     setTotalTaxes(totalTaxes);
-    setTotalAmount(subTotal + totalTaxes);
+    setTotalAmount(Number(subTotal) + totalTaxes);
+    //alert(totalAmount);
+    //alert(subTotal + totalTaxes);
   };
 
   const theme = useTheme();
@@ -180,7 +189,10 @@ const SalesInvoice = (props) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
 
-const [counter, setCounter] = React.useState(0);
+  const [counter, setCounter] = useState(0);
+  const [counterSales, setCounterSales] = useState(0);
+  const [counterTax, setCounterTax] = useState(0);
+  const [counterTracking, setCounterTracking] = useState(0);
 
   const [deleteItem, setDeleteItem] = useState({ id: "", values: [] });
 
@@ -221,7 +233,7 @@ const [counter, setCounter] = React.useState(0);
       .catch(function (error) {
         console.log("network error");
       });
-  }, [loadSalesItems]);
+  }, [counterSales]);
 
   useEffect(() => {
     fetch("https://localhost:44302/api/TaxRate/get", {
@@ -238,7 +250,7 @@ const [counter, setCounter] = React.useState(0);
       .catch(function (error) {
         console.log("network error");
       });
-  }, [loadTaxRates]);
+  }, [counterTax]);
 
   useEffect(() => {
     fetch("https://localhost:44302/api/Tracking/get", {
@@ -254,7 +266,7 @@ const [counter, setCounter] = React.useState(0);
       .catch(function (error) {
         console.log("network error");
       });
-  }, [loadTrackings]);
+  }, [counterTracking]);
 
   var [totalAmount, setTotalAmount] = useState(0);
 
@@ -286,19 +298,18 @@ const [counter, setCounter] = React.useState(0);
         taxRateItem: null,
         trackingItem: null,
       },
-    ] 
+    ],
   };
 
-function changeValue(input, value) {
-  var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    "value"
-  ).set;
-  nativeInputValueSetter.call(input, value);
-  var inputEvent = new Event("input", { bubbles: true });
-  input.dispatchEvent(inputEvent);
-}
-
+  function changeValue(input, value) {
+    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value"
+    ).set;
+    nativeInputValueSetter.call(input, value);
+    var inputEvent = new Event("input", { bubbles: true });
+    input.dispatchEvent(inputEvent);
+  }
 
   const validationSchema = Yup.object().shape({
     billingAddress: Yup.string().required("Enter Billing Address."),
@@ -334,16 +345,17 @@ function changeValue(input, value) {
               var formData = new FormData();
               for (let i = 0; i < files.length; i++) {
                 formData.append("Files", files[i]);
-              }   
+              }
               formData.append("id", Number(data));
               fetch("https://localhost:44302/api/sales/AddUploadedFiles", {
                 method: "POST",
-                body: formData
+                body: formData,
               })
                 .then((results) => results.json())
                 .then((data) => {
                   resetForm(initialValues);
-                  fileList = [null]
+                  fileList = [null];
+                  setFiles([])
                   subTotal = 0;
                   totalTaxes = 0;
                   totalAmount = 0;
@@ -354,7 +366,7 @@ function changeValue(input, value) {
                 })
                 .catch(function (error) {
                   console.log("network error");
-                });              
+                });
             })
             .catch(function (error) {
               console.log("network error");
@@ -370,15 +382,17 @@ function changeValue(input, value) {
             handleBlur,
             handleChange,
             isSubmitting,
-            setFieldValue
+            setFieldValue,
           } = props;
 
           const loadBillingAddress = (id) => {
-            const sL = subsidiaryLedgerAccounts.find(x => x.value === id)
+            const sL = subsidiaryLedgerAccounts.find((x) => x.value === id);
             setFieldValue("billingAddress", sL.address);
-            setFieldValue("billingAddress", sL.address === null ? "" : sL.address)
-          }
-
+            setFieldValue(
+              "billingAddress",
+              sL.address === null ? "" : sL.address
+            );
+          };
 
           return (
             <>
@@ -532,14 +546,17 @@ function changeValue(input, value) {
                                 >
                                   <Grid item xs={2}>
                                     <ReactSelect
-                                      label="Customer"
+                                      label="Sales Item"
                                       name={`items[${index}].salesItem`}
                                       type="text"
                                       options={salesItems}
                                       value={r.salesItem}
                                       placeholder="Select Sales Item..."
                                       className={classes.reactSelect}
-                                      handleChangeAmount={() => alert("abc")}
+                                      accountType="SALES"
+                                      refreshSales={() =>
+                                        setCounterSales(counterSales + 1)
+                                      }
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -633,6 +650,10 @@ function changeValue(input, value) {
                                       className={classes.reactSelect}
                                       myValues={values}
                                       functionBake={handleChangeAmount}
+                                      accountType="TAX"
+                                      refreshTax={() =>
+                                        setCounterTax(counterTax + 1)
+                                      }
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
@@ -662,8 +683,12 @@ function changeValue(input, value) {
                                       type="text"
                                       options={trackings}
                                       value={r.trackingItem}
+                                      accountType="TRACKING"
                                       placeholder="Select Tracking Item..."
                                       className={classes.reactSelect}
+                                      refreshTracking={() =>
+                                        setCounterTracking(counterTracking + 1)
+                                      }
                                     />
                                     <span className={classes.errorMessage}>
                                       <ErrorMessage
