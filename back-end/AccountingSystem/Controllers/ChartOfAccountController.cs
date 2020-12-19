@@ -21,6 +21,12 @@ namespace AccountingSystem.Controllers
         }
 
         [HttpGet]
+        public IActionResult GetSelect()
+        {
+            return Ok(_chartOfAccountService.GetChartOfAccountSelect());
+        }
+
+        [HttpGet]
         public IActionResult GetTypes()
         {
             return Ok(_chartOfAccountService.GetChartOfAccountsTypes());

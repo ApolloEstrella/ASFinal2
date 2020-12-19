@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CreatableSelect from "react-select/creatable";
+import Select from "react-select";
 import { Formik, Form, ErrorMessage, useFormikContext, useField } from "formik";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -42,6 +43,15 @@ const ReactSelect = ({
       ...provided,
       padding: "5px",
     }),
+    reactSelect: {
+      paddingTop: "8px",
+      //zIndex: "999",
+    },
+    textFieldReadOnly: (provided) => ({
+      ...provided,
+      position: "relative",
+      zIndex: "-99999",
+    }),
   };
 
   const { setFieldValue, setFieldTouched } = useFormikContext();
@@ -50,6 +60,8 @@ const ReactSelect = ({
   const [openSales, toggleOpenSales] = useState(false);
   const [openTax, toggleOpenTax] = useState(false);
   const [openTracking, toggleOpenTracking] = useState(false);
+  const [chartOfAccounts, getChartOfAccounts] = useState([]);
+  const [counterChartOfAccount, setCounterCharOfAccount] = useState(0);
 
   const handleClose = () => {
     setBillingAddress({ address: "" });
@@ -57,6 +69,7 @@ const ReactSelect = ({
   };
 
   const handleCloseSales = () => {
+    setOptionSales(optionSales = null);
     toggleOpenSales(false);
   };
 
@@ -90,6 +103,7 @@ const ReactSelect = ({
   const [billingAddress, setBillingAddress] = useState({
     address: "",
   });
+
   /**
    * Will manually set the value belong to the name props in the Formik form using setField
    */
@@ -100,6 +114,11 @@ const ReactSelect = ({
       loadBillingAddress(selection.value);
     }
     if (myValues !== undefined) handleBake(myValues, selection, props.name);
+  }
+
+  function handleOptionChangeSelect(selection) {
+    setOptionSales(selection);
+    setFieldValue(props.name, selection);
   }
 
   function handleBake(evt, selection) {
@@ -159,7 +178,7 @@ const ReactSelect = ({
         name: values.name,
         sku: values.sku,
         description: values.description,
-        incomeAccountId: 6054, //values.incomeAccountId,
+        incomeAccountId: values.incomeAccountId.value,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -207,6 +226,23 @@ function handleNewTracking(values) {
     });
 }
 
+  useEffect(() => {
+    fetch("https://localhost:44302/api/chartofaccount/GetSelect", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        console.log(data);
+        getChartOfAccounts(data);
+      })
+      .catch(function (error) {
+        console.log("network error");
+      });
+  }, [counterChartOfAccount]);
+
   const validationSchemaCustomer = Yup.object().shape({
     name: Yup.string().required("Enter Customer Name."),
   });
@@ -228,7 +264,7 @@ function handleNewTracking(values) {
     name: dialogValueSales.name,
     sku: "",
     description: "",
-    incomeAccountId: 6054,
+    incomeAccountId: {},
   };
 
   const initialTaxValues = {
@@ -239,6 +275,8 @@ function handleNewTracking(values) {
   const initialTrackingValues = {
     description: dialogValueTracking.description
   };
+
+  var [optionSales, setOptionSales] = useState(null);
 
   return (
     <React.Fragment>
@@ -366,9 +404,11 @@ function handleNewTracking(values) {
           <Formik
             initialValues={initialSaleValues}
             onSubmit={(values, { resetForm }) => {
+              values.incomeAccountId = optionSales;
               handleNewSales(values);
+              resetForm(initialSaleValues)
             }}
-            validationSchema={validationSchemaSales}
+            //validationSchema={validationSchemaSales}
           >
             {(props) => {
               const {
@@ -397,6 +437,29 @@ function handleNewTracking(values) {
                     helperText={errors.name && touched.name && errors.name}
                     error={errors.name && touched.name}
                   />
+                  <br></br>
+                  <br></br>
+                  <br></br>
+                  <Select
+                    id="incomeAccountId"
+                    name="incomeAccountId"
+                    placeholder="Select Income Account"
+                    //styles={customStyles}
+                    {...field}
+                    {...props}
+                    onBlur={updateBlur}
+                    onChange={handleOptionChangeSelect}
+                    value={optionSales}
+                    //value={chartOfAccounts.find((obj) => obj.value === 6054)}
+                    //value={{ value: 6054, label: "31231" }}
+                    options={chartOfAccounts}
+                    //className={customStyles.reactSelect}
+                    isClearable
+                  />
+                  {console.log(
+                    chartOfAccounts.find((obj) => obj.value === 6054)
+                  )}
+
                   <TextField
                     id="sku"
                     label="SKU"
@@ -406,9 +469,10 @@ function handleNewTracking(values) {
                     fullWidth
                     margin="normal"
                     multiline
-                    rows={4}
-                    rowsMax={4}
-                    variant="outlined"
+                    //rows={4}
+                    //rowsMax={4}
+                    //variant="outlined"
+                    className={customStyles.textFieldReadOnly}
                   />
                   <TextField
                     id="description"
@@ -419,10 +483,11 @@ function handleNewTracking(values) {
                     fullWidth
                     margin="normal"
                     multiline
-                    rows={2}
-                    rowsMax={4}
-                    variant="outlined"
+                    //rows={2}
+                    //rowsMax={4}
+                    //variant="outlined"
                   />
+
                   <Button type="submit" color="primary">
                     Add
                   </Button>

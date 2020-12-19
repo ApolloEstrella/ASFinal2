@@ -29,6 +29,7 @@ import NumberFormat from "react-number-format";
 import "react-dropzone-uploader/dist/styles.css";
 import { useDropzone } from "react-dropzone";
 import { compareSync } from "bcryptjs";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -74,6 +75,9 @@ const useStyles = makeStyles((theme) =>
     deleteButton: {
       marginTop: "9.5px",
       marginLeft: "15px",
+    },
+    deleteAttachmentButton: {
+      marginBottom: "0px",
     },
     title: { textAlign: "center" },
     successMessage: { color: "green" },
@@ -132,9 +136,23 @@ const SalesInvoice = (props) => {
 
   var fileList = files.map((file) => (
     <li key={file.path}>
-      {file.path} - {file.size} bytes
+      {file.path}
+      {<DeleteForeverIcon onClick={()=> removeAttachment(file,files)} />}
     </li>
   ));
+
+  const removeAttachment = (file, files) => {
+    const result = $.grep(
+      files,
+      function (n, i) {
+        return n.path !== file.path;
+      },
+      false
+    );
+    setFiles(result)
+  }
+
+
 
   const removeRow = (id, values) => {
     const result = $.grep(
@@ -167,7 +185,7 @@ const SalesInvoice = (props) => {
           ? taxRates.find((x) => x.value === item.taxRateItem.value)
           : null;
       var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
-      subTotal = subTotal + (item.qty * item.unitPrice);
+      subTotal = subTotal + item.qty * item.unitPrice;
       totalTaxes = totalTaxes + subTotal * taxRate;
       totalAmount = totalAmount + subTotal + totalTaxes;
     });
@@ -355,7 +373,7 @@ const SalesInvoice = (props) => {
                 .then((data) => {
                   resetForm(initialValues);
                   fileList = [null];
-                  setFiles([])
+                  setFiles([]);
                   subTotal = 0;
                   totalTaxes = 0;
                   totalAmount = 0;

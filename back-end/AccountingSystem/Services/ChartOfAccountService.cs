@@ -21,8 +21,15 @@ namespace AccountingSystem.Services
                     on a.AccountTypeId equals b.Id
                     join c in _serverContext.ChartOfAccountsCategories
                     on b.CategoryId equals c.Id
-                    select new { a.Id, b.Type, a.Title, Category_Id = c.Id, a.Description, a.Code, a.AccountTypeId}).ToList()
+                    select new { a.Id, b.Type, a.Title, Category_Id = c.Id, a.Description, a.Code, a.AccountTypeId }).ToList()
                      .Select(x => new ChartOfAccountModel { Id = x.Id, Type = x.Type, Title = x.Title, Description = x.Description, Code = x.Code, AccountTypeId = x.AccountTypeId }).OrderBy(x => x.Type).ToList();
+        }
+
+        public List<ChartOfAccountSelectModel> GetChartOfAccountSelect()
+        {
+            return (from a in _serverContext.ChartOfAccounts
+                    select new { a.Id, a.Title }).ToList()
+                     .Select(x => new ChartOfAccountSelectModel { value = x.Id, label = x.Title }).OrderBy(x => x.label).ToList();
         }
 
         public List<ChartOfAccountsType> GetChartOfAccountsTypes()
