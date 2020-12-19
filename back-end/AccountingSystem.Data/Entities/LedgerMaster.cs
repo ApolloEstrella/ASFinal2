@@ -23,6 +23,7 @@ namespace AccountingSystem.Data.Entities
         public string InvoiceReference { get; set; }
         public string TransactionType { get; set; }
 
+        public virtual SubsidiaryLedgerAccountName SubsidiaryLedgerAccount { get; set; }
         public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }
         public virtual ICollection<UploadedFile> UploadedFiles { get; set; }
     }

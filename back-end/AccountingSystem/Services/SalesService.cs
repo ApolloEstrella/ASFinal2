@@ -23,7 +23,7 @@ namespace AccountingSystem.Services
         public int AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
             int Id = 0;
-            _serverContext.Database.BeginTransactionAsync();
+            _serverContext.Database.BeginTransaction();
             try
             {
                 LedgerMaster ledgerMaster = new LedgerMaster();
@@ -47,7 +47,6 @@ namespace AccountingSystem.Services
                     ledgerDetail.InvoiceDescription = item.Description;
                     ledgerDetail.InvoiceQuantity = item.Qty;
                     ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
-                    //ledgerDetail.InvoiceTaxRate = item.TaxRateItem.Value;
                     ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
                     ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
                     _serverContext.LedgerDetails.Add(ledgerDetail);
@@ -65,18 +64,21 @@ namespace AccountingSystem.Services
 
         public int AddUploadFiles(int id, FileModel files)
         {
-            for (int i = 0; i < files.Files.Count; i++)
+            if (files.Files != null)
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", files.Files[i].FileName);
-                using (Stream stream = new FileStream(path, FileMode.Create))
+                for (int i = 0; i < files.Files.Count; i++)
                 {
-                    files.Files[i].CopyTo(stream);
-                    UploadedFile uploadedFile = new UploadedFile();
-                    uploadedFile.Id = 0;
-                    uploadedFile.LedgerMasterId = id;
-                    uploadedFile.Path = path;
-                    _serverContext.UploadedFiles.Add(uploadedFile);
-                    _serverContext.SaveChanges();
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", files.Files[i].FileName);
+                    using (Stream stream = new FileStream(path, FileMode.Create))
+                    {
+                        files.Files[i].CopyTo(stream);
+                        UploadedFile uploadedFile = new UploadedFile();
+                        uploadedFile.Id = 0;
+                        uploadedFile.LedgerMasterId = id;
+                        uploadedFile.Path = path;
+                        _serverContext.UploadedFiles.Add(uploadedFile);
+                        _serverContext.SaveChanges();
+                    }
                 }
             }
             return 1;

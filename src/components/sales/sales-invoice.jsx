@@ -30,6 +30,7 @@ import "react-dropzone-uploader/dist/styles.css";
 import { useDropzone } from "react-dropzone";
 import { compareSync } from "bcryptjs";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
+import commaNumber from "comma-number";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -111,12 +112,6 @@ const SalesInvoice = (props) => {
     },
   ]);
 
-  //const [tracking, getTracking] = useState([
-  //  {
-  //    description: ""
-  //  },
-  //]);
-
   var [totalTaxes, setTotalTaxes] = useState();
 
   const [trackings, getTrackings] = useState([
@@ -151,8 +146,6 @@ const SalesInvoice = (props) => {
     );
     setFiles(result)
   }
-
-
 
   const removeRow = (id, values) => {
     const result = $.grep(
@@ -189,11 +182,9 @@ const SalesInvoice = (props) => {
       totalTaxes = totalTaxes + subTotal * taxRate;
       totalAmount = totalAmount + subTotal + totalTaxes;
     });
-    setSubTotal(subTotal);
+    setSubTotal(Number(subTotal));
     setTotalTaxes(totalTaxes);
     setTotalAmount(Number(subTotal) + totalTaxes);
-    //alert(totalAmount);
-    //alert(subTotal + totalTaxes);
   };
 
   const theme = useTheme();
@@ -319,16 +310,6 @@ const SalesInvoice = (props) => {
     ],
   };
 
-  function changeValue(input, value) {
-    var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      "value"
-    ).set;
-    nativeInputValueSetter.call(input, value);
-    var inputEvent = new Event("input", { bubbles: true });
-    input.dispatchEvent(inputEvent);
-  }
-
   const validationSchema = Yup.object().shape({
     billingAddress: Yup.string().required("Enter Billing Address."),
     invoiceNo: Yup.string().required("Enter Invoice No."),
@@ -344,6 +325,19 @@ const SalesInvoice = (props) => {
     ),
   });
 
+  function addCommas(num) {
+    var str = num.toString().split(".");
+    if (str[0].length >= 4) {
+      //add comma every 3 digits befor decimal
+      str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, "$1,");
+    }
+    /* Optional formating for decimal places
+    if (str[1] && str[1].length >= 4) {
+        //add space every 3 digits after decimal
+        str[1] = str[1].replace(/(\d{3})/g, '$1 ');
+    }*/
+    return str.join(".");
+  }
   return (
     <div className={classes.root}>
       <Formik
@@ -682,8 +676,12 @@ const SalesInvoice = (props) => {
                                   <Grid item xs={1}>
                                     <TextField
                                       name={`items[${index}].amount`}
-                                      value={r.qty * r.unitPrice}
-                                      type="number"
+                                      //value={r.qty * r.unitPrice}
+                                      //value={(Math.round((r.qty * r.unitPrice) * 100) / 100)}
+                                      value={commaNumber(
+                                        Math.round(r.qty * r.unitPrice * 100) /
+                                          100
+                                      )}
                                       margin="dense"
                                       className={classes.textFieldReadOnly}
                                       InputProps={{

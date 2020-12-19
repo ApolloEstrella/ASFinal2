@@ -226,6 +226,12 @@ namespace AccountingSystem.Data.Entities
                     .IsRequired()
                     .HasMaxLength(5)
                     .HasColumnName("transaction_type");
+
+                entity.HasOne(d => d.SubsidiaryLedgerAccount)
+                    .WithMany(p => p.LedgerMasters)
+                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_subsidiary_ledger_account_id");
             });
 
             modelBuilder.Entity<SubsidiaryLedgerAccountName>(entity =>

@@ -466,10 +466,10 @@ const ChartOfAccounts = () => {
                           {row.type}
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          {row.description}
+                          {row.title}
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          {row.title}
+                          {row.description}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           {row.code}
