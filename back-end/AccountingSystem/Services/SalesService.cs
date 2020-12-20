@@ -4,6 +4,7 @@ using AccountingSystem.Data.Entities;
 using System.Collections.Generic;
 using AccountingSystem.Models;
 using System;
+using System.Linq;
 
 namespace AccountingSystem.Services
 {
@@ -19,6 +20,65 @@ namespace AccountingSystem.Services
         {
             const List<CustomerInvoiceModel> list = null;
             return list;
+        }
+
+        public CustomerInvoiceModel GetSalesInvoice(int id)
+        {
+            List<CustomerInvoiceItemModel> items = (from a in _serverContext.LedgerDetails
+                                                    select new
+                                                    {
+                                                        a.Id,
+                                                        a.InvoiceSalesItem,
+                                                        a.LedgerMasterId,
+                                                        a.InvoiceSalesItemId,
+                                                        a.InvoiceDescription,
+                                                        a.InvoiceQuantity,
+                                                        a.InvoiceUnitPrice,
+                                                        a.InvoiceTaxRateId,
+                                                        a.InvoiceTrackingId
+                                                    }).ToList()
+                                                    .Where(w => w.LedgerMasterId == id)
+                                                   .Select(x => new CustomerInvoiceItemModel
+                                                   {
+                                                       Id = x.Id,
+                                                       LedgerMasterId = x.LedgerMasterId,
+                                                       SalesItem = new SalesItem { Value = x.InvoiceSalesItemId },
+                                                       Description = x.InvoiceDescription,
+                                                       Qty = x.InvoiceQuantity,
+                                                       UnitPrice = x.InvoiceUnitPrice,
+                                                       TaxRateItem = new TaxRateItem { Value = x.InvoiceTaxRateId },
+                                                       TrackingItem = new TrackingItem { Value = x.InvoiceTrackingId }
+                                                   }).ToList();
+
+            return (from a in _serverContext.LedgerMasters
+                    select new
+                    {
+                        a.Id,
+                        a.SubsidiaryLedgerAccountId,
+                        a.InvoiceBillingAddress,
+                        a.InvoiceNo,
+                        a.InvoiceDate,
+                        a.InvoiceDueDate,
+                        a.InvoiceTerms,
+                        a.InvoiceReference
+
+                    })
+                    .Select(x => new CustomerInvoiceModel
+                    {
+                        Id = x.Id,
+                        Customer = new Customer { Value = x.SubsidiaryLedgerAccountId },
+                        BillingAddress = x.InvoiceBillingAddress,
+                        InvoiceNo = x.InvoiceNo,
+                        Date = x.InvoiceDate,
+                        DueDate = x.InvoiceDueDate,
+                        Terms = x.InvoiceTerms,
+                        Reference = x.InvoiceReference,
+                        Items = items
+                    })
+                    .Where(w => w.Id == id)
+                    .FirstOrDefault();
+
+
         }
         public int AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
@@ -81,6 +141,11 @@ namespace AccountingSystem.Services
                     }
                 }
             }
+            return 1;
+        }
+
+        public int EditSalesInvoice(CustomerInvoiceEditModel customerInvoiceEditModel)
+        {
             return 1;
         }
     }

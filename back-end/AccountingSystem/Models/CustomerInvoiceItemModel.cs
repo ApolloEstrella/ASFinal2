@@ -8,6 +8,7 @@ namespace AccountingSystem.Models
     public class CustomerInvoiceItemModel
     {
         public int Id { get; set; }
+        public int LedgerMasterId { get; set; }
         public SalesItem SalesItem { get; set; }
         public string Description { get; set; }
         public int Qty { get; set; }

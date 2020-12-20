@@ -30,5 +30,17 @@ namespace AccountingSystem.Controllers
 
             return Ok(_salesService.AddUploadFiles(files.Id, files));
         }
+
+        [HttpGet("{id}")]
+        public ActionResult GetAccount(int id)
+        {
+            return Ok(_salesService.GetSalesInvoice(id));
+        }
+
+        [HttpPut]
+        public ActionResult EditAccount([FromBody] CustomerInvoiceEditModel customerInvoiceEditModel)
+        {
+            return Ok(_salesService.EditSalesInvoice(customerInvoiceEditModel));
+        }
     }
 }

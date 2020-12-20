@@ -132,7 +132,7 @@ const SalesInvoice = (props) => {
   var fileList = files.map((file) => (
     <li key={file.path}>
       {file.path}
-      {<DeleteForeverIcon onClick={() => removeAttachment(file, files)} />}
+      {<DeleteForeverIcon onClick={()=> removeAttachment(file,files)} />}
     </li>
   ));
 
@@ -144,8 +144,8 @@ const SalesInvoice = (props) => {
       },
       false
     );
-    setFiles(result);
-  };
+    setFiles(result)
+  }
 
   const removeRow = (id, values) => {
     const result = $.grep(
@@ -170,18 +170,12 @@ const SalesInvoice = (props) => {
     values.items.map((item, index) => {
       if (name !== undefined) {
         if (name.indexOf(index) !== -1) {
-            item.taxRateItem = value;
+          item.taxRateItem = value;
         }
       }
       rate =
         item.taxRateItem !== null
-          ? taxRates.find(
-              (x) =>
-                x.value ===
-                (typeof item.taxRateItem === "object"
-                  ? item.taxRateItem.value
-                  : item.taxRateItem)
-            )
+          ? taxRates.find((x) => x.value === item.taxRateItem.value)
           : null;
       var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
       subTotal = subTotal + item.qty * item.unitPrice;
@@ -219,7 +213,7 @@ const SalesInvoice = (props) => {
 
   var [formValues, setFormValues] = useState(null);
 
-  function getInvoice() {
+  const getInvoice = () => {
     fetch("https://localhost:44302/api/sales/getaccount/6048", {
       method: "GET",
       headers: {
@@ -228,13 +222,10 @@ const SalesInvoice = (props) => {
     })
       .then((results) => results.json())
       .then((data) => {
+         
         data.customer = data.customer.value;
-        for (var i = 0; i < data.items.length; i++) {
-          data.items[i].salesItem = data.items[i].salesItem.value;
-          data.items[i].taxRateItem = data.items[i].taxRateItem.value;
-          data.items[i].trackingItem = data.items[i].trackingItem.value;
-        }
         setFormValues(data);
+        
       })
       .catch(function (error) {
         console.log("network error");
@@ -332,8 +323,8 @@ const SalesInvoice = (props) => {
         id: -1,
         salesItem: null,
         description: "",
-        qty: 0,
-        unitPrice: 0,
+        qty: 5,
+        unitPrice: 5,
         taxRateItem: null,
         trackingItem: null,
       },
@@ -359,23 +350,12 @@ const SalesInvoice = (props) => {
     <div className={classes.root}>
       <button onClick={() => getInvoice()}>Edit</button>
       <Formik
-        enableReinitialize={formValues === null ? false : true}
-        initialValues={formValues === null ? initialValues : formValues}
+        initialValues={initialValues.customer == null ? initialValues : formValues}
         validationSchema={validationSchema}
         onSubmit={(values, { resetForm }) => {
           values.files = files;
-          const url =
-            formValues === null
-              ? "https://localhost:44302/api/sales/addaccount"
-              : "https://localhost:44302/api/sales/editaccount"; 
-
-            const method =
-              formValues === null
-                ? "POST"
-                : "PUT";
-          
-          fetch(url, {
-            method: method,
+          fetch("https://localhost:44302/api/sales/addaccount", {
+            method: "POST",
             body: JSON.stringify(values),
             headers: {
               "Content-Type": "application/json",
@@ -395,7 +375,6 @@ const SalesInvoice = (props) => {
                 .then((results) => results.json())
                 .then((data) => {
                   resetForm(initialValues);
-                  setFormValues(null)
                   fileList = [null];
                   setFiles([]);
                   subTotal = 0;
