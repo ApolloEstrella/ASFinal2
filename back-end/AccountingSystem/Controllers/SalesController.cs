@@ -42,5 +42,11 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_salesService.EditSalesInvoice(customerInvoiceEditModel));
         }
+
+        [HttpGet]
+        public ActionResult GetAllAccounts()
+        {
+            return Ok(_salesService.GetAllSalesInvoices());
+        }
     }
 }

@@ -122,13 +122,17 @@ const SalesInvoice = forwardRef((props, ref) => {
     },
   ]);
 
-  //const [taxRates, setTaxRates] = useState([{ value: 0, label: "", rate: 0 }]);
-
-  const [taxRates, setTaxRates] = useState([]);
+  const [taxRates, getTaxRates] = useState([
+    {
+      Id: 0,
+      name: "",
+      rate: 0,
+    },
+  ]);
 
   const [counter, setCounter] = useState(0);
   const [counterSales, setCounterSales] = useState(0);
-  var [counterTax, setCounterTax] = useState(0);
+  const [counterTax, setCounterTax] = useState(0);
   const [counterTracking, setCounterTracking] = useState(0);
 
   var [totalTaxes, setTotalTaxes] = useState();
@@ -145,39 +149,6 @@ const SalesInvoice = forwardRef((props, ref) => {
   var [subTotal, setSubTotal] = useState(0);
 
   const [files, setFiles] = useState([]);
-
-const theme = useTheme();
-const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
-const [loadSalesItems, setLoadSalesItems] = useState(false);
-const [loadTaxRates, setLoadTaxRates] = useState(false);
-const [loadTrackings, setLoadTrackings] = useState(false);
-
-const [openDelete, setOpenDelete] = useState(false);
-const [deleteItemId, setDeleteItemId] = useState(null);
-
-const [deleteItem, setDeleteItem] = useState({ id: "", values: [] });
-
-const handleDeleteConfirmation = (values) => {
-  setOpenDelete(true);
-};
-
-const [itemCount, setItemCount] = useState(-2);
-
-var [formValues, setFormValues] = useState(null);
-
-var [totalAmount, setTotalAmount] = useState(0);
-
-const [open, toggleOpen] = useState(false);
-const handleClose = () => {
-  toggleOpen(false);
-};
-
-const handleCloseDelete = () => {
-  setOpenDelete(false);
-  };
-  
   const onDrop = React.useCallback((acceptedFiles) => {
     setFiles((prev) => [...prev, ...acceptedFiles]);
   }, []);
@@ -248,21 +219,70 @@ const handleCloseDelete = () => {
       },
     })
       .then((results) => results.json())
-      .then( (data) => {
+      .then((data) => {
         console.log(data);
-        setTaxRates(data);
-        //setTaxRates(taxRates => [...taxRates, data]);
-        //setTaxRates([...taxRates, ...data]);
-        //setTaxRates((taxRates) => [...taxRates, ...data]);
-        //setTaxRates((prev) => [...prev, ...data]);
-        //setTaxRates([...taxRates, data]);
-        //const tr = Object.assign({}, data);
-        //setTaxRates(tr);
+        getTaxRates(data);
       })
       .catch(function (error) {
         console.log("network error");
       });
-  });
+  },[counterTax]);
+  
+  const handleChangeAmount = (values, value, name) => {
+    var subTotal = 0;
+    var totalTaxes = 0;
+    var totalAmount = 0;
+    var rate = 0;
+    // eslint-disable-next-line array-callback-return
+    values.items.map((item, index) => {
+      if (name !== undefined) {
+        if (name.indexOf(index) !== -1) {
+          item.taxRateItem = value;
+        }
+      }
+      rate =
+        item.taxRateItem !== null
+          ? taxRates.find(
+              (x) =>
+                x.value ===
+                (typeof item.taxRateItem === "object"
+                  ? item.taxRateItem.value
+                  : item.taxRateItem)
+            )
+          : null;
+      var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
+      subTotal = subTotal + item.qty * item.unitPrice;
+      totalTaxes = totalTaxes + subTotal * taxRate;
+      totalAmount = totalAmount + subTotal + totalTaxes;
+    });
+    setSubTotal(Number(subTotal));
+    setTotalTaxes(totalTaxes);
+    setTotalAmount(Number(subTotal) + totalTaxes);
+  };
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
+  const [loadSalesItems, setLoadSalesItems] = useState(false);
+  const [loadTaxRates, setLoadTaxRates] = useState(false);
+  const [loadTrackings, setLoadTrackings] = useState(false);
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+
+  
+
+  const [deleteItem, setDeleteItem] = useState({ id: "", values: [] });
+
+  const handleDeleteConfirmation = (values) => {
+    setOpenDelete(true);
+  };
+
+  const [itemCount, setItemCount] = useState(-2);
+
+  var [formValues, setFormValues] = useState(null);
+
 
   useEffect(() => {
     fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
@@ -297,6 +317,8 @@ const handleCloseDelete = () => {
       });
   }, [counterSales]);
 
+  
+
   useEffect(() => {
     fetch("https://localhost:44302/api/Tracking/get", {
       method: "GET",
@@ -313,37 +335,15 @@ const handleCloseDelete = () => {
       });
   }, [counterTracking]);
 
-  const handleChangeAmount = (values, value, name) => {
-    counterTax = counterTax + 1;
-    var subTotal = 0;
-    var totalTaxes = 0;
-    var totalAmount = 0;
-    var rate = 0;
-    // eslint-disable-next-line array-callback-return
-    values.items.map((item, index) => {
-      if (name !== undefined) {
-        if (name.indexOf(index) !== -1) {
-          item.taxRateItem = value;
-        }
-      }
-      rate =
-        item.taxRateItem !== null
-          ? taxRates.find(
-              (x) =>
-                x.value ===
-                (typeof item.taxRateItem === "object"
-                  ? item.taxRateItem.value
-                  : item.taxRateItem)
-            )
-          : null;
-      var taxRate = item.taxRateItem === null ? 0 : rate.rate / 100;
-      subTotal = subTotal + item.qty * item.unitPrice;
-      totalTaxes = totalTaxes + subTotal * taxRate;
-      totalAmount = totalAmount + subTotal + totalTaxes;
-    });
-    setSubTotal(Number(subTotal));
-    setTotalTaxes(totalTaxes);
-    setTotalAmount(Number(subTotal) + totalTaxes);
+  var [totalAmount, setTotalAmount] = useState(0);
+
+  const [open, toggleOpen] = useState(false);
+  const handleClose = () => {
+    toggleOpen(false);
+  };
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
   };
 
   const initialValues = {
@@ -383,7 +383,8 @@ const handleCloseDelete = () => {
     ),
   });
   return (
-    <div className={classes.root}>      
+    <div className={classes.root}>
+       
       <Formik
         enableReinitialize={formValues === null ? false : true}
         initialValues={formValues === null ? initialValues : formValues}

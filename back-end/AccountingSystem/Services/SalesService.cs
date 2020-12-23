@@ -22,6 +22,14 @@ namespace AccountingSystem.Services
             return list;
         }
 
+        public List<CustomerInvoiceForListModel> GetAllSalesInvoices()
+        {
+            return (from a in _serverContext.LedgerMasters
+                    join b in _serverContext.SubsidiaryLedgerAccountNames
+                    on a.SubsidiaryLedgerAccountId equals b.Id
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name }).ToList()
+                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name }).OrderBy(x => x.InvoiceDate).ToList();                 
+        }
         public CustomerInvoiceModel GetSalesInvoice(int id)
         {
             List<CustomerInvoiceItemModel> items = (from a in _serverContext.LedgerDetails
@@ -146,6 +154,27 @@ namespace AccountingSystem.Services
 
         public int EditSalesInvoice(CustomerInvoiceEditModel customerInvoiceEditModel)
         {
+            _serverContext.Database.BeginTransaction();
+            try
+            {
+                var ledgerMaster = _serverContext.LedgerMasters.Find(customerInvoiceEditModel.Id);
+                ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceEditModel.Customer;
+                ledgerMaster.InvoiceBillingAddress = customerInvoiceEditModel.BillingAddress;
+                ledgerMaster.InvoiceNo = customerInvoiceEditModel.InvoiceNo;
+                ledgerMaster.InvoiceDate = customerInvoiceEditModel.Date;
+                ledgerMaster.InvoiceDueDate = customerInvoiceEditModel.DueDate;
+                ledgerMaster.InvoiceTerms = customerInvoiceEditModel.Terms;
+                ledgerMaster.InvoiceReference = customerInvoiceEditModel.Reference;
+                _serverContext.SaveChanges();
+
+                //_serverContext.LedgerDetails.
+
+                _serverContext.Database.CommitTransaction();
+            }
+            catch(Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
             return 1;
         }
     }
