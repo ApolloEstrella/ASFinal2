@@ -253,7 +253,7 @@ function App() {
     }),
   };
 
-  const [costs, setCosts] = useState([]);
+  const [costs, setCosts] = useState([{}]);
 
   const handleChangeCustomer = (e, field) => {
     setValue(field, e, { shouldValidate: true }, { shouldDirty: true });
@@ -280,7 +280,6 @@ function App() {
   const handleCostsChange = (event, index, field) => {
     console.log(costs);
     const _tempCosts = [...costs];
-    console.log(fields);
     var rate = 0;
     //const index = event.target.dataset.id;
     if (_tempCosts.length > 0) {
@@ -319,81 +318,44 @@ function App() {
         : commaNumber(Math.round(q * y * 100) / 100)
     );
     //setValue(`items[${index}].description`, "8");
-    handleDeleteDisplayTotal(false);
-  };
-
-  const handleDeleteDisplayTotal = (handleDelete) => {
-    var _tempCosts = [...costs];
-    setCosts(_tempCosts);
     var subTotal = 0;
     var totalTaxes = 0;
     var totalAmount = 0;
-    console.log(fields);
-    console.log(costs);
-    var idDeleted = 0;
-    // eslint-disable-next-line array-callback-return
-    _tempCosts.map((item, index) => {
-      var hitBreak = false;
-      var itemId;
-      for (itemId = 0; itemId <= _tempCosts.length + 100; itemId++) {
-        if (!isNaN(Number(item["items[" + itemId + "].id"]))) {
-          hitBreak = true;
-          break;
-        }
-      }
-      if ((handleDelete && index !== deleteItemId && hitBreak) || (!handleDelete && hitBreak)) {
-        //_tempCosts.splice(index, 1);
-        //idDeleted = index;
-        //break;
 
-        const qty = Number(item["items[" + itemId + "].qty"]);
-        const unitPrice = Number(item["items[" + itemId + "].unitPrice"]);
-        //var x = "items[" + item.id + "].taxRateItem";
-        //const qty = Number(item.qty);
-        //const unitPrice = Number(item.unitPrice);
-        var rate = 0;
-        if (fields.taxRateItem !== null) {
-          rate = fields.taxRateItem;
-          if (rate === undefined) rate = 0;
-          if (typeof rate === "object") rate = rate.rate / 100;
-        }
-        if (!isNaN(qty) && !isNaN(unitPrice)) {
-          subTotal = subTotal + qty * unitPrice;
-          totalTaxes = totalTaxes + subTotal * rate;
-          totalAmount = totalAmount + subTotal + totalTaxes;
-        }
-      } else if (handleDelete && hitBreak) {
-        idDeleted = deleteItemId;
+    console.log(costs);
+    // eslint-disable-next-line array-callback-return
+    costs.map((item, index) => {
+      const qty = Number(item["items[" + index + "].qty"]);
+      const unitPrice = Number(item["items[" + index + "].unitPrice"]);
+      if (costs[index]["items[" + index + "].taxRateItem"] !== null) {
+        rate = costs[index]["items[" + index + "].taxRateItem"];
+        if (rate === undefined) rate = 0;
+        if (typeof rate === "object") rate = rate.rate / 100;
+      }
+      if (!isNaN(qty) && !isNaN(unitPrice)) {
+        subTotal = subTotal + qty * unitPrice;
+        totalTaxes = totalTaxes + qty * unitPrice * rate;
+        totalAmount = totalAmount + subTotal + totalTaxes;
       }
     });
-    setOpenDelete(false);
     setSubTotal(Number(subTotal));
     setTotalTaxes(totalTaxes);
     setTotalAmount(Number(subTotal) + totalTaxes);
-    if (handleDelete) {
-      remove(deleteItemId);
-      _tempCosts.splice(idDeleted, 1);
-      setCosts(_tempCosts);
-    }
   };
 
-  {
-    /*  useEffect(() => {
+  const handleDisplayAmount = () => {
     var subTotal = 0;
     var totalTaxes = 0;
     var totalAmount = 0;
-    console.log(fields);
+
     console.log(costs);
     // eslint-disable-next-line array-callback-return
-    fields.map((item, index) => {
-      //const qty = Number(item["items[" + item.id + "].qty"]);
-      //const unitPrice = Number(item["items[" + item.id + "].unitPrice"]);
-      //var x = "items[" + item.id + "].taxRateItem";
-      const qty = Number(item.qty);
-      const unitPrice = Number(item.unitPrice);
+    costs.map((item, index) => {
+      const qty = Number(item["items[" + index + "].qty"]);
+      const unitPrice = Number(item["items[" + index + "].unitPrice"]);
       var rate = 0;
-      if (fields.taxRateItem !== null) {
-        rate = fields.taxRateItem;
+      if (costs[index]["items[" + index + "].taxRateItem"] !== null) {
+        rate = costs[index]["items[" + index + "].taxRateItem"];
         if (rate === undefined) rate = 0;
         if (typeof rate === "object") rate = rate.rate / 100;
       }
@@ -406,12 +368,38 @@ function App() {
     setSubTotal(Number(subTotal));
     setTotalTaxes(totalTaxes);
     setTotalAmount(Number(subTotal) + totalTaxes);
-  }, [costs, fields]); */
-  }
+  };
 
-  //useEffect(() => {
+  useEffect(() => {
+    var subTotal = 0;
+    var totalTaxes = 0;
+    var totalAmount = 0;
+
+    console.log(costs);
+    // eslint-disable-next-line array-callback-return
+    costs.map((item, index) => {
+      const qty = Number(item["items[" + index + "].qty"]);
+      const unitPrice = Number(item["items[" + index + "].unitPrice"]);
+      var rate = 0;
+      if (costs[index]["items[" + index + "].taxRateItem"] !== null) {
+        rate = costs[index]["items[" + index + "].taxRateItem"];
+        if (rate === undefined) rate = 0;
+        if (typeof rate === "object") rate = rate.rate / 100;
+      }
+      if (!isNaN(qty) && !isNaN(unitPrice)) {
+        subTotal = subTotal + qty * unitPrice;
+        totalTaxes = totalTaxes + subTotal * rate;
+        totalAmount = totalAmount + subTotal + totalTaxes;
+      }
+    });
+    setSubTotal(Number(subTotal));
+    setTotalTaxes(totalTaxes);
+    setTotalAmount(Number(subTotal) + totalTaxes);
+  }, [costs]);
+
+  //useEffect(() => { 
   //  setCosts((prevCosts) => [...prevCosts, {}]);
-  //},[])
+  //},[]) 
 
   const handleChangeSubTotal = (e, field, index) => {
     setValue(field, e, { shouldValidate: true }, { shouldDirty: true });
@@ -561,6 +549,8 @@ function App() {
       {fields.map((item, index) => {
         return (
           <div key={item.id}>
+            {item.id}
+
             <Grid container justify="space-around" direction="row">
               <Grid item xs={2}>
                 <Controller
@@ -860,7 +850,36 @@ function App() {
             </Button>
             <Button
               onClick={() => {
-                handleDeleteDisplayTotal(true);
+                //remove(deleteItemId);
+                // get index of object with id:37
+                //var _tempCosts = [...costs];
+                var _tempCosts = [...costs];
+
+                for (var i = 0; i < _tempCosts.length; i++) {
+                  var id = _tempCosts[i].id;
+                  //console.log(i);
+                  //if (_tempCosts[i]["items[" + i + "].id"] === deleteItemId) {
+                  if (id === deleteItemId) {
+                    _tempCosts.splice(i,1);
+                    //break;
+                  }
+                }
+                //_tempCosts = [_tempCosts.filter(
+                //  (item, idx) => idx !== deleteItemId
+                //)];
+                // _tempCosts.splice(removeIndex, 1);
+                //setCosts(...costs, ..._tempCosts);
+                //_tempCosts[index]["items[" + index + "].id"] = index;
+                //setCosts([...costs, _tempCosts]);
+                //setCosts([..._tempCosts]);
+                //setCosts([...costs, { _tempCosts }]);
+
+                setCosts(_tempCosts);
+                console.log(costs);
+                //setCosts(_tempCosts);
+                remove(deleteItemId);
+                setOpenDelete(false);
+                //handleDisplayAmount();
               }}
               color="primary"
               autoFocus

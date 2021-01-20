@@ -149,6 +149,13 @@ function FieldArrayNameWatched({ control, name }) {
   return <></>;
 }
 
+const _defaultCosts = [
+  {
+    name: "Rice",
+    price: 40,
+  },
+];
+
 const SalesInvoice = (props) => {
   const {
     register,
@@ -251,7 +258,7 @@ const SalesInvoice = (props) => {
   };
 
   const handleChangeAmount = (values, value, name) => {
-    //return;
+    
     var subTotal = 0;
     var totalTaxes = 0;
     var totalAmount = 0;
@@ -278,7 +285,7 @@ const SalesInvoice = (props) => {
   };
 
   const theme = useTheme();
-  //const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [loadSubsidiaryLedger, setLoadSubsidiaryLedger] = useState(false);
   const [loadSalesItems, setLoadSalesItems] = useState(false);
@@ -302,6 +309,8 @@ const SalesInvoice = (props) => {
   const [itemCount, setItemCount] = useState(-2);
 
   var [formValues, setFormValues] = useState(null);
+
+  const [costs, setCosts] = useState(_defaultCosts);
 
   const customStyles = {
     control: (base) => ({
@@ -458,13 +467,12 @@ const SalesInvoice = (props) => {
       name: "items",
     }
   );
-  const [costs, setCosts] = useState(initialValues);
+
   //watch("items");
   //const lat = useWatch({name: `items[${index}].lat`});
-  const addNewCost = () => {
-    append({});
-    //setCosts((prevCosts) => [...prevCosts, { }]);
-  };
+const addNewCost = () => {
+  setCosts((prevCosts) => [...prevCosts, { name: "", price: 0 }]);
+};
   return (
     <div className={classes.root}>
       <>
@@ -588,219 +596,213 @@ const SalesInvoice = (props) => {
               <p className={classes.p}>{errors.reference?.message}</p>
             </Grid>
 
-            <Grid container justify="space-around" direction="row">
-              <Grid item xs={12}>
-                {({ push, remove, touched }) => (
-                  <>
-                    {costs.map((r, index) => (
-                      <div key={index}>
-                        <Grid container justify="space-around" direction="row">
-                          <Grid item xs={2}>
-                            <ReactSelect
-                              label="Sales Item"
-                              name={`items[${index}].salesItem`}
-                              type="text"
-                              options={salesItems}
-                              value={r.salesItem}
-                              placeholder="Select Sales Item..."
-                              className={classes.reactSelect}
-                              accountType="SALES"
-                              refreshSales={() =>
-                                setCounterSales(counterSales + 1)
-                              }
-                            />
-                          </Grid>
-                          <Grid item xs={3} className={classes.textField}>
-                            <TextField
-                              name={`items[${index}].description`}
-                              //value={r.description}
-                              //onChange={handleChange}
-                              defaultValue={r.description}
-                              //onBlur={handleChange}
-                              helperText={
-                                errors.description &&
-                                touched.description &&
-                                errors.description
-                              }
-                              className={classes.textField2}
-                              margin="dense"
-                              variant="outlined"
-                              label="Description"
-                            />
-                          </Grid>
-                          <Grid item xs={1}>
-                            <TextField
-                              name={`items[${index}].qty`}
-                              defaultValue={r.qty}
-                              //value={r.qty}
-                              type="number"
-                              //onChange={(e) => {
-                              //  handleChange(e);
-                              //  values.items[index].qty =
-                              //    e.currentTarget.value;
-                              //  handleChangeAmount(values);
-                              //}}
-
-                              helperText={
-                                errors.qty && touched.qty && errors.qty
-                              }
-                              className={classes.textField}
-                              margin="dense"
-                              variant="outlined"
-                              label="Quantity"
-                            />
-                          </Grid>
-                          <Grid item xs={1}>
-                            <TextField
-                              name={`items[${index}].unitPrice`}
-                              defaultValue={r.unitPrice}
-                              //value={r.unitPrice}
-                              type="number"
-                              //onChange={(e) => {
-                              //  handleChange(e);
-                              //  values.items[index].unitPrice =
-                              //    e.currentTarget.value;
-                              //  handleChangeAmount(values);
-                              //}}
-
-                              helperText={
-                                errors.unitPrice &&
-                                touched.unitPrice &&
-                                errors.unitPrice
-                              }
-                              className={classes.textField}
-                              margin="dense"
-                              variant="outlined"
-                              label="Unit Price"
-                            />
-                          </Grid>
-                          <Grid item xs={2}>
-                            <ReactSelect
-                              label="Tax Rate"
-                              name={`items[${index}].taxRateItem`}
-                              type="text"
-                              options={taxRates}
-                              value={r.taxRateItem}
-                              placeholder="Select Tax Rate..."
-                              className={classes.reactSelect}
-                              functionBake={handleChangeAmount}
-                              accountType="TAX"
-                              refreshTax={() => setCounterTax(counterTax + 1)}
-                            />
-                          </Grid>
-                          <Grid item xs={1}>
-                            <TextField
-                              name={`items[${index}].amount`}
-                              //value={r.qty * r.unitPrice}
-                              //value={(Math.round((r.qty * r.unitPrice) * 100) / 100)}
-                              value={commaNumber(
-                                Math.round(r.qty * r.unitPrice * 100) / 100
-                              )}
-                              margin="dense"
-                              //className={classes.textFieldReadOnly}
-                              //className={classes.textField}
-                              InputProps={{
-                                readOnly: true,
-                              }}
-                              label="Sub Total"
-                              size="small"
-                              variant="outlined"
-                            />
-                          </Grid>
-                          <Grid item xs={1}>
-                            <ReactSelect
-                              label="Tracking"
-                              name={`items[${index}].trackingItem`}
-                              type="text"
-                              options={trackings}
-                              value={r.trackingItem}
-                              accountType="TRACKING"
-                              placeholder="Select Tracking Item..."
-                              className={classes.reactSelect}
-                              refreshTracking={() =>
-                                setCounterTracking(counterTracking + 1)
-                              }
-                            />
-                          </Grid>
-                          <Grid item xs={1}>
-                            Delete
-                          </Grid>
-                        </Grid>
-                      </div>
-                    ))}
-                    <br></br>
-                    <Grid container justify="space-around" direction="row">
-                      <Grid item xs={9}>
-                        <Button
-                          type="button"
-                          variant="contained"
-                          color="primary"
-                          onClick={() => {
-                            addNewCost();
-                          }}
-                        >
-                          Add New Row
-                        </Button>
-                      </Grid>
-                      <Grid item xs={1}>
-                        <h1 className={classes.totalAmount}>Sub Total:</h1>
-                      </Grid>
-                      <Grid item xs={2}>
-                        <h1 className={classes.totalAmount}>
-                          <NumberFormat
-                            value={subTotal}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                          />
-                        </h1>
-                      </Grid>
-                      <Grid item xs={9}></Grid>
-                      <Grid item xs={1}>
-                        <h1 className={classes.totalAmount}>Sales Tax:</h1>
-                      </Grid>
-                      <Grid item xs={2}>
-                        <h1 className={classes.totalAmount}>
-                          <NumberFormat
-                            value={totalTaxes}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                          />
-                        </h1>
-                      </Grid>
-                      <Grid item xs={9}></Grid>
-                      <Grid item xs={1}>
-                        <h1 className={classes.totalAmount}>TOTAL :</h1>
-                      </Grid>
-                      <Grid item xs={2}>
-                        <h1 className={classes.totalAmount}>
-                          <NumberFormat
-                            value={totalAmount}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                          />
-                        </h1>
-                      </Grid>
-                    </Grid>
-                  </>
-                )}
-              </Grid>
-            </Grid>
+            {costs.map((r, index) => (
+              <div key={index}>
+                <Grid container justify="space-around" direction="row" fullScreen>
+                  <Grid item xs={2}>
+                    <Controller
+                      control={control}
+                      name={`items[${index}].salesItem`}
+                      render={(
+                        { onChange, onBlur, value, name, ref },
+                        { invalid, isTouched, isDirty }
+                      ) => (
+                        <CreatableSelect
+                          onBlur={onBlur}
+                          onChange={(e) =>
+                            handleChange(e, `items[${index}].salesItem`)
+                          }
+                          inputRef={ref}
+                          options={salesItems}
+                          className={classes.reactSelect}
+                          placeholder="Please select Sales Items"
+                          styles={customStyles}
+                        />
+                      )}
+                    />
+                    <p className={classes.p}>
+                      {errors?.["items"]?.[index]?.["salesItem"]?.["message"]}
+                    </p>
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Controller
+                      as={TextField}
+                      name={`items[${index}].description`}
+                      control={control}
+                      label="Description"
+                      className={classes.textField2}
+                      margin="dense"
+                      defaultValue=""
+                      variant="outlined"
+                      size="small"
+                      //required={true}
+                    />
+                    <p className={classes.p}>
+                      {errors?.["items"]?.[index]?.["description"]?.["message"]}
+                    </p>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Controller
+                      control={control}
+                      name={`items[${index}].qty`}
+                      render={(
+                        { onChange, onBlur, value, name, ref },
+                        { invalid, isTouched, isDirty }
+                      ) => (
+                        <TextField
+                          onBlur={onBlur}
+                          variant="outlined"
+                          onChange={(e) =>
+                            handleChangeSubTotal(
+                              e.target.value,
+                              `items[${index}].qty`,
+                              index
+                            )
+                          }
+                          //ref={register({})}
+                          placeholder="Quantity"
+                          className={classes.textField}
+                          styles={customStyles}
+                          type="Number"
+                        />
+                      )}
+                    />
+                    <p className={classes.p}>
+                      {errors?.["items"]?.[index]?.["qty"]?.["message"]}
+                    </p>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Controller
+                      control={control}
+                      name={`items[${index}].unitPrice`}
+                      render={(
+                        { onChange, onBlur, value, name, ref },
+                        { invalid, isTouched, isDirty }
+                      ) => (
+                        <TextField
+                          onBlur={onBlur}
+                          variant="outlined"
+                          onChange={(e) =>
+                            handleChangeSubTotal(
+                              e.target.value,
+                              `items[${index}].unitPrice`,
+                              index
+                            )
+                          }
+                          placeholder="Unit Price"
+                          className={classes.textField}
+                          //styles={customStyles}
+                          type="Number"
+                          //ref={register({})}
+                        />
+                      )}
+                    />
+                    <p className={classes.p}>
+                      {errors?.["items"]?.[index]?.["unitPrice"]?.["message"]}
+                    </p>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Controller
+                      control={control}
+                      name={`items[${index}].taxRateItem`}
+                      render={(
+                        { onChange, onBlur, value, name, ref },
+                        { invalid, isTouched, isDirty }
+                      ) => (
+                        <CreatableSelect
+                          onBlur={onBlur}
+                          onChange={(e) =>
+                            handleChangeSubTotal(
+                              e,
+                              `items[${index}].taxRateItem`,
+                              index
+                            )
+                          }
+                          inputRef={ref}
+                          options={taxRates}
+                          className={classes.reactSelect}
+                          placeholder="Please select Tax Rates"
+                          styles={customStyles}
+                          //ref={register({})}
+                        />
+                      )}
+                    />
+                    <p className={classes.p}>
+                      {errors?.["items"]?.[index]?.["taxRateItem"]?.["message"]}
+                    </p>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Controller
+                      as={TextField}
+                      name={`items[${index}].amount`}
+                      control={control}
+                      //defaultValue="5"
+                      className={classes.textFieldReadOnly}
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      margin="dense"
+                      label="Sub Total"
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Controller
+                      control={control}
+                      name={`items[${index}].trackingItem`}
+                      render={(
+                        { onChange, onBlur, value, name, ref },
+                        { invalid, isTouched, isDirty }
+                      ) => (
+                        <CreatableSelect
+                          onBlur={onBlur}
+                          onChange={(e) =>
+                            handleChange(e, `items[${index}].trackingItem`)
+                          }
+                          inputRef={ref}
+                          options={trackings}
+                          className={classes.reactSelect}
+                          placeholder="Please select Tracking"
+                          styles={customStyles}
+                        />
+                      )}
+                    />
+                    <p className={classes.p}>
+                      {
+                        errors?.["items"]?.[index]?.["trackingItem"]?.[
+                          "message"
+                        ]
+                      }
+                    </p>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      className={classes.deleteButton}
+                      startIcon={<DeleteIcon />}
+                      onClick={() => {
+                        setOpenDelete(true);
+                        //setDeleteItemId(index);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </Grid>
+                </Grid>
+              </div>
+            ))}
 
             <br></br>
-            <Grid container justify="space-around" direction="row">
+            <Grid container justify="space-around" direction="row" fullScreen>
               <Grid item xs={9}>
                 <Button
                   type="button"
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    addNewCost();
+                    addNewCost()
                   }}
                 >
                   Add New Row
@@ -895,7 +897,7 @@ const SalesInvoice = (props) => {
 
       <>
         <Dialog
-           
+          fullScreen={fullScreen}
           open={openDelete}
           onClose={handleClose}
           aria-labelledby="responsive-dialog-title"

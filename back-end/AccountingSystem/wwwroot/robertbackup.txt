@@ -1,0 +1,57 @@
+using Dapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using P21WWConnectFunctionApp.Entities;
+using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json;
+ 
+namespace P21WWConnectFunctionApp
+{
+    public static class PostSessionViewCount
+    {
+        [FunctionName("PostSessionViewCount")]
+        public static async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "add_session")] HttpRequest req,
+            ExecutionContext context,
+            ILogger log)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            SessionView sessionView = JsonConvert.DeserializeObject<SessionView>(requestBody);
+          
+            log.LogInformation("C# HTTP trigger function processed a post.");
+
+            var config = new ConfigurationBuilder()
+                        .SetBasePath(context.FunctionAppDirectory)
+                        .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true) // <- This gives you access to your application settings in your local development environment
+                        .AddEnvironmentVariables() // <- This is what actually gets you the application settings in Azure
+                        .Build();
+
+            string connectionString = config["ConnectionStrings:P21WWForum"];
+
+            log.LogInformation("We have the ConnectionString");
+
+            using SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                string insertQuery = @"INSERT INTO [dbo].[session_view]([session_id], [user_email_address], [user_id], [view_date]) VALUES (@session_id, @user_email_address, @user_id, @view_date)";
+
+                var result = connection.Execute(insertQuery, sessionView);
+
+                log.LogInformation("returning the session");
+                return new OkObjectResult(sessionView); 
+            }
+            catch (SqlException e)
+            {
+                var message = "An error occured: " + e.Message;
+                log.LogInformation(message);
+                return new BadRequestResult();
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+var sharedBlacklist = [
+  /node_modules[\/\\]react[\/\\]dist[\/\\].*/,
+  /website\/node_modules\/.*/,
+  /heapCapture\/bundle\.js/,
+  /.*\/__tests__\/.*/
+];
+
+
+D:\TestProjects\ReactNative\rn01\node_modules\metro-config\src\defaults
+\node_modules\metro-config\src\defaults\blacklist.js
+
+C:\Users\stars\AppData\Local\Android\Sdk

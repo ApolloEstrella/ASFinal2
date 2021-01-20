@@ -1,0 +1,16 @@
+import MuiSelect from "@material-ui/core/Select";
+import MuiMenuItem from "@material-ui/core/MenuItem";
+
+
+<Grid item lg={6} md={6} sm={6} xs={6}>
+                            <InputLabel id="age">Age</InputLabel>
+                            <MuiSelect
+                              
+                              labelId="age"
+                               
+                              style={{ width: "13em" }}
+                            >
+                              <MuiMenuItem value="1">1</MuiMenuItem>
+                              <MuiMenuItem value="2">2</MuiMenuItem>
+                            </MuiSelect>
+                          </Grid>

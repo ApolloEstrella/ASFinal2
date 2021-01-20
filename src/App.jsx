@@ -215,7 +215,7 @@ const App = (props) => {
         <Route
           exact
           path="/sales-invoice"
-          render={(props) => <SalesInvoiceList {...props} />}
+          render={(props) => <SalesInvoice {...props} />}
         />
         <Route
           exact

@@ -24,7 +24,6 @@ const ReactSelect = ({
   value,
   myValues,
   accountType,
-  //setValue,
   ...props
 }) => {
   const customStyles = {
@@ -55,8 +54,8 @@ const ReactSelect = ({
     }),
   };
 
-  //const { setFieldValue, setFieldTouched } = useFormikContext();
-  //const [field, meta] = useField(props);
+  const { setFieldValue, setFieldTouched } = useFormikContext();
+  const [field, meta] = useField(props);
   const [open, toggleOpen] = useState(false);
   const [openSales, toggleOpenSales] = useState(false);
   const [openTax, toggleOpenTax] = useState(false);
@@ -109,8 +108,7 @@ const ReactSelect = ({
    * Will manually set the value belong to the name props in the Formik form using setField
    */
   function handleOptionChange(selection) {
-    //setFieldValue(props.name, selection);
-    //setValue(props.name, selection);
+    setFieldValue(props.name, selection);
     if (accountType === "INV") {
       setDialogValue(selection.label);
       loadBillingAddress(selection.value);
@@ -120,7 +118,7 @@ const ReactSelect = ({
 
   function handleOptionChangeSelect(selection) {
     setOptionSales(selection);
-    //setFieldValue(props.name, selection);
+    setFieldValue(props.name, selection);
   }
 
   function handleBake(evt, selection) {
@@ -150,7 +148,7 @@ const ReactSelect = ({
    * Manually updated the touched property for the field in Formik
    */
   function updateBlur() {
-    //setFieldTouched(props.name, true);
+    setFieldTouched(props.name, true);
   }
 
   function handleNewCustomer(name, address) {
@@ -285,8 +283,7 @@ const ReactSelect = ({
       <CreatableSelect
         styles={customStyles}
         options={options}
-        
-        //{...field}
+        {...field}
         {...props}
         //formatCreateLabel={(inputValue) => setDialogValue(inputValue)}
         onBlur={updateBlur}
@@ -313,11 +310,10 @@ const ReactSelect = ({
         }
         isClearable
       />
-
-      {/*{meta.touched && meta.error ? (
+      {meta.touched && meta.error ? (
         <span className="custom-input-error">{meta.error.value}</span>
-      ) : null} */}
- 
+      ) : null}
+
       <Dialog
         open={open}
         onClose={handleClose}
@@ -449,7 +445,7 @@ const ReactSelect = ({
                     name="incomeAccountId"
                     placeholder="Select Income Account"
                     //styles={customStyles}
-                    //{...field}
+                    {...field}
                     {...props}
                     onBlur={updateBlur}
                     onChange={handleOptionChangeSelect}
