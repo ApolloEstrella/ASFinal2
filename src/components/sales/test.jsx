@@ -33,6 +33,8 @@ import { compareSync } from "bcryptjs";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import commaNumber from "comma-number";
 import CreatableSelect from "react-select/creatable";
+import { Formik, Form, ErrorMessage, useFormikContext, useField } from "formik";
+import Select from "react-select";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -52,6 +54,12 @@ const useStyles = makeStyles((theme) =>
     textField2: {
       width: "100%",
       zIndex: "0",
+    },
+    textField3: {
+      width: "100%",
+      zIndex: "0",
+      paddingTop: "8px",
+      //margin: "0px"
     },
     textFieldReadOnly: {
       "& > *": {
@@ -170,7 +178,7 @@ function App() {
   ]);
 
   const [itemCount, setItemCount] = useState(-2);
-
+  const [count, setCount] = useState(0);
   const [counter, setCounter] = useState(0);
   const [counterSales, setCounterSales] = useState(0);
   const [counterTax, setCounterTax] = useState(0);
@@ -245,6 +253,62 @@ function App() {
       });
   }, [counterTracking]);
 
+   function handleNewSales(values) {
+     fetch("https://localhost:44302/api/IncomeItem/addaccount", {
+       method: "POST",
+       body: JSON.stringify({
+         id: 0,
+         name: values.name,
+         sku: values.sku,
+         description: values.description,
+         incomeAccountId: values.incomeAccountId.value,
+       }),
+       headers: {
+         "Content-Type": "application/json",
+       },
+     })
+       .then((results) => results.json())
+       .then((data) => {
+         setCounterSales(counterSales + 1)
+         handleCloseSales();
+       });
+   }
+
+   function handleNewTax(values) {
+     fetch("https://localhost:44302/api/TaxRate/addaccount", {
+       method: "POST",
+       body: JSON.stringify({
+         description: values.description,
+         rate: values.rate,
+       }),
+       headers: {
+         "Content-Type": "application/json",
+       },
+     })
+       .then((results) => results.json())
+       .then((data) => {
+         setCounterTax(counterTax + 1)
+         handleCloseTax();
+       });
+   }
+
+   function handleNewTracking(values) {
+     fetch("https://localhost:44302/api/Tracking/addaccount", {
+       method: "POST",
+       body: JSON.stringify({
+         description: values.description,
+       }),
+       headers: {
+         "Content-Type": "application/json",
+       },
+     })
+       .then((results) => results.json())
+       .then((data) => {
+         setCounterTracking(counterTracking + 1)
+         handleCloseTracking();
+       });
+   }
+
   const customStyles = {
     control: (base) => ({
       ...base,
@@ -255,9 +319,20 @@ function App() {
 
   const [costs, setCosts] = useState([]);
 
+  const loadBillingAddress = (id) => {
+    const sL = subsidiaryLedgerAccounts.find((x) => x.value === id);
+    //setValue("billingAddress", sL.address, {
+    //  shouldValidate: true,
+    //  shouldDirty: true,
+    //});
+    setValue("billingAddress", sL.address === null ? "" : sL.address, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
   const handleChangeCustomer = (e, field) => {
     setValue(field, e, { shouldValidate: true }, { shouldDirty: true });
-    //loadBillingAddress(e.value);
+    loadBillingAddress(e.value);
   };
 
   const handleChange = (e, field) => {
@@ -267,15 +342,67 @@ function App() {
   const handleCloseDelete = () => {
     setOpenDelete(false);
   };
-  const handleClose = () => {
-    toggleOpen(false);
-  };
-
+   
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
   const [open, toggleOpen] = useState(false);
   const [indexes, setIndexes] = useState([]);
   const [counterArray, setCounterArray] = useState(0);
+  const [openSales, toggleOpenSales] = useState(false);
+  const [openTax, toggleOpenTax] = useState(false);
+  const [openTracking, toggleOpenTracking] = useState(false);
+  const [chartOfAccounts, getChartOfAccounts] = useState([]);
+  const [counterChartOfAccount, setCounterCharOfAccount] = useState(0);
+
+  const handleClose = () => {
+    setBillingAddress({ address: "" });
+    toggleOpen(false);
+  };
+
+  const handleCloseSales = () => {
+    setOptionSales((optionSales = null));
+    toggleOpenSales(false);
+  };
+
+  const handleCloseTax = () => {
+    toggleOpenTax(false);
+  };
+
+  const handleCloseTracking = () => {
+    toggleOpenTracking(false);
+  };
+
+  const [dialogValue, setDialogValue] = useState({
+    name: "",
+    billingAddress: "",
+  });
+
+  const [dialogValueSales, setDialogValueSales] = useState({
+    description: "",
+    rate: 0,
+  });
+
+  const [dialogValueTax, setDialogValueTax] = useState({
+    description: "",
+    rate: 0,
+  });
+
+  const [dialogValueTracking, setDialogValueTracking] = useState({
+    description: "",
+  });
+
+  const [billingAddress, setBillingAddress] = useState({
+    address: "",
+  });
+
+
+
+
+
+
+
+
+
 
   const handleCostsChange = (event, index, field) => {
     console.log(costs);
@@ -325,6 +452,9 @@ function App() {
   const handleDeleteDisplayTotal = (handleDelete) => {
     var _tempCosts = [...costs];
     setCosts(_tempCosts);
+    setSubTotal(0);
+    setTotalTaxes(0);
+    setTotalAmount(0);
     var subTotal = 0;
     var totalTaxes = 0;
     var totalAmount = 0;
@@ -341,7 +471,10 @@ function App() {
           break;
         }
       }
-      if ((handleDelete && index !== deleteItemId && hitBreak) || (!handleDelete && hitBreak)) {
+      if (
+        (handleDelete && index !== deleteItemId && hitBreak) ||
+        (!handleDelete && hitBreak)
+      ) {
         //_tempCosts.splice(index, 1);
         //idDeleted = index;
         //break;
@@ -352,14 +485,15 @@ function App() {
         //const qty = Number(item.qty);
         //const unitPrice = Number(item.unitPrice);
         var rate = 0;
-        if (fields.taxRateItem !== null) {
-          rate = fields.taxRateItem;
-          if (rate === undefined) rate = 0;
-          if (typeof rate === "object") rate = rate.rate / 100;
+        var taxRateItem = item["items[" + itemId + "].taxRateItem"];
+        if (taxRateItem !== undefined) {
+          rate = taxRateItem.rate / 100;
+          //if (rate === undefined) rate = 0;
+          //if (typeof rate === "object") rate = rate.rate / 100;
         }
         if (!isNaN(qty) && !isNaN(unitPrice)) {
           subTotal = subTotal + qty * unitPrice;
-          totalTaxes = totalTaxes + subTotal * rate;
+          totalTaxes = totalTaxes + qty * unitPrice * rate;
           totalAmount = totalAmount + subTotal + totalTaxes;
         }
       } else if (handleDelete && hitBreak) {
@@ -377,41 +511,11 @@ function App() {
     }
   };
 
-  {
-    /*  useEffect(() => {
-    var subTotal = 0;
-    var totalTaxes = 0;
-    var totalAmount = 0;
-    console.log(fields);
-    console.log(costs);
-    // eslint-disable-next-line array-callback-return
-    fields.map((item, index) => {
-      //const qty = Number(item["items[" + item.id + "].qty"]);
-      //const unitPrice = Number(item["items[" + item.id + "].unitPrice"]);
-      //var x = "items[" + item.id + "].taxRateItem";
-      const qty = Number(item.qty);
-      const unitPrice = Number(item.unitPrice);
-      var rate = 0;
-      if (fields.taxRateItem !== null) {
-        rate = fields.taxRateItem;
-        if (rate === undefined) rate = 0;
-        if (typeof rate === "object") rate = rate.rate / 100;
-      }
-      if (!isNaN(qty) && !isNaN(unitPrice)) {
-        subTotal = subTotal + qty * unitPrice;
-        totalTaxes = totalTaxes + subTotal * rate;
-        totalAmount = totalAmount + subTotal + totalTaxes;
-      }
-    });
-    setSubTotal(Number(subTotal));
-    setTotalTaxes(totalTaxes);
-    setTotalAmount(Number(subTotal) + totalTaxes);
-  }, [costs, fields]); */
-  }
-
-  //useEffect(() => {
-  //  setCosts((prevCosts) => [...prevCosts, {}]);
-  //},[])
+ function handleOptionChangeSelect(selection) {
+   setOptionSales(selection);
+   //setFieldValue(props.name, selection);
+ }
+ 
 
   const handleChangeSubTotal = (e, field, index) => {
     setValue(field, e, { shouldValidate: true }, { shouldDirty: true });
@@ -424,14 +528,66 @@ function App() {
     setCounterArray((prevCounter) => prevCounter - 1);
   };
 
+const validationSchemaCustomer = Yup.object().shape({
+  name: Yup.string().required("Enter Customer Name."),
+});
+
+const validationSchemaSales = Yup.object().shape({
+  name: Yup.string().required("Enter Sales Item Name."),
+});
+
+const validationSchemaTax = Yup.object().shape({
+  description: Yup.string().required("Enter Description."),
+});
+
+const initialCustomerValues = {
+  name: dialogValue.name,
+  billingAddress: "",
+};
+
+const initialSaleValues = {
+  name: dialogValueSales.name,
+  sku: "",
+  description: "",
+  incomeAccountId: {},
+};
+
+const initialTaxValues = {
+  description: dialogValueTax.description,
+  rate: 0,
+};
+
+const initialTrackingValues = {
+  description: dialogValueTracking.description,
+};
+
+var [optionSales, setOptionSales] = useState(null);
+
   const onSubmit = (data) => console.log("data", data);
 
-  // if you want to control your fields with watch
-  // const watchResult = watch("test");
-  // console.log(watchResult);
+ function handleNewCustomer(name, address) {
+   fetch("https://localhost:44302/api/subsidiaryledger/addaccount", {
+     method: "POST",
+     body: JSON.stringify({
+       id: 0,
+       name: name,
+       address: address,
+     }),
+     headers: {
+       "Content-Type": "application/json",
+     },
+   })
+     .then((results) => results.json())
+     .then((data) => {
+       setCounter(counter + 1);
+       handleClose();
+     });
+ }
 
-  // The following is useWatch example
-  // console.log(useWatch({ name: "test", control }));
+  //const { register, handleSubmit } = useForm();
+
+  const onSubmitNewCustomer = (data) => alert(JSON.stringify(data));
+
 
   renderCount++;
 
@@ -452,8 +608,13 @@ function App() {
                 onBlur={onBlur}
                 onChange={(e) => handleChangeCustomer(e, "customer")}
                 inputRef={ref}
+                isClearable
                 options={subsidiaryLedgerAccounts}
                 className={classes.reactSelect}
+                onCreateOption={(inputValue) => {
+                  setDialogValue({ name: inputValue });
+                  toggleOpen(true);
+                }}
               />
             )}
           />
@@ -582,6 +743,10 @@ function App() {
                       className={classes.reactSelect}
                       placeholder="Please select Sales Items"
                       styles={customStyles}
+                      onCreateOption={(inputValue) => {
+                        setDialogValueSales({ name: inputValue });
+                        toggleOpenSales(true);
+                      }}
                     />
                   )}
                 />
@@ -628,9 +793,10 @@ function App() {
                       }
                       //ref={register({})}
                       placeholder="Quantity"
-                      className={classes.textField}
-                      styles={customStyles}
+                      className={classes.textField3}
+                      //styles={customStyles}
                       type="Number"
+                      size="small"
                       inputProps={{ "data-id": index }}
                     />
                   )}
@@ -657,7 +823,8 @@ function App() {
                         handleCostsChange(e, index, `items[${index}].unitPrice`)
                       }
                       placeholder="Unit Price"
-                      className={classes.textField}
+                      className={classes.textField3}
+                      size="small"
                       //styles={customStyles}
                       type="Number"
                       //ref={register({})}
@@ -700,7 +867,10 @@ function App() {
                       className={classes.reactSelect}
                       placeholder="Please select Tax Rates"
                       styles={customStyles}
-                      //ref={register({})}
+                      onCreateOption={(inputValue) => {
+                        setDialogValueTax({ name: inputValue });
+                        toggleOpenTax(true);
+                      }}
                     />
                   )}
                 />
@@ -735,10 +905,10 @@ function App() {
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
-                      //onBlur={onBlur}
-                      //onChange={(e) =>
-                      //  handleChange(e, `items[${index}].trackingItem`)
-                      //}
+                      onCreateOption={(inputValue) => {
+                        setDialogValueTracking({ name: inputValue });
+                        toggleOpenTracking(true);
+                      }}
                       inputRef={ref}
                       options={trackings}
                       className={classes.reactSelect}
@@ -836,6 +1006,328 @@ function App() {
       </section>
 
       <>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Add a new Customer</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Customer does not exists. Please, add it!
+            </DialogContentText>
+            <Formik
+              initialValues={initialCustomerValues}
+              onSubmit={(values, { resetForm }) => {
+                handleNewCustomer(values.name, values.billingAddress);
+              }}
+              validationSchema={validationSchemaCustomer}
+            >
+              {(props) => {
+                const {
+                  values,
+                  touched,
+                  errors,
+                  dirty,
+                  isSubmitting,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  handleReset,
+                } = props;
+                return (
+                  <Form onSubmit={handleSubmit}>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="name"
+                      name="name"
+                      fullWidth
+                      value={values.name}
+                      onChange={handleChange}
+                      //onChange={(event) =>
+                      //  setDialogValue({
+                      //    ...dialogValue,
+                      //    name: event.target.value,
+                      //  })
+                      //}
+                      label="name"
+                      type="text"
+                      helperText={errors.name && touched.name && errors.name}
+                      error={errors.name && touched.name}
+                    />
+                    <TextField
+                      id="billingAddress"
+                      label="Billing Address"
+                      name="billingAddress"
+                      value={values.address}
+                      onChange={handleChange}
+                      fullWidth
+                      margin="normal"
+                      multiline
+                      rows={4}
+                      rowsMax={4}
+                      variant="outlined"
+                    />
+                    <Button type="submit" color="primary">
+                      Add
+                    </Button>
+                    <Button onClick={handleClose} color="primary">
+                      Cancel
+                    </Button>
+                  </Form>
+                );
+              }}
+            </Formik>
+          </DialogContent>
+          <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openSales}
+          onClose={handleCloseSales}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Add new Sales Item</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Sales Item does not exists. Please, add it!
+            </DialogContentText>
+            <Formik
+              initialValues={initialSaleValues}
+              onSubmit={(values, { resetForm }) => {
+                values.incomeAccountId = optionSales;
+                handleNewSales(values);
+                resetForm(initialSaleValues);
+              }}
+              //validationSchema={validationSchemaSales}
+            >
+              {(props) => {
+                const {
+                  values,
+                  touched,
+                  errors,
+                  dirty,
+                  isSubmitting,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  handleReset,
+                } = props;
+                return (
+                  <Form onSubmit={handleSubmit}>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="name"
+                      name="name"
+                      fullWidth
+                      value={values.name}
+                      onChange={handleChange}
+                      label="name"
+                      type="text"
+                      helperText={errors.name && touched.name && errors.name}
+                      error={errors.name && touched.name}
+                    />
+                    <br></br>
+                    <br></br>
+                    <br></br>
+                    <Select
+                      id="incomeAccountId"
+                      name="incomeAccountId"
+                      placeholder="Select Income Account"
+                      //styles={customStyles}
+                      //{...field}
+                      {...props}
+                      //onBlur={updateBlur}
+                      onChange={handleOptionChangeSelect}
+                      value={optionSales}
+                      //value={chartOfAccounts.find((obj) => obj.value === 6054)}
+                      //value={{ value: 6054, label: "31231" }}
+                      options={chartOfAccounts}
+                      //className={customStyles.reactSelect}
+                      isClearable
+                    />
+                    {console.log(
+                      chartOfAccounts.find((obj) => obj.value === 6054)
+                    )}
+
+                    <TextField
+                      id="sku"
+                      label="SKU"
+                      name="sku"
+                      value={values.sku}
+                      onChange={handleChange}
+                      fullWidth
+                      margin="normal"
+                      multiline
+                      //rows={4}
+                      //rowsMax={4}
+                      //variant="outlined"
+                      className={customStyles.textFieldReadOnly}
+                    />
+                    <TextField
+                      id="description"
+                      label="Description"
+                      name="description"
+                      value={values.description}
+                      onChange={handleChange}
+                      fullWidth
+                      margin="normal"
+                      multiline
+                      //rows={2}
+                      //rowsMax={4}
+                      //variant="outlined"
+                    />
+
+                    <Button type="submit" color="primary">
+                      Add
+                    </Button>
+                    <Button onClick={handleCloseSales} color="primary">
+                      Cancel
+                    </Button>
+                  </Form>
+                );
+              }}
+            </Formik>
+          </DialogContent>
+          <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openTax}
+          onClose={handleCloseTax}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Add new Tax Rate</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Tax rate does not exists. Please, add it!
+            </DialogContentText>
+            <Formik
+              initialValues={initialTaxValues}
+              onSubmit={(values, { resetForm }) => {
+                handleNewTax(values);
+              }}
+              validationSchema={validationSchemaTax}
+            >
+              {(props) => {
+                const {
+                  values,
+                  touched,
+                  errors,
+                  dirty,
+                  isSubmitting,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  handleReset,
+                } = props;
+                return (
+                  <Form onSubmit={handleSubmit}>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="description"
+                      name="description"
+                      fullWidth
+                      value={values.description}
+                      onChange={handleChange}
+                      label="name"
+                      type="text"
+                      helperText={
+                        errors.description &&
+                        touched.description &&
+                        errors.description
+                      }
+                      error={errors.description && touched.description}
+                    />
+                    <TextField
+                      id="rate"
+                      label="Tax Rate"
+                      name="rate"
+                      type="number"
+                      value={values.rate}
+                      onChange={handleChange}
+                      fullWidth
+                      margin="normal"
+                      variant="outlined"
+                    />
+                    <Button type="submit" color="primary">
+                      Add
+                    </Button>
+                    <Button onClick={handleCloseTax} color="primary">
+                      Cancel
+                    </Button>
+                  </Form>
+                );
+              }}
+            </Formik>
+          </DialogContent>
+          <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openTracking}
+          onClose={handleCloseTracking}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Add new Tracking</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Tracking does not exists. Please, add it!
+            </DialogContentText>
+            <Formik
+              initialValues={initialTrackingValues}
+              onSubmit={(values, { resetForm }) => {
+                handleNewTracking(values);
+              }}
+              validationSchema={validationSchemaTax}
+            >
+              {(props) => {
+                const {
+                  values,
+                  touched,
+                  errors,
+                  dirty,
+                  isSubmitting,
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  handleReset,
+                } = props;
+                return (
+                  <Form onSubmit={handleSubmit}>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="description"
+                      name="description"
+                      fullWidth
+                      value={values.description}
+                      onChange={handleChange}
+                      label="name"
+                      type="text"
+                      helperText={
+                        errors.description &&
+                        touched.description &&
+                        errors.description
+                      }
+                      error={errors.description && touched.description}
+                    />
+                    <Button type="submit" color="primary">
+                      Add
+                    </Button>
+                    <Button onClick={handleCloseTracking} color="primary">
+                      Cancel
+                    </Button>
+                  </Form>
+                );
+              }}
+            </Formik>
+          </DialogContent>
+          <DialogActions></DialogActions>
+        </Dialog>
         <Dialog
           //fullScreen={fullScreen}
           open={openDelete}
