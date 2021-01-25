@@ -35,6 +35,8 @@ import commaNumber from "comma-number";
 import CreatableSelect from "react-select/creatable";
 import { Formik, Form, ErrorMessage, useFormikContext, useField } from "formik";
 import Select from "react-select";
+import ReactDatePicker from "react-datepicker";
+import { value } from "numeral";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -122,8 +124,8 @@ const validationSchema = Yup.object().shape({
       description: Yup.string().required("Enter Description"),
       taxRateItem: Yup.object().nullable().required("Tax Rate is required"),
       trackingItem: Yup.object().nullable().required("Tracking is required"),
-      qty: Yup.string().nullable().required("Quantity is required"),
-      unitPrice: Yup.string().nullable().required("Unit Price is required"),
+      qty: Yup.number().nullable().required("Quantity is required"),
+      unitPrice: Yup.number().nullable().required("Unit Price is required"),
     })
   ),
 });
@@ -164,7 +166,7 @@ const SalesInvoice = () => {
   } = useForm({
     //mode: "onChange",
     //defaultValues: initialValues,
-    //resolver: yupResolver(validationSchema),
+    resolver: yupResolver(validationSchema),
   });
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
     {
@@ -439,7 +441,7 @@ const SalesInvoice = () => {
         _tempCosts[index][event.target.name] = event.target.value;
         setValue(
           event.target.name,
-          event.target.value,
+          Number(event.target.value),
           { shouldValidate: true },
           { shouldDirty: true }
         );
@@ -463,7 +465,7 @@ const SalesInvoice = () => {
       `items[${index}].amount`,
       isNaN(Math.round(q * y * 100) / 100)
         ? ""
-        : commaNumber(Math.round(q * y * 100) / 100)
+        : (commaNumber(Math.round(q * y * 100) / 100)).toString()
     );
     //setValue(`items[${index}].description`, "8");
     handleDeleteDisplayTotal(false);
@@ -607,49 +609,56 @@ const SalesInvoice = () => {
     </li>
   ));
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, { resetForm }) => {
+    const x = JSON.stringify(values);
+    console.log("data", values);
     values.files = files;
-    console.log("data", values)
-      values.files = files;
-      fetch("https://localhost:44302/api/sales/addaccount", {
-        method: "POST",
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((results) => results.json())
-        .then((data) => {
-          var formData = new FormData();
-          for (let i = 0; i < files.length; i++) {
-            formData.append("Files", files[i]);
-          }
-          formData.append("id", Number(data));
-          fetch("https://localhost:44302/api/sales/AddUploadedFiles", {
-            method: "POST",
-            body: formData,
+    console.log(values.id)
+    //values.items = null;
+    //values.files = null;
+    values.date = values.date.toISOString();
+    values.dueDate = values.dueDate.toISOString();
+    values.terms = Number(values.terms)
+
+    fetch("https://localhost:44302/api/sales/addaccount", {
+      method: "POST",
+      body: JSON.stringify(values),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        var formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+          formData.append("Files", files[i]);
+        }
+        formData.append("id", Number(data));
+        fetch("https://localhost:44302/api/sales/AddUploadedFiles", {
+          method: "POST",
+          body: formData,
+        })
+          .then((results) => results.json())
+          .then((data) => {
+            //resetForm(initialValues);
+            fileList = [null];
+            setFiles([]);
+            //subTotal = 0;
+            //totalTaxes = 0;
+            //totalAmount = 0;
+            setSubTotal(0);
+            setTotalTaxes(0);
+            setTotalAmount(0);
+            console.log("successful");
           })
-            .then((results) => results.json())
-            .then((data) => {
-              //resetForm(initialValues);
-              fileList = [null];
-              setFiles([]);
-              subTotal = 0;
-              totalTaxes = 0;
-              totalAmount = 0;
-              setSubTotal(0);
-              setTotalTaxes(0);
-              setTotalAmount(0);
-              console.log("successful");
-            })
-            .catch(function (error) {
-              console.log("network error");
-            });
-        })
-        .catch(function (error) {
-          console.log("network error");
-        })
-        .finally(function () {});
+          .catch(function (error) {
+            console.log("network error");
+          });
+      })
+      .catch(function (error) {
+        console.log("network error");
+      })
+      .finally(function () {});
   };
 
   function handleNewCustomer(name, address) {
@@ -675,12 +684,25 @@ const SalesInvoice = () => {
 
   const onSubmitNewCustomer = (data) => alert(JSON.stringify(data));
 
+  const [selectedDate, setSelectedDate] = React.useState(new Date());
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
   renderCount++;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container justify="space-around" direction="row">
+        <Controller
+          as={TextField}
+          name="id"
+          control={control}
+          defaultValue={0}
+          className={classes.hide}
+        />
         <Grid item xs={12}>
           <Controller
             control={control}
@@ -745,50 +767,55 @@ const SalesInvoice = () => {
           <p className={classes.p}>{errors.invoiceNo?.message}</p>
         </Grid>
 
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <Grid item xs={2} className={classes.textField}>
-            <KeyboardDatePicker
-              style={{ marginTop: "0px" }}
-              disableToolbar
-              variant="inline"
-              format="MM/dd/yyyy"
-              margin="normal"
-              id="date"
+        <Grid item xs={2} className={classes.textField}>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Controller
               name="date"
-              label="Date"
-              //defaultValue={props.values.date}
-              //onChange={(value) => props.setFieldValue("date", value)}
-              //KeyboardButtonProps={{
-              //  "aria-label": "change date",
-              //}}
+              control={control}
+              render={({ ref, ...rest }) => (
+                <KeyboardDatePicker
+                  margin="normal"
+                  id="date-picker-dialog"
+                  label="Date picker dialog"
+                  format="MM/dd/yyyy"
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                  }}
+                  {...rest}
+                />
+              )}
             />
-          </Grid>
-          <Grid item xs={2} className={classes.textField}>
-            <KeyboardDatePicker
-              style={{ marginTop: "0px" }}
-              disableToolbar
-              variant="inline"
-              format="MM/dd/yyyy"
-              margin="normal"
-              id="dueDate"
+          </MuiPickersUtilsProvider>
+        </Grid>
+
+        <Grid item xs={2} className={classes.textField}>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Controller
               name="dueDate"
-              label="Due Date"
-              //defaultValue={props.values.dueDate}
-              //onChange={(value) =>
-              //  props.setFieldValue("dueDate", value)
-              //}
-              KeyboardButtonProps={{
-                "aria-label": "change date",
-              }}
+              control={control}
+              render={({ ref, ...rest }) => (
+                <KeyboardDatePicker
+                  margin="normal"
+                  id="date-picker-dialog"
+                  label="Date picker dialog"
+                  format="MM/dd/yyyy"
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                  }}
+                  {...rest}
+                />
+              )}
             />
-          </Grid>
-        </MuiPickersUtilsProvider>
+          </MuiPickersUtilsProvider>
+        </Grid>
+
         <Grid item xs={1} className={classes.textField}>
           <Controller
             as={TextField}
             name="terms"
             control={control}
             //ref={register}
+            type="number"
             label="Terms"
             defaultValue=""
           />
@@ -810,18 +837,18 @@ const SalesInvoice = () => {
           <div key={item.id}>
             <Grid container justify="space-around" direction="row">
               <Controller
-                  as={TextField}
-                  id={`items[${index}].id`}
-                  name={`items[${index}].id`}
-                  control={control}
-                  label="id"
-                  className={classes.hide}
-                  margin="dense"
-                  defaultValue={item.id}
-                  variant="outlined"
-                  size="small"
-                  //required={true}
-                />
+                as={TextField}
+                id={`items[${index}].id`}
+                name={`items[${index}].id`}
+                control={control}
+                label="id"
+                className={classes.hide}
+                margin="dense"
+                defaultValue={item.id}
+                variant="outlined"
+                size="small"
+                //required={true}
+              />
               <Grid item xs={2}>
                 <Controller
                   control={control}
@@ -833,10 +860,13 @@ const SalesInvoice = () => {
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
-                      onBlur={onBlur}
+                      //onBlur={onBlur}
                       //onChange={(e) =>
                       //  handleChange(e, `items[${index}].salesItem`)
                       //}
+                      onChange={(e) =>
+                        handleCostsChange(e, index, `items[${index}].salesItem`)
+                      }
                       inputRef={ref}
                       options={salesItems}
                       className={classes.reactSelect}
@@ -876,7 +906,7 @@ const SalesInvoice = () => {
                   control={control}
                   id={`items[${index}].qty`}
                   name={`items[${index}].qty`}
-                  defaultValue={null}
+                  //defaultValue={null}
                   //name="qty"
                   render={(
                     { onChange, onBlur, value, name, ref },
@@ -885,7 +915,7 @@ const SalesInvoice = () => {
                     <TextField
                       //name="qty"
                       name={`items[${index}].qty`}
-                      //onBlur={onBlur}
+                      defaultValue={null}
                       variant="outlined"
                       onChange={(e) =>
                         handleCostsChange(e, index, `items[${index}].qty`)
@@ -909,7 +939,7 @@ const SalesInvoice = () => {
                   control={control}
                   id={`items[${index}].unitPrice`}
                   name={`items[${index}].unitPrice`}
-                  defaultValue={null}
+                  //defaultValue={0}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
@@ -921,6 +951,7 @@ const SalesInvoice = () => {
                       onChange={(e) =>
                         handleCostsChange(e, index, `items[${index}].unitPrice`)
                       }
+                      defaultValue={null}
                       placeholder="Unit Price"
                       className={classes.textField3}
                       size="small"
@@ -1004,6 +1035,13 @@ const SalesInvoice = () => {
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
+                      onChange={(e) =>
+                        handleCostsChange(
+                          e,
+                          index,
+                          `items[${index}].trackingItem`
+                        )
+                      }
                       onCreateOption={(inputValue) => {
                         setDialogValueTracking({ name: inputValue });
                         toggleOpenTracking(true);
@@ -1047,9 +1085,10 @@ const SalesInvoice = () => {
           setItemCount(itemCount - 1);
           append({
             id: itemCount,
-            qty: null,
-            unitPrice: null,
+            qty: 1,
+            unitPrice: 1,
             taxRateItem: null,
+            amount: ""
           });
           setCosts((prevCosts) => [...prevCosts, { id: itemCount }]);
           //setCosts([{id: itemCount}]);

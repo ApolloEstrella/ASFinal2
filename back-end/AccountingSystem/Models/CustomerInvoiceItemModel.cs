@@ -16,7 +16,7 @@ namespace AccountingSystem.Models
         public int TaxRateId { get; set; }
         public TaxRateItem TaxRateItem { get; set; }
         public TrackingItem TrackingItem { get; set; }
-        public decimal Amount { get; set; }
+        public string Amount { get; set; }
     }
 
     public class SalesItem

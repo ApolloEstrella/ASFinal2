@@ -1,0 +1,25 @@
+control={control}
+                  id={`items[${index}].qty`}
+                  name={`items[${index}].qty`}
+                  defaultValue={null}
+                  //name="qty"
+                  render={(
+                    { onChange, onBlur, value, name, ref },
+                    { invalid, isTouched, isDirty }
+                  ) => (
+                    <TextField
+                      //name="qty"
+                      name={`items[${index}].qty`}
+                      //onBlur={onBlur}
+                      variant="outlined"
+                      onChange={(e) =>
+                        handleCostsChange(e, index, `items[${index}].qty`)
+                      }
+                      //ref={register({})}
+                      placeholder="Quantity"
+                      className={classes.textField}
+                      //styles={customStyles}
+                      type="Number"
+                      inputProps={{ "data-id": index }}
+                    />
+                  )}
