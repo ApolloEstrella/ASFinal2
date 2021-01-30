@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) =>
         paddingTop: "0px",
         zIndex: "0",
         marginTop: "0px",
-        paddingBottom: "5px",
+        paddingBottom: "5px"
       },
     },
     textField2: {
@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme) =>
       width: "100%",
       zIndex: "0",
       //paddingTop: "8px",
-      marginTop: "8px",
+      marginTop: "8px"
     },
     textFieldReadOnly: {
       "& > *": {
@@ -111,7 +111,7 @@ const useStyles = makeStyles((theme) =>
     },
     billingAddress: {
       marginTop: "15px",
-      paddingBottom: "0px",
+      paddingBottom: "0px"
     },
   })
 );
@@ -610,7 +610,7 @@ const SalesInvoice = () => {
       {<DeleteForeverIcon onClick={() => removeAttachment(file, files)} />}
     </li>
   ));
-
+ 
   const onSubmit = (values, { resetForm }) => {
     const x = JSON.stringify(values);
     console.log("data", values);
@@ -765,49 +765,52 @@ const SalesInvoice = () => {
             as={TextField}
             name="invoiceNo"
             control={control}
+            //ref={register}
             label="Invoice No"
             defaultValue=""
           />
           <p className={classes.p}>{errors.invoiceNo?.message}</p>
         </Grid>
 
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <Grid item xs={2} className={classes.textField}>
+        <Grid item xs={2} className={classes.textField}>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Controller
               control={control}
-              as={KeyboardDatePicker}
-              style={{ marginTop: "0px" }}
-              //disableToolbar
-              defaultValue={new Date()}
-              variant="inline"
-              format="MM/dd/yyyy"
-              margin="normal"
-              id="date"
-              name="date"
               label="Invoice Date"
-            />
-          </Grid>
-          <Grid item xs={2} className={classes.textField}>
-            <Controller
-              control={control}
-              as={KeyboardDatePicker}
-              style={{ marginTop: "0px" }}
-              //disableToolbar
+              initialFocusedDate={new Date()}
               defaultValue={new Date()}
-              variant="inline"
+              as={KeyboardDatePicker}
+              name="date"
+              clearable
+              value={new Date()}
+              //placeholder="10/10/2018"
+              onChange={(date) => handleDateChange(date)}
+              //minDate={new Date()}
               format="MM/dd/yyyy"
-              margin="normal"
-              id="dueDate"
-              name="dueDate"
-              label="Due Date"
-              //defaultValue={props.values.date}
-              //onChange={(value) => props.setFieldValue("date", value)}
-              //KeyboardButtonProps={{
-              //  "aria-label": "change date",
-              //}}
             />
-          </Grid>
-        </MuiPickersUtilsProvider>
+          </MuiPickersUtilsProvider>
+        </Grid>
+
+        <Grid item xs={2} className={classes.textField}>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <Controller
+                control={control}
+                label="Due Date"
+                initialFocusedDate={new Date()}
+                defaultValue={new Date()}
+                as={KeyboardDatePicker}
+                name="dueDate"
+                clearable
+                value={new Date()}
+                //placeholder="10/10/2018"
+                onChange={(date) => handleDateChange(date)}
+                //minDate={new Date()}
+                format="MM/dd/yyyy"
+              />
+            </MuiPickersUtilsProvider>
+          </MuiPickersUtilsProvider>
+        </Grid>
 
         <Grid item xs={1} className={classes.textField}>
           <Controller

@@ -51,7 +51,6 @@ const useStyles = makeStyles((theme) =>
         paddingTop: "0px",
         zIndex: "0",
         marginTop: "0px",
-        paddingBottom: "5px",
       },
     },
     textField2: {
@@ -61,8 +60,8 @@ const useStyles = makeStyles((theme) =>
     textField3: {
       width: "100%",
       zIndex: "0",
-      //paddingTop: "8px",
-      marginTop: "8px",
+      paddingTop: "8px",
+      //margin: "0px"
     },
     textFieldReadOnly: {
       "& > *": {
@@ -111,7 +110,6 @@ const useStyles = makeStyles((theme) =>
     },
     billingAddress: {
       marginTop: "15px",
-      paddingBottom: "0px",
     },
   })
 );
@@ -616,8 +614,6 @@ const SalesInvoice = () => {
     console.log("data", values);
     values.files = files;
     console.log(values.id);
-    //values.items = null;
-    //values.files = null;
     values.date === undefined ? new Date() : values.date.toISOString();
     values.dueDate === undefined ? new Date() : values.dueDate.toISOString();
     values.terms = Number(values.terms);
@@ -643,7 +639,6 @@ const SalesInvoice = () => {
           .then((results) => results.json())
           .then((data) => {
             //resetForm(initialValues);
-            reset(initialValues);
             fileList = [null];
             setFiles([]);
             //subTotal = 0;
@@ -687,18 +682,16 @@ const SalesInvoice = () => {
 
   const onSubmitNewCustomer = (data) => alert(JSON.stringify(data));
 
-  //const [selectedDate, setSelectedDate] = React.useState(new Date());
+  const [selectedDate, setSelectedDate] = React.useState(new Date());
 
-  //const handleDateChange = (date) => {
-  //  setSelectedDate(date);
-  //};
-
-  const [selectedDate, handleDateChange] = useState(new Date().toISOString());
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
 
   renderCount++;
 
   return (
-    <form id="salesInvoiceForm" onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container justify="space-around" direction="row">
         <Controller
@@ -765,6 +758,7 @@ const SalesInvoice = () => {
             as={TextField}
             name="invoiceNo"
             control={control}
+            //ref={register}
             label="Invoice No"
             defaultValue=""
           />
@@ -784,7 +778,12 @@ const SalesInvoice = () => {
               margin="normal"
               id="date"
               name="date"
-              label="Invoice Date"
+              label="Date"
+              //defaultValue={props.values.date}
+              //onChange={(value) => props.setFieldValue("date", value)}
+              //KeyboardButtonProps={{
+              //  "aria-label": "change date",
+              //}}
             />
           </Grid>
           <Grid item xs={2} className={classes.textField}>
@@ -799,7 +798,7 @@ const SalesInvoice = () => {
               margin="normal"
               id="dueDate"
               name="dueDate"
-              label="Due Date"
+              label="Date"
               //defaultValue={props.values.date}
               //onChange={(value) => props.setFieldValue("date", value)}
               //KeyboardButtonProps={{
@@ -922,13 +921,11 @@ const SalesInvoice = () => {
                       }
                       //ref={register({})}
                       placeholder="Quantity"
-                      label="Quantity"
                       className={classes.textField3}
                       //styles={customStyles}
                       type="Number"
                       size="small"
                       inputProps={{ "data-id": index }}
-                      step="0.01"
                     />
                   )}
                 />
@@ -958,13 +955,9 @@ const SalesInvoice = () => {
                       className={classes.textField3}
                       size="small"
                       //styles={customStyles}
-                      //type="Number"
-                      label="Unit Price"
+                      type="Number"
                       //ref={register({})}
-                      pattern="[+-]?\d+(?:[.,]\d+)?"
-                      //inputProps={{
-                      //  pattern: "[0-9]+(.[0-9][0-9]?)?",
-                      //}}
+                      inputProps={{ "data-id": index }}
                     />
                   )}
                 />

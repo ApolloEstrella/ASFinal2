@@ -12,6 +12,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@unicef/material-ui-currency-textfield": "^0.8.6",
     "bcryptjs": "^2.4.3",
     "comma-number": "^2.0.1",
     "crypto-js": "^4.0.0",
