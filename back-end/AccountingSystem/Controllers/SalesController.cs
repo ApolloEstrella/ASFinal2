@@ -31,7 +31,7 @@ namespace AccountingSystem.Controllers
             return Ok(_salesService.AddUploadFiles(files.Id, files));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
         public ActionResult GetAccount(int id)
         {
             return Ok(_salesService.GetSalesInvoice(id));

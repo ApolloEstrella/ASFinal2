@@ -37,6 +37,8 @@ import { Formik, Form, ErrorMessage, useFormikContext, useField } from "formik";
 import Select from "react-select";
 import ReactDatePicker from "react-datepicker";
 import { value } from "numeral";
+import moment from "moment";
+import MomentUtils from "@date-io/moment";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -136,14 +138,14 @@ let renderCount = 0;
 
 const initialValues = {
   id: -1,
-  customer: null,
+  customer: {value: 0, label: ""},
   billingAddress: "",
   invoiceNo: "",
   date: new Date(),
   dueDate: new Date(),
   terms: "",
   reference: "",
-  items: [
+  /* items: [
     {
       id: -1234567,
       salesItem: null,
@@ -153,7 +155,7 @@ const initialValues = {
       taxRateItem: null,
       trackingItem: null,
     },
-  ],
+  ], */
 };
 
 const SalesInvoice = () => {
@@ -618,8 +620,36 @@ const SalesInvoice = () => {
     console.log(values.id);
     //values.items = null;
     //values.files = null;
-    values.date === undefined ? new Date() : values.date.toISOString();
-    values.dueDate === undefined ? new Date() : values.dueDate.toISOString();
+    //values.date === undefined ? new Date() : values.date.toISOString();
+    //values.dueDate === undefined ? new Date() : values.dueDate.toISOString();
+
+    if (values.date === undefined) {
+      const currentDate = new Date();
+      values.date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDay(),
+        currentDate.getHours(),
+        currentDate.getMinutes(),
+        currentDate.getSeconds()
+      );
+    }
+
+    if (values.dueDate === undefined) {
+      const currentDate = new Date();
+      values.dueDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDay(),
+        currentDate.getHours(),
+        currentDate.getMinutes(),
+        currentDate.getSeconds()
+      );
+    }
+
+    //values.date = values.date.toISOString()
+    //values.dueDate = values.dueDate.toISOString()
+    //values.date = new Date(2025, 10, 9);
     values.terms = Number(values.terms);
 
     fetch("https://localhost:44302/api/sales/addaccount", {
@@ -693,6 +723,10 @@ const SalesInvoice = () => {
   //  setSelectedDate(date);
   //};
 
+  const [selectedDate1, setSelectedDate] = useState(
+    new Date("2020-09-11T12:00:00")
+  );
+
   const [selectedDate, handleDateChange] = useState(new Date().toISOString());
 
   renderCount++;
@@ -721,6 +755,8 @@ const SalesInvoice = () => {
                 onBlur={onBlur}
                 onChange={(e) => handleChangeCustomer(e, "customer")}
                 inputRef={ref}
+                id="customer"
+                name="customer"
                 isClearable
                 options={subsidiaryLedgerAccounts}
                 className={classes.reactSelect}
@@ -775,36 +811,56 @@ const SalesInvoice = () => {
           <Grid item xs={2} className={classes.textField}>
             <Controller
               control={control}
-              as={KeyboardDatePicker}
-              style={{ marginTop: "0px" }}
-              //disableToolbar
-              defaultValue={new Date()}
-              variant="inline"
-              format="MM/dd/yyyy"
-              margin="normal"
-              id="date"
               name="date"
-              label="Invoice Date"
+              render={({ onChange, onBlur, value, name, ref }) => (
+                <KeyboardDatePicker
+                  autoOk
+                  //disabled={isLoading}
+                  //error={Boolean(errors?.myDateField)}
+                  format="MM/dd/yyyy"
+                  //fullWidth={true}
+                  //helperText={getHelperText("date")}
+                  inputRef={ref}
+                  //inputVariant="inline"
+                  label="Invoice Date"
+                  name={name}
+                  id="date"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
             />
           </Grid>
           <Grid item xs={2} className={classes.textField}>
             <Controller
               control={control}
-              as={KeyboardDatePicker}
-              style={{ marginTop: "0px" }}
-              //disableToolbar
-              defaultValue={new Date()}
-              variant="inline"
-              format="MM/dd/yyyy"
-              margin="normal"
-              id="dueDate"
               name="dueDate"
-              label="Due Date"
-              //defaultValue={props.values.date}
-              //onChange={(value) => props.setFieldValue("date", value)}
-              //KeyboardButtonProps={{
-              //  "aria-label": "change date",
-              //}}
+              render={({ onChange, onBlur, value, name, ref }) => (
+                <KeyboardDatePicker
+                  //style={{ paddingBottom: "20px" }}
+                  autoOk
+                  //disabled={isLoading}
+                  //error={Boolean(errors?.myDateField)}
+                  format="MM/dd/yyyy"
+                  //fullWidth={true}
+                  //helperText={getHelperText("date")}
+                  inputRef={ref}
+                  //inputVariant="inline"
+                  label="Due Date"
+                  name={name}
+                  id="dueDate"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
             />
           </Grid>
         </MuiPickersUtilsProvider>
@@ -1533,5 +1589,4 @@ const SalesInvoice = () => {
     </form>
   );
 };
-
 export default SalesInvoice;
