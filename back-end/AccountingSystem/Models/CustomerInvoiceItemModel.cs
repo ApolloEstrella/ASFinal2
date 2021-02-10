@@ -29,6 +29,7 @@ namespace AccountingSystem.Models
     {
         public int Value { get; set; }
         public string Label { get; set; }
+        public decimal Rate { get; set; }
     }
 
     public class TrackingItem

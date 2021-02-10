@@ -22,6 +22,7 @@ import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-a
 import SalesInvoice from "./components/sales/sales-invoice.jsx";
 import MaterialUIPickers from "./components/sales/test"
 import SalesInvoiceList from "./components/sales/sales-invoice-list";
+import SalesInvoiceApp from "./components/sales/sales-invoice-app"
 
 const storageService = new StorageService();
 
@@ -215,7 +216,7 @@ const App = (props) => {
         <Route
           exact
           path="/sales-invoice"
-          render={(props) => <SalesInvoice {...props} />}
+          render={(props) => <SalesInvoiceApp {...props} />}
         />
         <Route
           exact

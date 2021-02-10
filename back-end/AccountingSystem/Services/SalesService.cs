@@ -33,6 +33,8 @@ namespace AccountingSystem.Services
         public CustomerInvoiceModel GetSalesInvoice(int id)
         {
             List<CustomerInvoiceItemModel> items = (from a in _serverContext.LedgerDetails
+                                                    join b in _serverContext.TaxRates
+                                                    on a.InvoiceTaxRateId equals b.Id
                                                     select new
                                                     {
                                                         a.Id,
@@ -43,7 +45,9 @@ namespace AccountingSystem.Services
                                                         a.InvoiceQuantity,
                                                         a.InvoiceUnitPrice,
                                                         a.InvoiceTaxRateId,
-                                                        a.InvoiceTrackingId
+                                                        a.InvoiceTrackingId,
+                                                        b.Description,
+                                                        b.Rate
                                                     }).ToList()
                                                     .Where(w => w.LedgerMasterId == id)
                                                    .Select(x => new CustomerInvoiceItemModel
@@ -54,7 +58,7 @@ namespace AccountingSystem.Services
                                                        Description = x.InvoiceDescription,
                                                        Qty = x.InvoiceQuantity,
                                                        UnitPrice = x.InvoiceUnitPrice,
-                                                       TaxRateItem = new TaxRateItem { Value = x.InvoiceTaxRateId },
+                                                       TaxRateItem = new TaxRateItem { Value = x.InvoiceTaxRateId, Label = x.Description, Rate = x.Rate },
                                                        TrackingItem = new TrackingItem { Value = x.InvoiceTrackingId }
                                                    }).ToList();
 

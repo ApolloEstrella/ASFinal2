@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Grid,
   TextField,
@@ -138,7 +138,7 @@ let renderCount = 0;
 
 const initialValues = {
   id: -1,
-  customer: {value: 0, label: ""},
+  customer: { value: 0, label: "" },
   billingAddress: "",
   invoiceNo: "",
   date: new Date(),
@@ -158,7 +158,11 @@ const initialValues = {
   ], */
 };
 
-const SalesInvoice = () => {
+const SalesInvoice = ({ preloadedValues }) => {
+  const [costs, setCosts] = useState([]);
+  useEffect(() => {
+    if (preloadedValues !== null) setCosts(preloadedValues.items);
+  }, []);
   const {
     register,
     control,
@@ -169,14 +173,50 @@ const SalesInvoice = () => {
     setValue,
   } = useForm({
     //mode: "onChange",
-    //defaultValues: initialValues,
-    resolver: yupResolver(validationSchema),
+    defaultValues: preloadedValues === null ? {} : preloadedValues,
+
+    //resolver: yupResolver(validationSchema),
   });
+
+  const invoice = useRef();
+  const tax = useRef();
+  const [inv, setInv] = useState();
+
+  //invoice.current = {
+  //  billingAddress: "abc",
+  //  items: [{ description: "kat1" }, { description: "kat2" }],
+  //};
+
+  invoice.current = {
+    billingAddress: "abc",
+    items: [{ description: "kat1" }, { description: "kat2" }],
+  };
+
+  // eslint-disable-next-line no-lone-blocks
+  {/* useEffect(() => {
+    fetch("https://localhost:44367/api/sales/GetAccount?id=9092", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        invoice.current = data;
+        setInv(data);
+      })
+      .catch(function (error) {
+        console.log("network error");
+      });
+  }, []); */}
+
+  useEffect(() => {});
+
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
     {
       control,
       name: "items",
-      keyName: "keyNameId",
+      //keyName: "keyNameId",
     }
   );
 
@@ -190,27 +230,11 @@ const SalesInvoice = () => {
     },
   ]);
 
-  const [salesItems, getSalesItems] = useState([
-    {
-      Id: 0,
-      name: "",
-    },
-  ]);
+  const [salesItems, getSalesItems] = useState([]);
 
-  const [taxRates, getTaxRates] = useState([
-    {
-      Id: 0,
-      name: "",
-      rate: 0,
-    },
-  ]);
+  const [taxRates, getTaxRates] = useState([]);
 
-  const [trackings, getTrackings] = useState([
-    {
-      Id: 0,
-      name: "",
-    },
-  ]);
+  const [trackings, getTrackings] = useState([]);
 
   const [itemCount, setItemCount] = useState(-2);
   const [count, setCount] = useState(0);
@@ -221,9 +245,20 @@ const SalesInvoice = () => {
   const [subTotal, setSubTotal] = useState(0);
   const [totalTaxes, setTotalTaxes] = useState();
   const [totalAmount, setTotalAmount] = useState(0);
+  const [invoiceData, setInvoiceData] = useState();
+  const [taxRateDefaultValue, setTaxRateDefaultValue] = useState([]);
+
+  var tv = [];
+  const [isBusy, setBusy] = useState(true);
+  const [isBusy2, setBusy2] = useState(true);
+
+  //useEffect(() => {
+  //  if (preloadedValues !== null)
+  //    setCosts(preloadedValues.items)
+  //}, [])
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
+    fetch(" ", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -240,7 +275,7 @@ const SalesInvoice = () => {
   }, [counter]);
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/IncomeItem/get", {
+    fetch("https://localhost:44367/api/IncomeItem/get", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -256,7 +291,7 @@ const SalesInvoice = () => {
   }, [counterSales]);
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/TaxRate/get", {
+    fetch("https://localhost:44367/api/TaxRate/get", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -266,14 +301,16 @@ const SalesInvoice = () => {
       .then((data) => {
         //console.log(data);
         getTaxRates(data);
+        //tax.current = data;
+        setBusy2(false);
       })
       .catch(function (error) {
         console.log("network error");
       });
-  }, [counterTax]);
+  }, []);
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/Tracking/get", {
+    fetch("https://localhost:44367/api/Tracking/get", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -288,8 +325,18 @@ const SalesInvoice = () => {
       });
   }, [counterTracking]);
 
+  const tv2 = [2011, 2];
+
+  const [taxRateValue, setSelectedTaxRateValue] = useState([]);
+  //setCounterTax(counterTax + 1)
+
+  useEffect(() => {
+    console.log(taxRateValue[0]);
+    //setValue(`items[0].taxRateItem`, taxRateDefaultValue[0])
+  });
+
   function handleNewSales(values) {
-    fetch("https://localhost:44302/api/IncomeItem/addaccount", {
+    fetch("https://localhost:44367/api/IncomeItem/addaccount", {
       method: "POST",
       body: JSON.stringify({
         id: 0,
@@ -310,7 +357,7 @@ const SalesInvoice = () => {
   }
 
   function handleNewTax(values) {
-    fetch("https://localhost:44302/api/TaxRate/addaccount", {
+    fetch("https://localhost:44367/api/TaxRate/addaccount", {
       method: "POST",
       body: JSON.stringify({
         description: values.description,
@@ -328,7 +375,7 @@ const SalesInvoice = () => {
   }
 
   function handleNewTracking(values) {
-    fetch("https://localhost:44302/api/Tracking/addaccount", {
+    fetch("https://localhost:44367/api/Tracking/addaccount", {
       method: "POST",
       body: JSON.stringify({
         description: values.description,
@@ -352,8 +399,6 @@ const SalesInvoice = () => {
     }),
   };
 
-  const [costs, setCosts] = useState([]);
-
   const loadBillingAddress = (id) => {
     const sL = subsidiaryLedgerAccounts.find((x) => x.value === id);
     //setValue("billingAddress", sL.address, {
@@ -372,7 +417,7 @@ const SalesInvoice = () => {
 
   const handleChange = (e, field) => {
     setValue(field, e, { shouldValidate: true }, { shouldDirty: true });
-    handleCostsChange();
+    //handleCostsChange();
   };
   const handleCloseDelete = () => {
     setOpenDelete(false);
@@ -430,7 +475,7 @@ const SalesInvoice = () => {
     address: "",
   });
 
-  const handleCostsChange = (event, index, field) => {
+  const handleCostsChange = (event, index, field, fieldName) => {
     console.log(costs);
     const _tempCosts = [...costs];
     console.log(fields);
@@ -439,30 +484,30 @@ const SalesInvoice = () => {
     if (_tempCosts.length > 0) {
       if (event.target === undefined) {
         _tempCosts[index][field] = event;
-        setValue(field, event, { shouldValidate: true }, { shouldDirty: true });
-        rate = costs[index][field].rate / 100;
+        setValue(fieldName, event, { shouldValidate: true }, { shouldDirty: true });
+        rate = _tempCosts[index][field].rate / 100;
       } else {
-        _tempCosts[index][event.target.name] = event.target.value;
+        _tempCosts[index][field] = event.target.value;
         setValue(
-          event.target.name,
+          fieldName,
           Number(event.target.value),
           { shouldValidate: true },
           { shouldDirty: true }
         );
-        if (costs[index]["items[" + index + "].taxRateItem"] !== null) {
-          rate = costs[index]["items[" + index + "].taxRateItem"];
+        if (_tempCosts[index]["taxRateItem"]["rate"] !== null) {
+          rate = _tempCosts[index]["taxRateItem"]["rate"];
           if (rate === undefined) rate = 0;
           if (typeof rate === "object") rate = rate.rate / 100;
         }
       }
     }
 
-    _tempCosts[index]["items[" + index + "].id"] = index;
+    _tempCosts[index]["id"] = index;
 
     setCosts(_tempCosts);
     console.log(costs);
-    const q = Number(costs[index]["items[" + index + "].qty"]);
-    const y = Number(costs[index]["items[" + index + "].unitPrice"]);
+    const q = Number(_tempCosts[index]["qty"]);
+    const y = Number(_tempCosts[index]["unitPrice"]);
     // console.log(q * y)
     // const z = `items[${index}].amount`;
     setValue(
@@ -487,12 +532,13 @@ const SalesInvoice = () => {
     console.log(fields);
     console.log(costs);
     var idDeleted = 0;
+    
     // eslint-disable-next-line array-callback-return
     _tempCosts.map((item, index) => {
       var hitBreak = false;
       var itemId;
       for (itemId = 0; itemId <= _tempCosts.length + 100; itemId++) {
-        if (!isNaN(Number(item["items[" + itemId + "].id"]))) {
+        if (!isNaN(Number(item["id"]))) {
           hitBreak = true;
           break;
         }
@@ -505,18 +551,20 @@ const SalesInvoice = () => {
         //idDeleted = index;
         //break;
 
-        const qty = Number(item["items[" + itemId + "].qty"]);
-        const unitPrice = Number(item["items[" + itemId + "].unitPrice"]);
+        const qty = Number(item["qty"]);
+        const unitPrice = Number(item["unitPrice"]);
         //var x = "items[" + item.id + "].taxRateItem";
         //const qty = Number(item.qty);
         //const unitPrice = Number(item.unitPrice);
         var rate = 0;
-        var taxRateItem = item["items[" + itemId + "].taxRateItem"];
-        if (taxRateItem !== undefined) {
+        var taxRateItem = item["taxRateItem"];
+        if (taxRateItem.value !== null) {
           rate = taxRateItem.rate / 100;
           //if (rate === undefined) rate = 0;
           //if (typeof rate === "object") rate = rate.rate / 100;
         }
+        else
+          rate = 0;
         if (!isNaN(qty) && !isNaN(unitPrice)) {
           subTotal = subTotal + qty * unitPrice;
           totalTaxes = totalTaxes + qty * unitPrice * rate;
@@ -652,7 +700,7 @@ const SalesInvoice = () => {
     //values.date = new Date(2025, 10, 9);
     values.terms = Number(values.terms);
 
-    fetch("https://localhost:44302/api/sales/addaccount", {
+    fetch("https://localhost:44367/api/sales/addaccount", {
       method: "POST",
       body: JSON.stringify(values),
       headers: {
@@ -666,7 +714,7 @@ const SalesInvoice = () => {
           formData.append("Files", files[i]);
         }
         formData.append("id", Number(data));
-        fetch("https://localhost:44302/api/sales/AddUploadedFiles", {
+        fetch("https://localhost:44367/api/sales/AddUploadedFiles", {
           method: "POST",
           body: formData,
         })
@@ -695,7 +743,7 @@ const SalesInvoice = () => {
   };
 
   function handleNewCustomer(name, address) {
-    fetch("https://localhost:44302/api/subsidiaryledger/addaccount", {
+    fetch("https://localhost:44367/api/subsidiaryledger/addaccount", {
       method: "POST",
       body: JSON.stringify({
         id: 0,
@@ -731,45 +779,12 @@ const SalesInvoice = () => {
 
   renderCount++;
 
-  return (
+  return salesItems.length > 0 && taxRates.length > 0 && trackings.length > 0 ? (
+    //return (
     <form id="salesInvoiceForm" onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container justify="space-around" direction="row">
-        <Controller
-          as={TextField}
-          name="id"
-          control={control}
-          defaultValue={0}
-          className={classes.hide}
-        />
-        <Grid item xs={12}>
-          <Controller
-            control={control}
-            name="customer"
-            defaultValue={null}
-            render={(
-              { onChange, onBlur, value, name, ref },
-              { invalid, isTouched, isDirty }
-            ) => (
-              <CreatableSelect
-                onBlur={onBlur}
-                onChange={(e) => handleChangeCustomer(e, "customer")}
-                inputRef={ref}
-                id="customer"
-                name="customer"
-                isClearable
-                options={subsidiaryLedgerAccounts}
-                className={classes.reactSelect}
-                onCreateOption={(inputValue) => {
-                  setDialogValue({ name: inputValue });
-                  toggleOpen(true);
-                }}
-              />
-            )}
-          />
-
-          <p className={classes.p}>{errors.customer?.message}</p>
-        </Grid>
+        <Grid item xs={12}></Grid>
         <Grid
           item
           lg={12}
@@ -778,13 +793,14 @@ const SalesInvoice = () => {
           xs={12}
           className={classes.textField}
         >
-          <Controller
-            as={TextField}
+          <TextField
+            //as={TextField}
             name="billingAddress"
-            id="billingAddress"
-            control={control}
-            defaultValue=""
+            //id="billingAddress"
+            //control={control}
+            //defaultValue=""
             //ref={register}
+            inputRef={register}
             label="Billing Address"
             margin="normal"
             multiline
@@ -794,144 +810,40 @@ const SalesInvoice = () => {
             InputLabelProps={{ shrink: true }}
             className={classes.billingAddress}
           />
-          <p className={classes.p}>{errors.billingAddress?.message}</p>
         </Grid>
-        <Grid item xs={2} className={classes.textField}>
-          <Controller
-            as={TextField}
-            name="invoiceNo"
-            control={control}
-            label="Invoice No"
-            defaultValue=""
-          />
-          <p className={classes.p}>{errors.invoiceNo?.message}</p>
-        </Grid>
+        <Grid item xs={2} className={classes.textField}></Grid>
 
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <Grid item xs={2} className={classes.textField}>
-            <Controller
-              control={control}
-              name="date"
-              render={({ onChange, onBlur, value, name, ref }) => (
-                <KeyboardDatePicker
-                  autoOk
-                  //disabled={isLoading}
-                  //error={Boolean(errors?.myDateField)}
-                  format="MM/dd/yyyy"
-                  //fullWidth={true}
-                  //helperText={getHelperText("date")}
-                  inputRef={ref}
-                  //inputVariant="inline"
-                  label="Invoice Date"
-                  name={name}
-                  id="date"
-                  onBlur={onBlur}
-                  onChange={onChange}
-                  size="small"
-                  variant="filled"
-                  value={value}
-                  style={{ marginTop: "3px" }}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={2} className={classes.textField}>
-            <Controller
-              control={control}
-              name="dueDate"
-              render={({ onChange, onBlur, value, name, ref }) => (
-                <KeyboardDatePicker
-                  //style={{ paddingBottom: "20px" }}
-                  autoOk
-                  //disabled={isLoading}
-                  //error={Boolean(errors?.myDateField)}
-                  format="MM/dd/yyyy"
-                  //fullWidth={true}
-                  //helperText={getHelperText("date")}
-                  inputRef={ref}
-                  //inputVariant="inline"
-                  label="Due Date"
-                  name={name}
-                  id="dueDate"
-                  onBlur={onBlur}
-                  onChange={onChange}
-                  size="small"
-                  variant="filled"
-                  value={value}
-                  style={{ marginTop: "3px" }}
-                />
-              )}
-            />
-          </Grid>
-        </MuiPickersUtilsProvider>
-
-        <Grid item xs={1} className={classes.textField}>
-          <Controller
-            as={TextField}
-            name="terms"
-            control={control}
-            //ref={register}
-            type="number"
-            label="Terms"
-            defaultValue=""
-          />
-        </Grid>
-        <Grid item xs={5} className={classes.textField}>
-          <Controller
-            as={TextField}
-            name="reference"
-            control={control}
-            //ref={register}
-            label="Reference"
-            defaultValue=""
-          />
-          <p className={classes.p}>{errors.reference?.message}</p>
-        </Grid>
+        <Grid item xs={1} className={classes.textField}></Grid>
+        <Grid item xs={5} className={classes.textField}></Grid>
       </Grid>
+
       {fields.map((item, index) => {
         return (
           <div key={item.id}>
             <Grid container justify="space-around" direction="row">
-              <Controller
-                as={TextField}
-                id={`items[${index}].id`}
-                name={`items[${index}].id`}
-                control={control}
-                label="id"
-                className={classes.hide}
-                margin="dense"
-                defaultValue={item.id}
-                variant="outlined"
-                size="small"
-                //required={true}
-              />
               <Grid item xs={2}>
                 <Controller
                   control={control}
-                  id={`items[${index}].salesItem`}
                   name={`items[${index}].salesItem`}
-                  defaultValue={null}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
-                      //onBlur={onBlur}
-                      //onChange={(e) =>
-                      //  handleChange(e, `items[${index}].salesItem`)
-                      //}
+                      onBlur={onBlur}
                       onChange={(e) =>
-                        handleCostsChange(e, index, `items[${index}].salesItem`)
+                        handleChange(e, `items[${index}].salesItem`)
                       }
+                      defaultValue={salesItems.find(
+                        (obj) =>
+                          Number(obj.value) ===
+                          Number(costs[index].salesItem.value)
+                      )}
                       inputRef={ref}
                       options={salesItems}
                       className={classes.reactSelect}
                       placeholder="Please select Sales Items"
                       styles={customStyles}
-                      onCreateOption={(inputValue) => {
-                        setDialogValueSales({ name: inputValue });
-                        toggleOpenSales(true);
-                      }}
                     />
                   )}
                 />
@@ -939,30 +851,30 @@ const SalesInvoice = () => {
                   {errors?.["items"]?.[index]?.["salesItem"]?.["message"]}
                 </p>
               </Grid>
+
               <Grid item xs={3}>
-                <Controller
-                  as={TextField}
+                <TextField
                   id={`items[${index}].description`}
                   name={`items[${index}].description`}
-                  control={control}
+                  defaultValue={`${item.description}`}
                   label="Description"
                   className={classes.textField2}
+                  //onChange={() => alert("a")}
                   margin="dense"
-                  defaultValue=""
+                  //defaultValue=""
                   variant="outlined"
-                  size="small"
+                  //size="small"
                   //required={true}
+                  inputRef={register}
                 />
-                <p className={classes.p}>
-                  {errors?.["items"]?.[index]?.["description"]?.["message"]}
-                </p>
               </Grid>
+
               <Grid item xs={1}>
                 <Controller
                   control={control}
                   id={`items[${index}].qty`}
                   name={`items[${index}].qty`}
-                  //defaultValue={null}
+                  //defaultValue={`${item.qty}`}
                   //name="qty"
                   render={(
                     { onChange, onBlur, value, name, ref },
@@ -971,10 +883,15 @@ const SalesInvoice = () => {
                     <TextField
                       //name="qty"
                       name={`items[${index}].qty`}
-                      defaultValue={null}
+                      defaultValue={`${item.qty}`}
                       variant="outlined"
                       onChange={(e) =>
-                        handleCostsChange(e, index, `items[${index}].qty`)
+                        handleCostsChange(
+                          e,
+                          index,
+                          `qty`,
+                          `items[${index}].qty`
+                        )
                       }
                       //ref={register({})}
                       placeholder="Quantity"
@@ -985,6 +902,7 @@ const SalesInvoice = () => {
                       size="small"
                       inputProps={{ "data-id": index }}
                       step="0.01"
+                      inputRef={register}
                     />
                   )}
                 />
@@ -1007,9 +925,14 @@ const SalesInvoice = () => {
                       name={`items[${index}].unitPrice`}
                       variant="outlined"
                       onChange={(e) =>
-                        handleCostsChange(e, index, `items[${index}].unitPrice`)
+                        handleCostsChange(
+                          e,
+                          index,
+                          `unitPrice`,
+                          `items[${index}].unitPrice`
+                        )
                       }
-                      defaultValue={null}
+                      defaultValue={`${item.unitPrice}`}
                       placeholder="Unit Price"
                       className={classes.textField3}
                       size="small"
@@ -1021,6 +944,7 @@ const SalesInvoice = () => {
                       //inputProps={{
                       //  pattern: "[0-9]+(.[0-9][0-9]?)?",
                       //}}
+                      inputRef={register}
                     />
                   )}
                 />
@@ -1033,28 +957,25 @@ const SalesInvoice = () => {
                   control={control}
                   id={`items[${index}].taxRateItem`}
                   name={`items[${index}].taxRateItem`}
-                  defaultValue={null}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
-                      //onBlur={onBlur}
-                      //onChange={(e) =>
-                      //handleChangeSubTotal(
-                      //  e,
-                      //`items[${index}].taxRateItem`,
-                      // index
-                      //)
-                      // }
                       onChange={(e) =>
                         handleCostsChange(
                           e,
                           index,
+                          `taxRateItem`,
                           `items[${index}].taxRateItem`
                         )
                       }
-                      inputRef={ref}
+                      defaultValue={taxRates.find(
+                        (obj) =>
+                          Number(obj.value) ===
+                          Number(costs[index].taxRateItem.value)
+                      )}
+                      inputRef={register}
                       options={taxRates}
                       className={classes.reactSelect}
                       placeholder="Please select Tax Rates"
@@ -1098,20 +1019,21 @@ const SalesInvoice = () => {
                   ) => (
                     <CreatableSelect
                       onChange={(e) =>
-                        handleCostsChange(
-                          e,
-                          index,
-                          `items[${index}].trackingItem`
-                        )
+                        handleChange(e, `items[${index}].trackingItem`)
                       }
+                      defaultValue={trackings.find(
+                        (obj) =>
+                          Number(obj.value) ===
+                          Number(costs[index].trackingItem.value)
+                      )}
                       onCreateOption={(inputValue) => {
                         setDialogValueTracking({ name: inputValue });
                         toggleOpenTracking(true);
                       }}
-                      inputRef={ref}
+                      inputRef={register}
                       options={trackings}
                       className={classes.reactSelect}
-                      placeholder="Please select Tracking"
+                      placeholder="Tracking"
                       styles={customStyles}
                     />
                   )}
@@ -1147,14 +1069,18 @@ const SalesInvoice = () => {
           setItemCount(itemCount - 1);
           append({
             id: itemCount,
-            qty: 1,
-            unitPrice: 1,
+            description: "",
+            qty: "",
+            unitPrice: "",
             taxRateItem: null,
             amount: "",
           });
-          setCosts((prevCosts) => [...prevCosts, { id: itemCount }]);
+          setCosts((prevCosts) => [
+            ...prevCosts,
+            { id: itemCount, taxRateItem: { value: null }, description: "" },
+          ]);
           //setCosts([{id: itemCount}]);
-          //console.log(costs);
+          console.log(costs);
         }}
       >
         Add Line
@@ -1587,6 +1513,9 @@ const SalesInvoice = () => {
         Submit
       </Button>
     </form>
+  ) : (
+    //);
+    "loading...."
   );
 };
 export default SalesInvoice;

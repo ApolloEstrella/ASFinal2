@@ -37,6 +37,8 @@ import { Formik, Form, ErrorMessage, useFormikContext, useField } from "formik";
 import Select from "react-select";
 import ReactDatePicker from "react-datepicker";
 import { value } from "numeral";
+import moment from "moment";
+import MomentUtils from "@date-io/moment";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -51,7 +53,7 @@ const useStyles = makeStyles((theme) =>
         paddingTop: "0px",
         zIndex: "0",
         marginTop: "0px",
-        paddingBottom: "5px"
+        paddingBottom: "5px",
       },
     },
     textField2: {
@@ -62,7 +64,7 @@ const useStyles = makeStyles((theme) =>
       width: "100%",
       zIndex: "0",
       //paddingTop: "8px",
-      marginTop: "8px"
+      marginTop: "8px",
     },
     textFieldReadOnly: {
       "& > *": {
@@ -111,7 +113,7 @@ const useStyles = makeStyles((theme) =>
     },
     billingAddress: {
       marginTop: "15px",
-      paddingBottom: "0px"
+      paddingBottom: "0px",
     },
   })
 );
@@ -136,14 +138,14 @@ let renderCount = 0;
 
 const initialValues = {
   id: -1,
-  customer: null,
+  customer: { value: 0, label: "" },
   billingAddress: "",
   invoiceNo: "",
   date: new Date(),
   dueDate: new Date(),
   terms: "",
   reference: "",
-  items: [
+  /* items: [
     {
       id: -1234567,
       salesItem: null,
@@ -153,7 +155,7 @@ const initialValues = {
       taxRateItem: null,
       trackingItem: null,
     },
-  ],
+  ], */
 };
 
 const SalesInvoice = () => {
@@ -167,9 +169,10 @@ const SalesInvoice = () => {
     setValue,
   } = useForm({
     //mode: "onChange",
-    //defaultValues: initialValues,
+    //defaultValues: { invoiceNo: 1234 },
     resolver: yupResolver(validationSchema),
   });
+
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
     {
       control,
@@ -219,6 +222,47 @@ const SalesInvoice = () => {
   const [subTotal, setSubTotal] = useState(0);
   const [totalTaxes, setTotalTaxes] = useState();
   const [totalAmount, setTotalAmount] = useState(0);
+  const [invoiceData, setInvoiceData] = useState();
+
+  useEffect(() => {
+    fetch("https://localhost:44302/api/sales/GetAccount?id=9092", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        const fields = [
+          "customer",
+          "billingAddress",
+          "invoiceNo",
+          "date",
+          "dueDate",
+          "terms",
+          "reference",
+          "items",
+        ];
+
+        const detailFields = ["description", "qty", "unitPrice"];
+
+        fields.forEach((field) => setValue(field, data[field]));
+
+        var fieldCounter = 0;
+        for (var i = 0; i < data.items.length; i++) {
+          setValue(`items[${i}].description`, data.items[i]["description"]);
+          setValue(`items[${i}].qty`, data.items[i]["qty"]);
+          setValue(`items[${i}].unitPrice`, data.items[i]["unitPrice"]);
+          var x = data.items[i]["unitPrice"];
+          console.log(x);
+        }
+
+        //setInvoiceData(data);
+      })
+      .catch(function (error) {
+        console.log("network error");
+      });
+  }, [setValue]);
 
   useEffect(() => {
     fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
@@ -610,7 +654,7 @@ const SalesInvoice = () => {
       {<DeleteForeverIcon onClick={() => removeAttachment(file, files)} />}
     </li>
   ));
- 
+
   const onSubmit = (values, { resetForm }) => {
     const x = JSON.stringify(values);
     console.log("data", values);
@@ -618,8 +662,36 @@ const SalesInvoice = () => {
     console.log(values.id);
     //values.items = null;
     //values.files = null;
-    values.date === undefined ? new Date() : values.date.toISOString();
-    values.dueDate === undefined ? new Date() : values.dueDate.toISOString();
+    //values.date === undefined ? new Date() : values.date.toISOString();
+    //values.dueDate === undefined ? new Date() : values.dueDate.toISOString();
+
+    if (values.date === undefined) {
+      const currentDate = new Date();
+      values.date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDay(),
+        currentDate.getHours(),
+        currentDate.getMinutes(),
+        currentDate.getSeconds()
+      );
+    }
+
+    if (values.dueDate === undefined) {
+      const currentDate = new Date();
+      values.dueDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDay(),
+        currentDate.getHours(),
+        currentDate.getMinutes(),
+        currentDate.getSeconds()
+      );
+    }
+
+    //values.date = values.date.toISOString()
+    //values.dueDate = values.dueDate.toISOString()
+    //values.date = new Date(2025, 10, 9);
     values.terms = Number(values.terms);
 
     fetch("https://localhost:44302/api/sales/addaccount", {
@@ -693,6 +765,10 @@ const SalesInvoice = () => {
   //  setSelectedDate(date);
   //};
 
+  const [selectedDate1, setSelectedDate] = useState(
+    new Date("2020-09-11T12:00:00")
+  );
+
   const [selectedDate, handleDateChange] = useState(new Date().toISOString());
 
   renderCount++;
@@ -721,6 +797,8 @@ const SalesInvoice = () => {
                 onBlur={onBlur}
                 onChange={(e) => handleChangeCustomer(e, "customer")}
                 inputRef={ref}
+                id="customer"
+                name="customer"
                 isClearable
                 options={subsidiaryLedgerAccounts}
                 className={classes.reactSelect}
@@ -765,52 +843,69 @@ const SalesInvoice = () => {
             as={TextField}
             name="invoiceNo"
             control={control}
-            //ref={register}
             label="Invoice No"
             defaultValue=""
           />
           <p className={classes.p}>{errors.invoiceNo?.message}</p>
         </Grid>
 
-        <Grid item xs={2} className={classes.textField}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <Grid item xs={2} className={classes.textField}>
             <Controller
               control={control}
-              label="Invoice Date"
-              initialFocusedDate={new Date()}
-              defaultValue={new Date()}
-              as={KeyboardDatePicker}
               name="date"
-              clearable
-              value={new Date()}
-              //placeholder="10/10/2018"
-              onChange={(date) => handleDateChange(date)}
-              //minDate={new Date()}
-              format="MM/dd/yyyy"
+              render={({ onChange, onBlur, value, name, ref }) => (
+                <KeyboardDatePicker
+                  autoOk
+                  //disabled={isLoading}
+                  //error={Boolean(errors?.myDateField)}
+                  format="MM/dd/yyyy"
+                  //fullWidth={true}
+                  //helperText={getHelperText("date")}
+                  inputRef={ref}
+                  //inputVariant="inline"
+                  label="Invoice Date"
+                  name={name}
+                  id="date"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
             />
-          </MuiPickersUtilsProvider>
-        </Grid>
-
-        <Grid item xs={2} className={classes.textField}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Controller
-                control={control}
-                label="Due Date"
-                initialFocusedDate={new Date()}
-                defaultValue={new Date()}
-                as={KeyboardDatePicker}
-                name="dueDate"
-                clearable
-                value={new Date()}
-                //placeholder="10/10/2018"
-                onChange={(date) => handleDateChange(date)}
-                //minDate={new Date()}
-                format="MM/dd/yyyy"
-              />
-            </MuiPickersUtilsProvider>
-          </MuiPickersUtilsProvider>
-        </Grid>
+          </Grid>
+          <Grid item xs={2} className={classes.textField}>
+            <Controller
+              control={control}
+              name="dueDate"
+              render={({ onChange, onBlur, value, name, ref }) => (
+                <KeyboardDatePicker
+                  //style={{ paddingBottom: "20px" }}
+                  autoOk
+                  //disabled={isLoading}
+                  //error={Boolean(errors?.myDateField)}
+                  format="MM/dd/yyyy"
+                  //fullWidth={true}
+                  //helperText={getHelperText("date")}
+                  inputRef={ref}
+                  //inputVariant="inline"
+                  label="Due Date"
+                  name={name}
+                  id="dueDate"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
+            />
+          </Grid>
+        </MuiPickersUtilsProvider>
 
         <Grid item xs={1} className={classes.textField}>
           <Controller
@@ -918,20 +1013,20 @@ const SalesInvoice = () => {
                     <TextField
                       //name="qty"
                       name={`items[${index}].qty`}
-                      defaultValue={null}
+                     // defaultValue={null}
                       variant="outlined"
                       onChange={(e) =>
                         handleCostsChange(e, index, `items[${index}].qty`)
                       }
-                      //ref={register({})}
+                      ref={register({})}
                       placeholder="Quantity"
                       label="Quantity"
                       className={classes.textField3}
                       //styles={customStyles}
-                      type="Number"
+                      //type="Number"
                       size="small"
-                      inputProps={{ "data-id": index }}
-                      step="0.01"
+                      //inputProps={{ "data-id": index }}
+                      //step="0.01"
                     />
                   )}
                 />
@@ -1071,7 +1166,7 @@ const SalesInvoice = () => {
                 <Button
                   variant="contained"
                   color="secondary"
-                  //className={classes.deleteButton}
+                  className={classes.deleteButton}
                   startIcon={<DeleteIcon />}
                   onClick={() => {
                     setOpenDelete(true);
@@ -1536,5 +1631,4 @@ const SalesInvoice = () => {
     </form>
   );
 };
-
 export default SalesInvoice;
