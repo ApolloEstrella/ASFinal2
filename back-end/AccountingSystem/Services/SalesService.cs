@@ -59,7 +59,8 @@ namespace AccountingSystem.Services
                                                        Qty = x.InvoiceQuantity,
                                                        UnitPrice = x.InvoiceUnitPrice,
                                                        TaxRateItem = new TaxRateItem { Value = x.InvoiceTaxRateId, Label = x.Description, Rate = x.Rate },
-                                                       TrackingItem = new TrackingItem { Value = x.InvoiceTrackingId }
+                                                       TrackingItem = new TrackingItem { Value = x.InvoiceTrackingId },
+                                                       Amount= Math.Round((x.InvoiceQuantity * x.InvoiceUnitPrice), 2).ToString("#,##0.00")
                                                    }).ToList();
 
             return (from a in _serverContext.LedgerMasters
