@@ -63,6 +63,34 @@ namespace AccountingSystem.Services
                                                        Amount= Math.Round((x.InvoiceQuantity * x.InvoiceUnitPrice), 2).ToString("#,##0.00")
                                                    }).ToList();
 
+            var x = (from a in _serverContext.LedgerMasters
+                     select new
+                     {
+                         a.Id,
+                         a.SubsidiaryLedgerAccountId,
+                         a.InvoiceBillingAddress,
+                         a.InvoiceNo,
+                         a.InvoiceDate,
+                         a.InvoiceDueDate,
+                         a.InvoiceTerms,
+                         a.InvoiceReference
+
+                     })
+                    .Select(x => new CustomerInvoiceModel
+                    {
+                        Id = x.Id,
+                        Customer = new Customer { Value = x.SubsidiaryLedgerAccountId },
+                        BillingAddress = x.InvoiceBillingAddress,
+                        InvoiceNo = x.InvoiceNo,
+                        Date = x.InvoiceDate,
+                        DueDate = x.InvoiceDueDate,
+                        Terms = x.InvoiceTerms,
+                        Reference = x.InvoiceReference,
+                        Items = items
+                    })
+                    .Where(w => w.Id == id)
+                    .FirstOrDefault();
+
             return (from a in _serverContext.LedgerMasters
                     select new
                     {

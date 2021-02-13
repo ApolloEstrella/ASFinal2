@@ -22,7 +22,7 @@ function SalesInvoiceApp() {
       });
   }, []);
 
-  return data ? <SalesInvoice preloadedValues={null} /> : <div>Loading...</div>;
+  return data ? <SalesInvoice preloadedValues={data} /> : <div>Loading...</div>;
 }
 
 export default SalesInvoiceApp;

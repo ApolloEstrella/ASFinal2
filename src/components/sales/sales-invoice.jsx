@@ -122,14 +122,28 @@ const validationSchema = Yup.object().shape({
   billingAddress: Yup.string().required("Enter Billing Address."),
   invoiceNo: Yup.string().required("Enter Invoice No."),
   customer: Yup.object().nullable().required("Enter Customer"),
+  //terms: Yup.number(),
   items: Yup.array().of(
     Yup.object().shape({
       salesItem: Yup.object().nullable().required("Sales Item is required"),
-      description: Yup.string().required("Enter Description"),
+      description: Yup.string().nullable().required("Enter Description"),
       taxRateItem: Yup.object().nullable().required("Tax Rate is required"),
       trackingItem: Yup.object().nullable().required("Tracking is required"),
-      qty: Yup.number().nullable().required("Quantity is required"),
-      unitPrice: Yup.number().nullable().required("Unit Price is required"),
+      qty: Yup.number()
+        .nullable()
+        .typeError("Quantity is required")
+        .required("Quantity is required"),
+      unitPrice: Yup.number()
+        .nullable()
+        .typeError("Unit Price is required")
+        .required("Unit Price is required"),
+      //Yup.string()
+      //.nullable()
+      //.typeError("Unit Price is required")
+      //.required("Unit Price is required")
+      //.test("is-decimal", "invalid decimal", (value) =>
+      //  (value + "").match(/^\d+(\.\d{1,2})?$/)
+      //),
     })
   ),
 });
@@ -138,7 +152,7 @@ let renderCount = 0;
 
 const initialValues = {
   id: -1,
-  customer: { value: 0, label: "" },
+  customer: { value: null, label: null },
   billingAddress: "",
   invoiceNo: "",
   date: new Date(),
@@ -160,9 +174,15 @@ const initialValues = {
 
 const SalesInvoice = ({ preloadedValues }) => {
   const [costs, setCosts] = useState([]);
-  const loadPreLoadedValues = useRef(true)
+  const loadPreLoadedValues = useRef(true);
   useEffect(() => {
-    if (preloadedValues !== null) setCosts(preloadedValues.items);
+    if (preloadedValues !== null) {
+      setCosts(preloadedValues.items);
+      preloadedValues.date = moment(preloadedValues.date).format("MM/DD/YYYY");
+      preloadedValues.dueDate = moment(preloadedValues.dueDate).format(
+        "MM/DD/YYYY"
+      );
+    }
   }, []);
   const {
     register,
@@ -176,7 +196,7 @@ const SalesInvoice = ({ preloadedValues }) => {
     //mode: "onChange",
     defaultValues: preloadedValues === null ? {} : preloadedValues,
 
-    //resolver: yupResolver(validationSchema),
+    resolver: yupResolver(validationSchema),
   });
 
   const invoice = useRef();
@@ -489,10 +509,12 @@ const SalesInvoice = ({ preloadedValues }) => {
         );
         rate = _tempCosts[index][field].rate / 100;
       } else {
-        _tempCosts[index][field] = event.target.value;
+        _tempCosts[index][field] = Number(event.target.value);
         setValue(
           fieldName,
-          Number(event.target.value),
+          event.target.value === "" || isNaN(event.target.value)
+            ? ""
+            : event.target.value,
           { shouldValidate: true },
           { shouldDirty: true }
         );
@@ -523,7 +545,10 @@ const SalesInvoice = ({ preloadedValues }) => {
   };
 
   const handleDeleteDisplayTotal = (handleDelete) => {
-    var _tempCosts = preloadedValues != null && loadPreLoadedValues.current === true ? preloadedValues.items : costs;
+    var _tempCosts =
+      preloadedValues != null && loadPreLoadedValues.current === true
+        ? preloadedValues.items
+        : costs;
 
     loadPreLoadedValues.current = false;
 
@@ -668,16 +693,20 @@ const SalesInvoice = ({ preloadedValues }) => {
     const x = JSON.stringify(values);
     console.log("data", values);
     values.files = files;
-    values.items = costs;
-    console.log(values.id);
+    //values.items = costs;
+    //console.log(values.id);
     //values.items = null;
     //values.files = null;
-    //values.date === undefined ? new Date() : values.date.toISOString();
-    //values.dueDate === undefined ? new Date() : values.dueDate.toISOString();
+    //if (values.date === undefined) new Date();
+    //if (values.dueDate === undefined) new Date();
 
-    //values.date = values.date.toISOString()
-    //values.dueDate = values.dueDate.toISOString()
-    //values.date = new Date(2025, 10, 9);
+    values.date = new Date(values.date);
+    values.dueDate = new Date(values.dueDate);
+    //values.date = new Date(values.date.ge, 10, 9);
+    //values.dueDate = new Date(values.dueDate.year, 7, 8);
+    
+    //values.qty = Number(values.qty)
+    //values.unitPrice = Number(values.unitPrice)
     values.terms = Number(values.terms);
 
     fetch("https://localhost:44367/api/sales/addaccount", {
@@ -710,6 +739,8 @@ const SalesInvoice = ({ preloadedValues }) => {
             setSubTotal(0);
             setTotalTaxes(0);
             setTotalAmount(0);
+            setValue("terms", null);
+            setValue("customer", null);
             console.log("successful");
           })
           .catch(function (error) {
@@ -755,7 +786,9 @@ const SalesInvoice = ({ preloadedValues }) => {
     new Date("2020-09-11T12:00:00")
   );
 
-  const [selectedDate, handleDateChange] = useState(new Date().toISOString());
+  //const [selectedDate, handleDateChange] = useState(new Date().toISOString());
+  const [selectedDate, handleDateChange] = useState(new Date());
+  const [selectedDueDate, handleDueDateChange] = useState(new Date());
 
   renderCount++;
 
@@ -770,6 +803,7 @@ const SalesInvoice = ({ preloadedValues }) => {
         <Grid item xs={12}>
           <Controller
             control={control}
+            //id="customer"
             name="customer"
             //defaultValue={null}
             render={(
@@ -777,9 +811,11 @@ const SalesInvoice = ({ preloadedValues }) => {
               { invalid, isTouched, isDirty }
             ) => (
               <CreatableSelect
+                //id="customer"
+                //name="customer"
                 onBlur={onBlur}
                 onChange={(e) => handleChangeCustomer(e, "customer")}
-                inputRef={register}
+                inputRef={ref}
                 isClearable
                 options={subsidiaryLedgerAccounts}
                 defaultValue={
@@ -788,7 +824,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                         (obj) =>
                           Number(obj.value) === preloadedValues.customer.value
                       )
-                    : ""
+                    : null
                 }
                 className={classes.reactSelect}
                 onCreateOption={(inputValue) => {
@@ -808,96 +844,173 @@ const SalesInvoice = ({ preloadedValues }) => {
           xs={12}
           className={classes.textField}
         >
-          <TextField
-            //as={TextField}
+          <Controller
+            control={control}
             name="billingAddress"
-            //id="billingAddress"
-            //control={control}
-            //defaultValue=""
-            //ref={register}
-            inputRef={register}
-            label="Billing Address"
-            margin="normal"
-            multiline
-            rows={4}
-            rowsMax={4}
-            variant="outlined"
-            InputLabelProps={{ shrink: true }}
-            className={classes.billingAddress}
+            render={(
+              { onChange, onBlur, value, name, ref },
+              { invalid, isTouched, isDirty }
+            ) => (
+              <TextField
+                name="billingAddress"
+                inputRef={register}
+                label="Billing Address"
+                margin="normal"
+                multiline
+                rows={4}
+                rowsMax={4}
+                variant="outlined"
+                InputLabelProps={{ shrink: true }}
+                className={classes.billingAddress}
+              />
+            )}
           />
+          <p className={classes.p}>{errors.billingAddress?.message}</p>
         </Grid>
         <Grid item xs={2} className={classes.textField}>
           <Controller
-            as={TextField}
-            name="invoiceNo"
             control={control}
-            //ref={register}
-            label="Invoice No"
-            defaultValue=""
+            name="invoiceNo"
+            render={(
+              { onChange, onBlur, value, name, ref },
+              { invalid, isTouched, isDirty }
+            ) => (
+              <TextField
+                name="invoiceNo"
+                inputRef={register}
+                label="Invoice No"
+                defaultValue=""
+              />
+            )}
           />
           <p className={classes.p}>{errors.invoiceNo?.message}</p>
         </Grid>
-
         <Grid item xs={2} className={classes.textField}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Controller
               control={control}
-              label="Invoice Date"
-              initialFocusedDate={new Date()}
-              defaultValue={new Date()}
-              as={KeyboardDatePicker}
               name="date"
-              clearable
-              value={new Date()}
-              //placeholder="10/10/2018"
-              onChange={(date) => handleDateChange(date)}
-              //minDate={new Date()}
-              format="MM/dd/yyyy"
+              render={({ onChange, onBlur, value, name, ref }) => (
+                <KeyboardDatePicker
+                  name="date"
+                  value={value}
+                  format="MM/dd/yyyy"
+                  inputRef={register}
+                  label="Invoice Date"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  //value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
+            />
+          </MuiPickersUtilsProvider>
+        </Grid>
+        <Grid item xs={2} className={classes.textField}>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Controller
+              control={control}
+              name="dueDate"
+              render={({ onChange, onBlur, value, name, ref }) => (
+                <KeyboardDatePicker
+                  name="dueDate"
+                  value={value}
+                  format="MM/dd/yyyy"
+                  inputRef={register}
+                  label="Invoice Date"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  //value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
             />
           </MuiPickersUtilsProvider>
         </Grid>
 
-        <Grid item xs={2} className={classes.textField}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Controller
-                control={control}
-                label="Due Date"
-                initialFocusedDate={new Date()}
-                defaultValue={new Date()}
-                as={KeyboardDatePicker}
-                name="dueDate"
-                clearable
-                value={new Date()}
-                //placeholder="10/10/2018"
-                onChange={(date) => handleDateChange(date)}
-                //minDate={new Date()}
-                format="MM/dd/yyyy"
-              />
-            </MuiPickersUtilsProvider>
-          </MuiPickersUtilsProvider>
-        </Grid>
-
+        {/*    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <Grid item xs={2} className={classes.textField}>
+            <Controller
+              control={control}
+              name="date"
+              render={({ onChange, onBlur,  name, ref }) => (
+                <KeyboardDatePicker
+                  name="date"
+                  defaultValue={new Date()}
+                  format="MM/dd/yyyy"
+                  inputRef={register}
+                  label="Invoice Date"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  //value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={2} className={classes.textField}>
+            <Controller
+              control={control}
+              name="dueDate"
+              render={({ onChange, onBlur, name, ref }) => (
+                <KeyboardDatePicker
+                  defaultValue={new Date()}
+                  format="MM/dd/yyyy"
+                  inputRef={register}
+                  label="Due Date"
+                  name="dueDate"
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  size="small"
+                  variant="filled"
+                  //value={value}
+                  style={{ marginTop: "3px" }}
+                />
+              )}
+            />
+          </Grid>
+        </MuiPickersUtilsProvider> */}
         <Grid item xs={1} className={classes.textField}>
           <Controller
-            as={TextField}
-            name="terms"
             control={control}
-            //ref={register}
-            type="number"
-            label="Terms"
-            defaultValue=""
+            name="terms"
+            render={(
+              { onChange, onBlur, value, name, ref },
+              { invalid, isTouched, isDirty }
+            ) => (
+              <TextField
+                name="terms"
+                inputRef={register}
+                type="number"
+                label="Terms"
+                defaultValue=""
+              />
+            )}
           />
         </Grid>
         <Grid item xs={5} className={classes.textField}>
           <Controller
-            as={TextField}
-            name="reference"
             control={control}
-            //ref={register}
-            label="Reference"
-            defaultValue=""
+            name="reference"
+            render={(
+              { onChange, onBlur, value, name, ref },
+              { invalid, isTouched, isDirty }
+            ) => (
+              <TextField
+                name="reference"
+                inputRef={register}
+                label="Reference"
+                defaultValue=""
+              />
+            )}
           />
+
           <p className={classes.p}>{errors.reference?.message}</p>
         </Grid>
       </Grid>
@@ -915,6 +1028,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
+                      name={`items[${index}].salesItem`}
                       onBlur={onBlur}
                       onChange={(e) =>
                         handleChange(e, `items[${index}].salesItem`)
@@ -943,35 +1057,39 @@ const SalesInvoice = ({ preloadedValues }) => {
               </Grid>
 
               <Grid item xs={3}>
-                <TextField
-                  id={`items[${index}].description`}
-                  name={`items[${index}].description`}
-                  defaultValue={`${item.description}`}
-                  label="Description"
-                  className={classes.textField2}
-                  //onChange={() => alert("a")}
-                  margin="dense"
-                  //defaultValue=""
-                  variant="outlined"
-                  //size="small"
-                  //required={true}
-                  inputRef={register}
-                />
-              </Grid>
-
-              <Grid item xs={1}>
                 <Controller
                   control={control}
-                  id={`items[${index}].qty`}
-                  name={`items[${index}].qty`}
-                  //defaultValue={`${item.qty}`}
-                  //name="qty"
+                  name={`items[${index}].description`}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
                   ) => (
                     <TextField
-                      //name="qty"
+                      name={`items[${index}].description`}
+                      defaultValue={`${item.description}`}
+                      label="Description"
+                      className={classes.textField2}
+                      margin="dense"
+                      variant="outlined"
+                      ref={register}
+                      inputRef={register}
+                    />
+                  )}
+                />
+                <p className={classes.p}>
+                  {errors?.["items"]?.[index]?.["description"]?.["message"]}
+                </p>
+              </Grid>
+
+              <Grid item xs={1}>
+                <Controller
+                  control={control}
+                  name={`items[${index}].qty`}
+                  render={(
+                    { onChange, onBlur, value, name, ref },
+                    { invalid, isTouched, isDirty }
+                  ) => (
+                    <TextField
                       name={`items[${index}].qty`}
                       defaultValue={`${item.qty}`}
                       variant="outlined"
@@ -983,15 +1101,11 @@ const SalesInvoice = ({ preloadedValues }) => {
                           `items[${index}].qty`
                         )
                       }
-                      //ref={register({})}
                       placeholder="Quantity"
                       label="Quantity"
                       className={classes.textField3}
-                      //styles={customStyles}
-                      type="Number"
                       size="small"
                       inputProps={{ "data-id": index }}
-                      step="0.01"
                       inputRef={register}
                     />
                   )}
@@ -1003,15 +1117,12 @@ const SalesInvoice = ({ preloadedValues }) => {
               <Grid item xs={1}>
                 <Controller
                   control={control}
-                  id={`items[${index}].unitPrice`}
                   name={`items[${index}].unitPrice`}
-                  //defaultValue={0}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
                   ) => (
                     <TextField
-                      //onBlur={onBlur}
                       name={`items[${index}].unitPrice`}
                       variant="outlined"
                       onChange={(e) =>
@@ -1026,14 +1137,8 @@ const SalesInvoice = ({ preloadedValues }) => {
                       placeholder="Unit Price"
                       className={classes.textField3}
                       size="small"
-                      //styles={customStyles}
-                      //type="Number"
                       label="Unit Price"
-                      //ref={register({})}
-                      pattern="[+-]?\d+(?:[.,]\d+)?"
-                      //inputProps={{
-                      //  pattern: "[0-9]+(.[0-9][0-9]?)?",
-                      //}}
+                      //pattern="/^\d+\.\d{0,2}$/" //"[+-]?\d+(?:[.,]\d+)?"
                       inputRef={register}
                     />
                   )}
@@ -1045,13 +1150,13 @@ const SalesInvoice = ({ preloadedValues }) => {
               <Grid item xs={2}>
                 <Controller
                   control={control}
-                  id={`items[${index}].taxRateItem`}
                   name={`items[${index}].taxRateItem`}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
                   ) => (
                     <CreatableSelect
+                      name={`items[${index}].taxRateItem`}
                       onChange={(e) =>
                         handleCostsChange(
                           e,
@@ -1087,28 +1192,31 @@ const SalesInvoice = ({ preloadedValues }) => {
                 </p>
               </Grid>
               <Grid item xs={1}>
-                <TextField
-                  //as={TextField}
-                  id={`items[${index}].amount`}
+                <Controller
+                  control={control}
                   name={`items[${index}].amount`}
-                  //control={control}
-                  label="Sub Total"
-                  className={classes.textFieldReadOnly}
-                  margin="dense"
-                  defaultValue={`${item.amount}`}
-                  variant="outlined"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  inputRef={register}
-                  //required={true}
+                  render={(
+                    { onChange, onBlur, value, name, ref },
+                    { invalid, isTouched, isDirty }
+                  ) => (
+                    <TextField
+                      name={`items[${index}].amount`}
+                      defaultValue={`${item.amount}`}
+                      label="Sub Total"
+                      className={classes.textFieldReadOnly}
+                      margin="dense"
+                      variant="outlined"
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      inputRef={register}
+                    />
+                  )}
                 />
               </Grid>
               <Grid item xs={1}>
                 <Controller
                   control={control}
-                  id={`items[${index}].trackingItem`}
                   name={`items[${index}].trackingItem`}
-                  defaultValue={null}
                   render={(
                     { onChange, onBlur, value, name, ref },
                     { invalid, isTouched, isDirty }
@@ -1168,23 +1276,28 @@ const SalesInvoice = ({ preloadedValues }) => {
         variant="contained"
         onClick={() => {
           setItemCount(itemCount - 1);
-          append({
-            id: itemCount,
-            description: "",
-            qty: "",
-            unitPrice: "",
-            taxRateItem: null,
-            amount: "",
-          });
+          append(
+            {
+              id: itemCount,
+              salesItem: {},
+              description: "",
+              qty: "",
+              unitPrice: "",
+              taxRateItem: null,
+              amount: "",
+            },
+            false
+          );
 
-          
           setCosts((prevCosts) => [
             ...prevCosts,
             {
               id: itemCount,
+              qty: "",
+              unitPrice: "",
+              salesItem: { value: null },
               taxRateItem: { value: null },
               description: "",
-              salesItem: { value: null },
               trackingItem: { value: null },
             },
           ]);

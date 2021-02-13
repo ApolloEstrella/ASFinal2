@@ -1,34 +1,28 @@
-import React from "react";
-const rx_live = /^[+-]?\d*(?:[.,]\d*)?$/;
+import React, { Fragment, useState } from "react";
+import { KeyboardDatePicker } from "@material-ui/pickers";
 
-class TestForm extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      depositedAmount: "",
-    };
-  }
+function KeyboardDatePickerExample(props) {
+  const [selectedDate, handleDateChange] = useState(new Date());
 
-  handleDepositeAmountChange = (evt) => {
-    if (rx_live.test(evt.target.value))
-      this.setState({ depositedAmount: evt.target.value });
-  };
+  return (
+    <Fragment>
+      <KeyboardDatePicker
+        clearable
+        value={selectedDate}
+        placeholder="10/10/2018"
+        onChange={(date) => handleDateChange(date)}
+        minDate={new Date()}
+        format="MM/dd/yyyy"
+      />
 
-  render() {
-    return (
-      <form>
-        <input
-          type="text"
-          id="depositedAmount"
-          maxLength={9}
-          pattern="[+-]?\d+(?:[.,]\d+)?"
-          placeholder="Enter amount"
-          onChange={this.handleDepositeAmountChange}
-          value={this.state.depositedAmount}
-        />
-      </form>
-    );
-  }
+      <KeyboardDatePicker
+        placeholder="2018/10/10"
+        value={selectedDate}
+        onChange={(date) => handleDateChange(date)}
+        format="yyyy/MM/dd"
+      />
+    </Fragment>
+  );
 }
 
-export default TestForm;
+export default KeyboardDatePickerExample;
