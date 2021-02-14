@@ -18,7 +18,8 @@ namespace AccountingSystem.Models
         public short Terms { get; set; }
         public string Reference { get; set; }
         public List<CustomerInvoiceItemModel> Items { get; set; }
-       // public IFormFileCollection Files { get; set; }
+        public FileModel Files { get; set; }
+        public List<LoadFileModel> LoadFiles { get; set; }
     }
 
     public class Customer

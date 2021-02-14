@@ -39,6 +39,7 @@ import ReactDatePicker from "react-datepicker";
 import { value } from "numeral";
 import moment from "moment";
 import MomentUtils from "@date-io/moment";
+import { ptBR } from "date-fns/locale";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -174,6 +175,7 @@ const initialValues = {
 
 const SalesInvoice = ({ preloadedValues }) => {
   const [costs, setCosts] = useState([]);
+  const [files, setFiles] = useState([]);
   const loadPreLoadedValues = useRef(true);
   useEffect(() => {
     if (preloadedValues !== null) {
@@ -182,6 +184,7 @@ const SalesInvoice = ({ preloadedValues }) => {
       preloadedValues.dueDate = moment(preloadedValues.dueDate).format(
         "MM/DD/YYYY"
       );
+      setFiles(preloadedValues.loadFiles);
     }
   }, []);
   const {
@@ -389,6 +392,20 @@ const SalesInvoice = ({ preloadedValues }) => {
         setCounterTax(counterTax + 1);
         handleCloseTax();
       });
+  }
+
+  function removeFileAttachment(file) {
+    fetch(
+      "https://localhost:44367/api/FileAttachment/DeleteFile?fileName=" + file,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((results) => results.json())
+      .then((data) => {});
   }
 
   function handleNewTracking(values) {
@@ -662,7 +679,6 @@ const SalesInvoice = ({ preloadedValues }) => {
     description: dialogValueTracking.description,
   };
 
-  const [files, setFiles] = useState([]);
   const onDrop = React.useCallback((acceptedFiles) => {
     setFiles((prev) => [...prev, ...acceptedFiles]);
   }, []);
@@ -675,6 +691,9 @@ const SalesInvoice = ({ preloadedValues }) => {
     const result = $.grep(
       files,
       function (n, i) {
+        if (n.path === file.path) {
+          removeFileAttachment(file.path);
+        }
         return n.path !== file.path;
       },
       false
@@ -692,7 +711,7 @@ const SalesInvoice = ({ preloadedValues }) => {
   const onSubmit = (values, { resetForm }) => {
     const x = JSON.stringify(values);
     console.log("data", values);
-    values.files = files;
+    //values.files = files;
     //values.items = costs;
     //console.log(values.id);
     //values.items = null;
@@ -700,11 +719,15 @@ const SalesInvoice = ({ preloadedValues }) => {
     //if (values.date === undefined) new Date();
     //if (values.dueDate === undefined) new Date();
 
-    values.date = new Date(values.date);
-    values.dueDate = new Date(values.dueDate);
+    //values.date = new Date(values.date);
+    //values.dueDate = new Date(values.dueDate);
+
+    values.date = new Date(moment(values.date).format("MM/DD/YYYY"));
+    values.dueDate = new Date(moment(values.dueDate).format("MM/DD/YYYY"));
+
     //values.date = new Date(values.date.ge, 10, 9);
     //values.dueDate = new Date(values.dueDate.year, 7, 8);
-    
+
     //values.qty = Number(values.qty)
     //values.unitPrice = Number(values.unitPrice)
     values.terms = Number(values.terms);
@@ -720,7 +743,11 @@ const SalesInvoice = ({ preloadedValues }) => {
       .then((data) => {
         var formData = new FormData();
         for (let i = 0; i < files.length; i++) {
-          formData.append("Files", files[i]);
+          const file = files[i];
+          const x = file.hasOwnProperty("isAttached");
+          if (!file.hasOwnProperty("isAttached")) {
+            formData.append("Files", files[i]);
+          }
         }
         formData.append("id", Number(data));
         fetch("https://localhost:44367/api/sales/AddUploadedFiles", {
@@ -909,7 +936,7 @@ const SalesInvoice = ({ preloadedValues }) => {
           </MuiPickersUtilsProvider>
         </Grid>
         <Grid item xs={2} className={classes.textField}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <MuiPickersUtilsProvider locale={ptBR} utils={DateFnsUtils}>
             <Controller
               control={control}
               name="dueDate"

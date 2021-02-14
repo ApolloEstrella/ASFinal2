@@ -9,6 +9,7 @@ namespace AccountingSystem.Models
     public class FileModel
     {
         public int Id { get; set; }
+        //public int LedgerMasterId { get; set; }
         public string FileName { get; set; }
         public IFormFile FormFile { get; set; }
         public string[] FileNames { get; set; }

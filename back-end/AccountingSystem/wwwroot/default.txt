@@ -1,0 +1,23 @@
+defaultValues: {
+      items: [
+        {
+          id: 0,
+          customer: null,
+          billingAddress: "",
+          invoiceNo: "",
+          date: new Date(),
+          dueDate: new Date(),
+          terms: "",
+          reference: "",
+          items: [
+            {
+              id: 0,
+              salesItem: null,
+              description: "",
+              qty: null,
+              unitPrice: null,
+              taxRateItem: null,
+              trackingItem: null,
+            },
+          ],
+        }

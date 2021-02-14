@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using AccountingSystem.Models;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace AccountingSystem.Services
 {
@@ -28,7 +29,7 @@ namespace AccountingSystem.Services
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
                     select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name }).ToList()
-                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name }).OrderBy(x => x.InvoiceDate).ToList();                 
+                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name }).OrderBy(x => x.InvoiceDate).ToList();
         }
         public CustomerInvoiceModel GetSalesInvoice(int id)
         {
@@ -60,36 +61,25 @@ namespace AccountingSystem.Services
                                                        UnitPrice = x.InvoiceUnitPrice,
                                                        TaxRateItem = new TaxRateItem { Value = x.InvoiceTaxRateId, Label = x.Description, Rate = x.Rate },
                                                        TrackingItem = new TrackingItem { Value = x.InvoiceTrackingId },
-                                                       Amount= Math.Round((x.InvoiceQuantity * x.InvoiceUnitPrice), 2).ToString("#,##0.00")
+                                                       Amount = Math.Round((x.InvoiceQuantity * x.InvoiceUnitPrice), 2).ToString("#,##0.00")
                                                    }).ToList();
 
-            var x = (from a in _serverContext.LedgerMasters
-                     select new
-                     {
-                         a.Id,
-                         a.SubsidiaryLedgerAccountId,
-                         a.InvoiceBillingAddress,
-                         a.InvoiceNo,
-                         a.InvoiceDate,
-                         a.InvoiceDueDate,
-                         a.InvoiceTerms,
-                         a.InvoiceReference
+            List<LoadFileModel> files = (from a in _serverContext.UploadedFiles
+                                         select new
+                                         {
+                                             a.Id,
+                                             a.LedgerMasterId,
+                                             a.Path
+                                         }).ToList()
+                                         .Where(x => x.LedgerMasterId == id)
+                                         .Select(x => new LoadFileModel
+                                         {
+                                             Path = Path.GetFileName(x.Path)
+                                         })
+                                         .ToList();
+                                         
+             
 
-                     })
-                    .Select(x => new CustomerInvoiceModel
-                    {
-                        Id = x.Id,
-                        Customer = new Customer { Value = x.SubsidiaryLedgerAccountId },
-                        BillingAddress = x.InvoiceBillingAddress,
-                        InvoiceNo = x.InvoiceNo,
-                        Date = x.InvoiceDate,
-                        DueDate = x.InvoiceDueDate,
-                        Terms = x.InvoiceTerms,
-                        Reference = x.InvoiceReference,
-                        Items = items
-                    })
-                    .Where(w => w.Id == id)
-                    .FirstOrDefault();
 
             return (from a in _serverContext.LedgerMasters
                     select new
@@ -114,7 +104,8 @@ namespace AccountingSystem.Services
                         DueDate = x.InvoiceDueDate,
                         Terms = x.InvoiceTerms,
                         Reference = x.InvoiceReference,
-                        Items = items
+                        Items = items,
+                        LoadFiles = files
                     })
                     .Where(w => w.Id == id)
                     .FirstOrDefault();
@@ -204,7 +195,7 @@ namespace AccountingSystem.Services
 
                 _serverContext.Database.CommitTransaction();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _serverContext.Database.RollbackTransaction();
             }
