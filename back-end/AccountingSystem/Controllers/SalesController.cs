@@ -24,6 +24,12 @@ namespace AccountingSystem.Controllers
             return Ok(_salesService.AddSalesInvoice(customerInvoiceModel));
         }
 
+        [HttpPut]
+        public ActionResult EditAccount([FromBody] CustomerInvoiceModel customerInvoiceModel)
+        {
+            return Ok(_salesService.EditSalesInvoice(customerInvoiceModel));
+        }
+
         [HttpPost]
         public ActionResult AddUploadedFiles([FromForm] FileModel files)
         {
@@ -37,11 +43,7 @@ namespace AccountingSystem.Controllers
             return Ok(_salesService.GetSalesInvoice(id));
         }
 
-        [HttpPut]
-        public ActionResult EditAccount([FromBody] CustomerInvoiceEditModel customerInvoiceEditModel)
-        {
-            return Ok(_salesService.EditSalesInvoice(customerInvoiceEditModel));
-        }
+        
 
         [HttpGet]
         public ActionResult GetAllAccounts()

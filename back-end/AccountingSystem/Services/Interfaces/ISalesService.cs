@@ -11,6 +11,6 @@ namespace AccountingSystem.Services.Interfaces
         int AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel);
         int AddUploadFiles(int id, FileModel files);
         CustomerInvoiceModel GetSalesInvoice(int id);
-        int EditSalesInvoice(CustomerInvoiceEditModel customerInvoiceEditModel);
+        int EditSalesInvoice(CustomerInvoiceModel customerInvoiceModell);
     }
 }

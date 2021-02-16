@@ -154,6 +154,56 @@ namespace AccountingSystem.Services
             return Id;
         }
 
+        public int EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
+        {
+            _serverContext.Database.BeginTransaction();
+            try
+            {
+                LedgerMaster ledgerMaster = _serverContext.LedgerMasters.Find(customerInvoiceModel.Id);
+                ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value;
+                ledgerMaster.InvoiceBillingAddress = customerInvoiceModel.BillingAddress;
+                ledgerMaster.InvoiceNo = customerInvoiceModel.InvoiceNo;
+                ledgerMaster.InvoiceDate = customerInvoiceModel.Date;
+                ledgerMaster.InvoiceDueDate = customerInvoiceModel.DueDate;
+                ledgerMaster.InvoiceTerms = customerInvoiceModel.Terms;
+                ledgerMaster.InvoiceReference = customerInvoiceModel.Reference;
+                ledgerMaster.TransactionType = "INV";
+                _serverContext.SaveChanges();
+
+                
+                foreach (var item in _serverContext.LedgerDetails.Where(x => x.LedgerMasterId == customerInvoiceModel.Id).ToList())
+                {
+                    LedgerDetail ledgerDetail = new LedgerDetail();
+                    ledgerDetail = _serverContext.LedgerDetails.Find(item.Id);
+                    if (ledgerDetail != null)
+                    {
+                        _serverContext.LedgerDetails.Remove(ledgerDetail);
+                        _serverContext.SaveChanges();
+                    }          
+                }
+                foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
+                {
+                    LedgerDetail ledgerDetail = new LedgerDetail();
+                    ledgerDetail.Id = 0;
+                    ledgerDetail.LedgerMasterId = ledgerMaster.Id;
+                    ledgerDetail.InvoiceSalesItemId = item.SalesItem.Value;
+                    ledgerDetail.InvoiceDescription = item.Description;
+                    ledgerDetail.InvoiceQuantity = item.Qty;
+                    ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
+                    ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
+                    ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
+                    _serverContext.LedgerDetails.Add(ledgerDetail);
+                    _serverContext.SaveChanges();
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            return customerInvoiceModel.Id;
+        }
+
         public int AddUploadFiles(int id, FileModel files)
         {
             if (files.Files != null)
@@ -172,32 +222,6 @@ namespace AccountingSystem.Services
                         _serverContext.SaveChanges();
                     }
                 }
-            }
-            return 1;
-        }
-
-        public int EditSalesInvoice(CustomerInvoiceEditModel customerInvoiceEditModel)
-        {
-            _serverContext.Database.BeginTransaction();
-            try
-            {
-                var ledgerMaster = _serverContext.LedgerMasters.Find(customerInvoiceEditModel.Id);
-                ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceEditModel.Customer;
-                ledgerMaster.InvoiceBillingAddress = customerInvoiceEditModel.BillingAddress;
-                ledgerMaster.InvoiceNo = customerInvoiceEditModel.InvoiceNo;
-                ledgerMaster.InvoiceDate = customerInvoiceEditModel.Date;
-                ledgerMaster.InvoiceDueDate = customerInvoiceEditModel.DueDate;
-                ledgerMaster.InvoiceTerms = customerInvoiceEditModel.Terms;
-                ledgerMaster.InvoiceReference = customerInvoiceEditModel.Reference;
-                _serverContext.SaveChanges();
-
-                //_serverContext.LedgerDetails.
-
-                _serverContext.Database.CommitTransaction();
-            }
-            catch (Exception ex)
-            {
-                _serverContext.Database.RollbackTransaction();
             }
             return 1;
         }

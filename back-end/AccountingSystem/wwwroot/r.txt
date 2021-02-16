@@ -1,0 +1,19 @@
+inputProps={{ "data-id": index }}
+
+const x = costs[0].items[0].qty
+
+0:
+items[0].qty: "7"
+items[0].unitPrice: "8"
+__proto__: Object
+1:
+items[1].qty: "5"
+items[1].unitPrice: "2"
+__proto__: Object
+2:
+items[2].qty: "9"
+items[2].unitPrice: "1"
+
+Hi Scott,
+  Yes I am comfortable communicating directly with the clients. I can actively interacting with them.
+  I will not be quiet. Thank you for the reminder.

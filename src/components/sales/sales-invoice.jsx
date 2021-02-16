@@ -8,7 +8,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@material-ui/core";
-import { useForm, useFieldArray, Controller, useWatch } from "react-hook-form";
+import { useForm, useFieldArray, Controller, useWatch, useFormContext } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import ReactSelect from "../controls/reactSelect";
@@ -55,26 +55,42 @@ const useStyles = makeStyles((theme) =>
         zIndex: "0",
         marginTop: "0px",
         paddingBottom: "5px",
+        fontSize: "13px",
       },
     },
     textField2: {
       width: "100%",
       zIndex: "0",
+      fontSize: "13px",
     },
     textField3: {
-      width: "100%",
-      zIndex: "0",
-      //paddingTop: "8px",
-      marginTop: "8px",
+      "& > *": {
+        width: "100%",
+        paddingTop: "0px",
+        zIndex: "0",
+        marginTop: "8px",
+        paddingBottom: "5px",
+        fontSize: "13px",
+      },
     },
     textFieldReadOnly: {
       "& > *": {
         width: "100%",
         zIndex: "-999",
+        fontSize: "13px",
+        height: "40px",
       },
     },
     reactSelect: {
       paddingTop: "8px",
+      fontSize: "13px",
+      width: "100%",
+      //zIndex: "5",
+    },
+    reactSelect2: {
+      paddingTop: "8px",
+      fontSize: "13px",
+      width: "40%",
       //zIndex: "5",
     },
     rowLines: {
@@ -123,9 +139,11 @@ const validationSchema = Yup.object().shape({
   billingAddress: Yup.string().required("Enter Billing Address."),
   invoiceNo: Yup.string().required("Enter Invoice No."),
   customer: Yup.object().nullable().required("Enter Customer"),
-  //terms: Yup.number(),
+  id: Yup.number(),
+  terms: Yup.number(),
   items: Yup.array().of(
     Yup.object().shape({
+      id: Yup.number(),
       salesItem: Yup.object().nullable().required("Sales Item is required"),
       description: Yup.string().nullable().required("Enter Description"),
       taxRateItem: Yup.object().nullable().required("Tax Rate is required"),
@@ -242,7 +260,7 @@ const SalesInvoice = ({ preloadedValues }) => {
     {
       control,
       name: "items",
-      //keyName: "keyNameId",
+      keyName: "keyNameId",
     }
   );
 
@@ -535,14 +553,14 @@ const SalesInvoice = ({ preloadedValues }) => {
           { shouldValidate: true },
           { shouldDirty: true }
         );
-        if (_tempCosts[index]["taxRateItem"]["rate"] !== null) {
+        if (_tempCosts[index].hasOwnProperty("taxRateItem")) {
           rate = _tempCosts[index]["taxRateItem"]["rate"];
           if (rate === undefined) rate = 0;
           if (typeof rate === "object") rate = rate.rate / 100;
         }
       }
     }
-
+ 
     _tempCosts[index]["id"] = index;
 
     setCosts(_tempCosts);
@@ -557,7 +575,6 @@ const SalesInvoice = ({ preloadedValues }) => {
         ? ""
         : commaNumber(Math.round(q * y * 100) / 100).toString()
     );
-    //setValue(`items[${index}].description`, "8");
     handleDeleteDisplayTotal(false);
   };
 
@@ -568,7 +585,11 @@ const SalesInvoice = ({ preloadedValues }) => {
         : costs;
 
     loadPreLoadedValues.current = false;
-
+    //if (handleDelete) {
+    //  remove(deleteItemId);
+    //}
+    //setOpenDelete(false);
+    //return;
     setCosts(_tempCosts);
     setSubTotal(0);
     setTotalTaxes(0);
@@ -605,7 +626,7 @@ const SalesInvoice = ({ preloadedValues }) => {
         //const unitPrice = Number(item.unitPrice);
         var rate = 0;
         var taxRateItem = item["taxRateItem"];
-        if (taxRateItem.value !== null) {
+        if (taxRateItem !== undefined && taxRateItem.hasOwnProperty("value")) {
           rate = taxRateItem.rate / 100;
           //if (rate === undefined) rate = 0;
           //if (typeof rate === "object") rate = rate.rate / 100;
@@ -625,7 +646,7 @@ const SalesInvoice = ({ preloadedValues }) => {
     setTotalAmount(Number(subTotal) + totalTaxes);
     if (handleDelete) {
       remove(deleteItemId);
-      _tempCosts.splice(idDeleted, 1);
+      //_tempCosts.splice(idDeleted, 1);
       setCosts(_tempCosts);
     }
   };
@@ -704,7 +725,12 @@ const SalesInvoice = ({ preloadedValues }) => {
   var fileList = files.map((file) => (
     <li key={file.path}>
       {file.path}
-      {<DeleteForeverIcon onClick={() => removeAttachment(file, files)} />}
+      {
+        <DeleteForeverIcon
+          style={{ paddingTop: "0px" }}
+          onClick={() => removeAttachment(file, files)}
+        />
+      }
     </li>
   ));
 
@@ -730,10 +756,17 @@ const SalesInvoice = ({ preloadedValues }) => {
 
     //values.qty = Number(values.qty)
     //values.unitPrice = Number(values.unitPrice)
-    values.terms = Number(values.terms);
+    //values.terms = Number(values.terms);
 
-    fetch("https://localhost:44367/api/sales/addaccount", {
-      method: "POST",
+    var url =
+      preloadedValues === null
+        ? "https://localhost:44367/api/sales/addaccount"
+        : "https://localhost:44367/api/sales/editaccount";
+
+    var urlMethod = preloadedValues === null ? "POST" : "PUT";
+
+    fetch(url, {
+      method: urlMethod,
       body: JSON.stringify(values),
       headers: {
         "Content-Type": "application/json",
@@ -830,6 +863,23 @@ const SalesInvoice = ({ preloadedValues }) => {
         <Grid item xs={12}>
           <Controller
             control={control}
+            name="id"
+            render={(
+              { onChange, onBlur, value, name, ref },
+              { invalid, isTouched, isDirty }
+            ) => (
+              <TextField
+                name="id"
+                defaultValue={-1}
+                className={classes.hide}
+                margin="dense"
+                variant="outlined"
+                inputRef={register()}
+              />
+            )}
+          />
+          <Controller
+            control={control}
             //id="customer"
             name="customer"
             //defaultValue={null}
@@ -842,7 +892,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                 //name="customer"
                 onBlur={onBlur}
                 onChange={(e) => handleChangeCustomer(e, "customer")}
-                inputRef={ref}
+                inputRef={register()}
                 isClearable
                 options={subsidiaryLedgerAccounts}
                 defaultValue={
@@ -880,7 +930,7 @@ const SalesInvoice = ({ preloadedValues }) => {
             ) => (
               <TextField
                 name="billingAddress"
-                inputRef={register}
+                inputRef={register()}
                 label="Billing Address"
                 margin="normal"
                 multiline
@@ -894,7 +944,7 @@ const SalesInvoice = ({ preloadedValues }) => {
           />
           <p className={classes.p}>{errors.billingAddress?.message}</p>
         </Grid>
-        <Grid item xs={2} className={classes.textField}>
+        <Grid item xs={2}>
           <Controller
             control={control}
             name="invoiceNo"
@@ -904,9 +954,11 @@ const SalesInvoice = ({ preloadedValues }) => {
             ) => (
               <TextField
                 name="invoiceNo"
-                inputRef={register}
+                inputRef={register()}
                 label="Invoice No"
                 defaultValue=""
+                fullWidth
+                //className={classes.textField2}
               />
             )}
           />
@@ -922,7 +974,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                   name="date"
                   value={value}
                   format="MM/dd/yyyy"
-                  inputRef={register}
+                  inputRef={register()}
                   label="Invoice Date"
                   onBlur={onBlur}
                   onChange={onChange}
@@ -945,7 +997,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                   name="dueDate"
                   value={value}
                   format="MM/dd/yyyy"
-                  inputRef={register}
+                  inputRef={register()}
                   label="Invoice Date"
                   onBlur={onBlur}
                   onChange={onChange}
@@ -1013,10 +1065,10 @@ const SalesInvoice = ({ preloadedValues }) => {
             ) => (
               <TextField
                 name="terms"
-                inputRef={register}
+                defaultValue={-1}
+                inputRef={register()}
                 type="number"
                 label="Terms"
-                defaultValue=""
               />
             )}
           />
@@ -1031,7 +1083,7 @@ const SalesInvoice = ({ preloadedValues }) => {
             ) => (
               <TextField
                 name="reference"
-                inputRef={register}
+                inputRef={register()}
                 label="Reference"
                 defaultValue=""
               />
@@ -1047,6 +1099,23 @@ const SalesInvoice = ({ preloadedValues }) => {
           <div key={item.id}>
             <Grid container justify="space-around" direction="row">
               <Grid item xs={2}>
+                <Controller
+                  control={control}
+                  name={`items[${index}].id`}
+                  render={(
+                    { onChange, onBlur, value, name, ref },
+                    { invalid, isTouched, isDirty }
+                  ) => (
+                    <TextField
+                      name={`items[${index}].id`}
+                      defaultValue={`${item.id}`}
+                      className={classes.hide}
+                      margin="dense"
+                      variant="outlined"
+                      inputRef={register()}
+                    />
+                  )}
+                />
                 <Controller
                   control={control}
                   name={`items[${index}].salesItem`}
@@ -1070,7 +1139,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                             )
                           : ""
                       }
-                      inputRef={register}
+                      inputRef={register()}
                       options={salesItems}
                       className={classes.reactSelect}
                       placeholder="Please select Sales Items"
@@ -1095,11 +1164,11 @@ const SalesInvoice = ({ preloadedValues }) => {
                       name={`items[${index}].description`}
                       defaultValue={`${item.description}`}
                       label="Description"
-                      className={classes.textField2}
+                      className={classes.textField}
                       margin="dense"
                       variant="outlined"
-                      ref={register}
-                      inputRef={register}
+                      inputRef={register()}
+                      fullWidth
                     />
                   )}
                 />
@@ -1133,7 +1202,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                       className={classes.textField3}
                       size="small"
                       inputProps={{ "data-id": index }}
-                      inputRef={register}
+                      inputRef={register()}
                     />
                   )}
                 />
@@ -1166,7 +1235,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                       size="small"
                       label="Unit Price"
                       //pattern="/^\d+\.\d{0,2}$/" //"[+-]?\d+(?:[.,]\d+)?"
-                      inputRef={register}
+                      inputRef={register()}
                     />
                   )}
                 />
@@ -1202,7 +1271,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                             )
                           : ""
                       }
-                      inputRef={register}
+                      inputRef={register()}
                       options={taxRates}
                       className={classes.reactSelect}
                       placeholder="Please select Tax Rates"
@@ -1235,62 +1304,90 @@ const SalesInvoice = ({ preloadedValues }) => {
                       variant="outlined"
                       size="small"
                       InputLabelProps={{ shrink: true }}
-                      inputRef={register}
+                      inputRef={register()}
                     />
                   )}
                 />
               </Grid>
-              <Grid item xs={1}>
-                <Controller
-                  control={control}
-                  name={`items[${index}].trackingItem`}
-                  render={(
-                    { onChange, onBlur, value, name, ref },
-                    { invalid, isTouched, isDirty }
-                  ) => (
-                    <CreatableSelect
-                      onChange={(e) =>
-                        handleChange(e, `items[${index}].trackingItem`)
-                      }
-                      defaultValue={
-                        preloadedValues !== null &&
-                        index < preloadedValues.items.length
-                          ? trackings.find(
-                              (obj) =>
-                                Number(obj.value) ===
-                                Number(costs[index].trackingItem.value)
-                            )
-                          : ""
-                      }
-                      onCreateOption={(inputValue) => {
-                        setDialogValueTracking({ name: inputValue });
-                        toggleOpenTracking(true);
-                      }}
-                      inputRef={register}
-                      options={trackings}
-                      className={classes.reactSelect}
-                      placeholder="Tracking"
-                      styles={customStyles}
-                    />
-                  )}
-                />
-                <p className={classes.p}>
-                  {errors?.["items"]?.[index]?.["trackingItem"]?.["message"]}
-                </p>
-              </Grid>
-              <Grid item xs={1}>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  className={classes.deleteButton}
-                  startIcon={<DeleteIcon />}
-                  onClick={() => {
-                    setOpenDelete(true);
-                    setDeleteItemId(index);
-                  }}
+              <Grid item xs={2}>
+                <table
+                  width="125%"
+                  border="0"
+                  cellPadding="0px"
+                  cellSpacing="0px"
+                  //style={{tableLayout: "fixed"}}
                 >
-                  Delete
-                </Button>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <Controller
+                          control={control}
+                          name={`items[${index}].trackingItem`}
+                          render={(
+                            { onChange, onBlur, value, name, ref },
+                            { invalid, isTouched, isDirty }
+                          ) => (
+                            <>
+                              <CreatableSelect
+                                onChange={(e) =>
+                                  handleChange(
+                                    e,
+                                    `items[${index}].trackingItem`
+                                  )
+                                }
+                                defaultValue={
+                                  preloadedValues !== null &&
+                                  index < preloadedValues.items.length
+                                    ? trackings.find(
+                                        (obj) =>
+                                          Number(obj.value) ===
+                                          Number(
+                                            costs[index].trackingItem.value
+                                          )
+                                      )
+                                    : ""
+                                }
+                                onCreateOption={(inputValue) => {
+                                  setDialogValueTracking({ name: inputValue });
+                                  toggleOpenTracking(true);
+                                }}
+                                //style={{ width: "5px" }}
+                                inputRef={register()}
+                                options={trackings}
+                                className={classes.reactSelect}
+                                placeholder="Tracking"
+                                styles={customStyles}
+                                fullWidth
+                              />
+                            </>
+                          )}
+                        />
+                        <p className={classes.p}>
+                          {
+                            errors?.["items"]?.[index]?.["trackingItem"]?.[
+                              "message"
+                            ]
+                          }
+                        </p>
+                      </td>
+                      <td>
+                        <DeleteForeverIcon
+                          style={{ paddingTop: "10px" }}
+                          onClick={() => {
+                            //setOpenDelete(true);
+                            //setDeleteItemId(index);
+                            remove(index);
+                            //if (fields.length >= index) {
+                            //  fields.splice(index, 1);
+                            //  setCosts(fields);
+                            //  console.log(fields);
+                            //}
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </Grid>
             </Grid>
           </div>
@@ -1306,11 +1403,12 @@ const SalesInvoice = ({ preloadedValues }) => {
           append(
             {
               id: itemCount,
-              salesItem: {},
+              salesItem: [{ value: null, label: "" }],
               description: "",
               qty: "",
               unitPrice: "",
-              taxRateItem: null,
+              //taxRateItem: { value: null, label: "" },
+              //trackingItem: { value: null, label: "" },
               amount: "",
             },
             false
@@ -1322,10 +1420,10 @@ const SalesInvoice = ({ preloadedValues }) => {
               id: itemCount,
               qty: "",
               unitPrice: "",
-              salesItem: { value: null },
-              taxRateItem: { value: null },
+              //salesItem: { value: null, label: "" },
+              //taxRateItem: { value: null, label: "" },
               description: "",
-              trackingItem: { value: null },
+              //trackingItem: { value: null, label: "" },
             },
           ]);
           //setCosts([{id: itemCount}]);
