@@ -8,7 +8,13 @@ import {
   useMediaQuery,
   useTheme,
 } from "@material-ui/core";
-import { useForm, useFieldArray, Controller, useWatch, useFormContext } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  useWatch,
+  useFormContext,
+} from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import ReactSelect from "../controls/reactSelect";
@@ -213,6 +219,7 @@ const SalesInvoice = ({ preloadedValues }) => {
     reset,
     watch,
     setValue,
+    getValues,
   } = useForm({
     //mode: "onChange",
     defaultValues: preloadedValues === null ? {} : preloadedValues,
@@ -222,6 +229,7 @@ const SalesInvoice = ({ preloadedValues }) => {
 
   const invoice = useRef();
   const tax = useRef();
+  
   const [inv, setInv] = useState();
 
   //invoice.current = {
@@ -289,11 +297,15 @@ const SalesInvoice = ({ preloadedValues }) => {
   var tv = [];
   const [isBusy, setBusy] = useState(true);
   const [isBusy2, setBusy2] = useState(true);
+  //const onLoadInvoiceItems = useRef(true);
+  const [addInvoiceItems, setAddInvoiceItems] = useState(false);
 
   //useEffect(() => {
-  //  if (preloadedValues !== null)
-  //    setCosts(preloadedValues.items)
-  //}, [])
+  //  if (!addInvoiceItems) {
+  //    onLoadInvoiceItems.current = true;
+  //  } else
+  //    onLoadInvoiceItems.current = false;
+  //}, [addInvoiceItems]);
 
   useEffect(() => {
     fetch("https://localhost:44367/api/SubsidiaryLedger/get", {
@@ -476,7 +488,11 @@ const SalesInvoice = ({ preloadedValues }) => {
   };
 
   const [openDelete, setOpenDelete] = useState(false);
-  const [deleteItemId, setDeleteItemId] = useState(null);
+
+  //const [deleteItemId, setDeleteItemId] = useState(null);
+
+  const deleteItemId = useRef(0)
+
   const [open, toggleOpen] = useState(false);
   const [indexes, setIndexes] = useState([]);
   const [counterArray, setCounterArray] = useState(0);
@@ -560,7 +576,7 @@ const SalesInvoice = ({ preloadedValues }) => {
         }
       }
     }
- 
+
     _tempCosts[index]["id"] = index;
 
     setCosts(_tempCosts);
@@ -585,12 +601,34 @@ const SalesInvoice = ({ preloadedValues }) => {
         : costs;
 
     loadPreLoadedValues.current = false;
+    var newCosts = [];
+    if (handleDelete) {
+      //const { costs1 } = _tempCosts;
+
+      // create a copy
+      newCosts = [..._tempCosts];
+
+      // remove by index
+      newCosts.splice(deleteItemId.current, 1);
+
+      // update values
+      setCosts(newCosts);
+    } // create a copy
+    else {
+      newCosts = [..._tempCosts];
+      // update values
+      setCosts(newCosts);
+    }
+    
+
+
+
     //if (handleDelete) {
     //  remove(deleteItemId);
     //}
     //setOpenDelete(false);
     //return;
-    setCosts(_tempCosts);
+    //setCosts(_tempCosts);
     setSubTotal(0);
     setTotalTaxes(0);
     setTotalAmount(0);
@@ -602,10 +640,10 @@ const SalesInvoice = ({ preloadedValues }) => {
     var idDeleted = 0;
 
     // eslint-disable-next-line array-callback-return
-    _tempCosts.map((item, index) => {
+    newCosts.map((item, index) => {
       var hitBreak = false;
       var itemId;
-      for (itemId = 0; itemId <= _tempCosts.length + 100; itemId++) {
+      for (itemId = 0; itemId <= newCosts.length + 100; itemId++) {
         if (!isNaN(Number(item["id"]))) {
           hitBreak = true;
           break;
@@ -645,9 +683,9 @@ const SalesInvoice = ({ preloadedValues }) => {
     setTotalTaxes(totalTaxes);
     setTotalAmount(Number(subTotal) + totalTaxes);
     if (handleDelete) {
-      remove(deleteItemId);
+      remove(deleteItemId.current);
       //_tempCosts.splice(idDeleted, 1);
-      setCosts(_tempCosts);
+      //setCosts(_tempCosts);
     }
   };
 
@@ -1131,7 +1169,8 @@ const SalesInvoice = ({ preloadedValues }) => {
                       }
                       defaultValue={
                         preloadedValues !== null &&
-                        index < preloadedValues.items.length
+                        index < preloadedValues.items.length &&
+                        !addInvoiceItems
                           ? salesItems.find(
                               (obj) =>
                                 Number(obj.value) ===
@@ -1263,7 +1302,8 @@ const SalesInvoice = ({ preloadedValues }) => {
                       }
                       defaultValue={
                         preloadedValues !== null &&
-                        index < preloadedValues.items.length
+                        index < preloadedValues.items.length &&
+                        !addInvoiceItems
                           ? taxRates.find(
                               (obj) =>
                                 Number(obj.value) ===
@@ -1297,7 +1337,7 @@ const SalesInvoice = ({ preloadedValues }) => {
                   ) => (
                     <TextField
                       name={`items[${index}].amount`}
-                      defaultValue={`${item.amount}`}
+                      defaultValue={addInvoiceItems ? 0 : `${item.amount}`}
                       label="Sub Total"
                       className={classes.textFieldReadOnly}
                       margin="dense"
@@ -1337,7 +1377,8 @@ const SalesInvoice = ({ preloadedValues }) => {
                                 }
                                 defaultValue={
                                   preloadedValues !== null &&
-                                  index < preloadedValues.items.length
+                                  index < preloadedValues.items.length &&
+                                  !addInvoiceItems
                                     ? trackings.find(
                                         (obj) =>
                                           Number(obj.value) ===
@@ -1374,9 +1415,10 @@ const SalesInvoice = ({ preloadedValues }) => {
                         <DeleteForeverIcon
                           style={{ paddingTop: "10px" }}
                           onClick={() => {
-                            //setOpenDelete(true);
-                            //setDeleteItemId(index);
-                            remove(index);
+                            setOpenDelete(true);
+                            deleteItemId.current = index;
+                            //handleDeleteDisplayTotal(true, index)
+                            //remove(index);
                             //if (fields.length >= index) {
                             //  fields.splice(index, 1);
                             //  setCosts(fields);
@@ -1400,10 +1442,11 @@ const SalesInvoice = ({ preloadedValues }) => {
         variant="contained"
         onClick={() => {
           setItemCount(itemCount - 1);
+          setAddInvoiceItems(true);
           append(
             {
               id: itemCount,
-              salesItem: [{ value: null, label: "" }],
+              salesItem: [{}],
               description: "",
               qty: "",
               unitPrice: "",
