@@ -82,7 +82,7 @@ const useStyles = makeStyles((theme) =>
     textFieldReadOnly: {
       "& > *": {
         width: "100%",
-        zIndex: "-999",
+        zIndex: "0",
         fontSize: "13px",
         height: "40px",
       },
@@ -197,7 +197,7 @@ const initialValues = {
   ], */
 };
 
-const SalesInvoice = ({ preloadedValues }) => {
+const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   const [costs, setCosts] = useState([]);
   const [files, setFiles] = useState([]);
   const loadPreLoadedValues = useRef(true);
@@ -229,7 +229,7 @@ const SalesInvoice = ({ preloadedValues }) => {
 
   const invoice = useRef();
   const tax = useRef();
-  
+
   const [inv, setInv] = useState();
 
   //invoice.current = {
@@ -491,7 +491,7 @@ const SalesInvoice = ({ preloadedValues }) => {
 
   //const [deleteItemId, setDeleteItemId] = useState(null);
 
-  const deleteItemId = useRef(0)
+  const deleteItemId = useRef(0);
 
   const [open, toggleOpen] = useState(false);
   const [indexes, setIndexes] = useState([]);
@@ -619,9 +619,6 @@ const SalesInvoice = ({ preloadedValues }) => {
       // update values
       setCosts(newCosts);
     }
-    
-
-
 
     //if (handleDelete) {
     //  remove(deleteItemId);
@@ -786,8 +783,8 @@ const SalesInvoice = ({ preloadedValues }) => {
     //values.date = new Date(values.date);
     //values.dueDate = new Date(values.dueDate);
 
-    values.date = new Date(moment(values.date).format("MM/DD/YYYY"));
-    values.dueDate = new Date(moment(values.dueDate).format("MM/DD/YYYY"));
+    //values.date = new Date(moment(values.date).format("MM/DD/YYYY"));
+    //values.dueDate = new Date(moment(values.dueDate).format("MM/DD/YYYY"));
 
     //values.date = new Date(values.date.ge, 10, 9);
     //values.dueDate = new Date(values.dueDate.year, 7, 8);
@@ -795,6 +792,12 @@ const SalesInvoice = ({ preloadedValues }) => {
     //values.qty = Number(values.qty)
     //values.unitPrice = Number(values.unitPrice)
     //values.terms = Number(values.terms);
+
+    //values.date = new Date(values.date.replace(/-/g, '/').replace(/T.+/, ''));
+    //values.dueDate = new Date(values.date.replace(/-/g, "/").replace(/T.+/, ""));
+
+    values.date = moment(values.date.toString()).toDate();
+    values.dueDate = moment(values.dueDate.toString()).toDate();
 
     var url =
       preloadedValues === null
@@ -839,6 +842,7 @@ const SalesInvoice = ({ preloadedValues }) => {
             setTotalAmount(0);
             setValue("terms", null);
             setValue("customer", null);
+            setOpenEdit(false);
             console.log("successful");
           })
           .catch(function (error) {

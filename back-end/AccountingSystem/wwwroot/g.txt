@@ -1,0 +1,44 @@
+<Grid item xs={1}>
+              <h1 className={classes.totalAmount}>Sub Total:</h1>
+            </Grid>
+            <Grid item xs={2}>
+              <h1 className={classes.totalAmount}>
+                <NumberFormat
+                  value={subTotal}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  decimalScale={2}
+                  fixedDecimalScale={true}
+                />
+              </h1>
+            </Grid>
+            <Grid item xs={9}></Grid>
+            <Grid item xs={1}>
+              <h1 className={classes.totalAmount}>Sales Tax:</h1>
+            </Grid>
+            <Grid item xs={2}>
+              <h1 className={classes.totalAmount}>
+                <NumberFormat
+                  value={totalTaxes}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  decimalScale={2}
+                  fixedDecimalScale={true}
+                />
+              </h1>
+            </Grid>
+            <Grid item xs={9}></Grid>
+            <Grid item xs={1}>
+              <h1 className={classes.totalAmount}>TOTAL :</h1>
+            </Grid>
+            <Grid item xs={2}>
+              <h1 className={classes.totalAmount}>
+                <NumberFormat
+                  value={totalAmount}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  decimalScale={2}
+                  fixedDecimalScale={true}
+                />
+              </h1>
+            </Grid>
