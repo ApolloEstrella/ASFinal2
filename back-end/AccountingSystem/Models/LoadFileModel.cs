@@ -11,5 +11,6 @@ namespace AccountingSystem.Models
         //public int LedgerMasterId { get; set; }
         public string Path { get; set; }
         public bool IsAttached { get; set; }
+        public string FullPath { get; set; }
     }
 }

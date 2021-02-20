@@ -29,7 +29,7 @@ namespace AccountingSystem.Services
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
                     select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name }).ToList()
-                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name }).OrderBy(x => x.InvoiceDate).ToList();
+                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
         public CustomerInvoiceModel GetSalesInvoice(int id)
         {
@@ -74,7 +74,8 @@ namespace AccountingSystem.Services
                                          .Where(x => x.LedgerMasterId == id)
                                          .Select(x => new LoadFileModel
                                          {
-                                             Path = Path.GetFileName(x.Path)
+                                             Path = Path.GetFileName(x.Path),
+                                             FullPath = x.Path
                                          })
                                          .ToList();
                                          

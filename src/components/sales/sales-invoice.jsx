@@ -46,6 +46,7 @@ import { value } from "numeral";
 import moment from "moment";
 import MomentUtils from "@date-io/moment";
 import { ptBR } from "date-fns/locale";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -759,7 +760,17 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
   var fileList = files.map((file) => (
     <li key={file.path}>
-      {file.path}
+      {/* <Link to={file.fullPath} target="_blank" download>
+        {file.path}
+      </Link> */}
+      <a
+        href={"https://localhost:44367/" + file.path}
+        target="_blank"
+        rel="noreferrer"
+        download={file.path}
+      >
+        {file.path}
+      </a>
       {
         <DeleteForeverIcon
           style={{ paddingTop: "0px" }}
@@ -1107,7 +1118,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
             ) => (
               <TextField
                 name="terms"
-                defaultValue={-1}
+                defaultValue={0}
                 inputRef={register()}
                 type="number"
                 label="Terms"

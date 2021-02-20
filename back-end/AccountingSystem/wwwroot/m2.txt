@@ -1,0 +1,168 @@
+import React from "react";
+import {
+  Grid,
+  TextField,
+  Button,
+  makeStyles,
+  createStyles,
+  useMediaQuery,
+  useTheme,
+} from "@material-ui/core";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    p: {
+      marginTop: "px",
+      color: "#bf1650",
+    },
+    root: {
+      maxWidth: "100%",
+      display: "block",
+      margin: "0 auto",
+    },
+    textField: {
+      "& > *": {
+        width: "100%",
+        paddingTop: "0px",
+        zIndex: "0",
+      },
+    },
+    textField2: {
+      width: "100%",
+    },
+    textFieldReadOnly: {
+      "& > *": {
+        width: "100%",
+        zIndex: "-999",
+      },
+    },
+    reactSelect: {
+      paddingTop: "8px",
+      //zIndex: "5",
+    },
+    rowLines: {
+      maxWidth: "100%",
+    },
+    myTable: {
+      width: "500px",
+    },
+    totalAmount: {
+      marginTop: "0px",
+      paddingTop: "0px",
+      textAlign: "left",
+    },
+    submitButton: {
+      marginTop: "24px",
+    },
+    deleteButton: {
+      marginTop: "9.5px",
+      marginLeft: "15px",
+    },
+    deleteAttachmentButton: {
+      marginBottom: "0px",
+    },
+    title: { textAlign: "center" },
+    successMessage: { color: "green" },
+    errorMessage: { color: "red" },
+  })
+);
+
+const schema = yup.object().shape({
+  firstName: yup.string().required("First Name please..."),
+  age: yup.number().positive().integer().required(),
+});
+
+const initialValues = {
+  id: -1,
+  firstName: ""
+}
+
+export default function App() {
+  const { register, handleSubmit, errors, control, touched } = useForm({ initialValues,
+    resolver: yupResolver(schema),
+  });
+  const classes = useStyles();
+  const onSubmit = (data) => console.log(data);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Controller
+        as={TextField}
+        name="firstName"
+        control={control}
+        ref={register}
+        label="First Name"
+        //helperText={errors.firstName && touched.firstName && errors.firstName}
+        //error={errors.firstName && touched.firstName}
+      />
+      <p className={classes.p}>{errors.firstName?.message}</p>
+
+      <input type="text" name="age" ref={register} />
+      <p>{errors.age?.message}</p>
+
+      <input type="submit" />
+    </form>
+  );
+}
+
+
+src/
+
+
+
+
+
+
+
+
+paddingBottom: "0px",
+        marginTop: "0px",
+        marginBottom: "0px",
+
+
+
+
+
+
+
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

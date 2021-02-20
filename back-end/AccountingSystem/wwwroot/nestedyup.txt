@@ -1,0 +1,48 @@
+// @ts-check
+
+validationSchema={Yup.object().shape({
+          person: Yup.object().shape({
+            email: Yup.string().email().required("Enter valid email-id"),
+            fullName: Yup.string().required("Please enter full name"),
+            password: Yup.string()
+              .matches(
+                /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()]).{8,20}\S$/
+              )
+              .required(
+                "Please valid password. One uppercase, one lowercase, one special character and no spaces"
+              ),
+            confirmPassword: Yup.string()
+              .required("Required")
+              .test("password-match", "Password musth match", function (value) {
+                return this.parent.password === value;
+              }),
+          }),
+        })}
+
+
+
+useEffect(() => {
+    fetch("https://localhost:44302/api/chartofaccount/gettypes", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (response) {
+        console.log(response)
+      });   
+  })
+
+
+<Grid container justify="space-around" direction="row">
+                <Grid item lg={6} md={6} sm={6} xs={6}>
+                  <InputLabel id="age">Age</InputLabel>
+                  <MuiSelect labelId="age" style={{ width: "13em" }}>
+                    <MuiMenuItem value="1">1</MuiMenuItem>
+                    <MuiMenuItem value="2">2</MuiMenuItem>
+                  </MuiSelect>
+                </Grid>
+

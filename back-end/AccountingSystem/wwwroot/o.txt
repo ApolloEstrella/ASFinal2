@@ -1,0 +1,27 @@
+var subTotal = 0;
+    var totalTaxes = 0;
+    var totalAmount = 0;
+    console.log(fields);
+    console.log(costs);
+    // eslint-disable-next-line array-callback-return
+    _tempCosts.map((item, index) => {
+      const qty = Number(item["items[" + index + "].qty"]);
+      const unitPrice = Number(item["items[" + index + "].unitPrice"]);
+      //var x = "items[" + item.id + "].taxRateItem";
+      //const qty = Number(item["items[" + index + "].qty"]);
+      //const unitPrice = Number(item.unitPrice);
+      var rate = 0;
+      if (fields.taxRateItem !== null) {
+        rate = fields.taxRateItem;
+        if (rate === undefined) rate = 0;
+        if (typeof rate === "object") rate = rate.rate / 100;
+      }
+      if (!isNaN(qty) && !isNaN(unitPrice)) {
+        subTotal = subTotal + qty * unitPrice;
+        totalTaxes = totalTaxes + subTotal * rate;
+        totalAmount = totalAmount + subTotal + totalTaxes;
+      }
+    });
+    setSubTotal(Number(subTotal));
+    setTotalTaxes(totalTaxes);
+    setTotalAmount(Number(subTotal) + totalTaxes);
