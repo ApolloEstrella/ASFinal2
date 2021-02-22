@@ -23,7 +23,7 @@ function SalesInvoiceApp(invoiceParam) {
         setData(data);
       })
       .catch(function (error) {
-        console.log("network error");
+        console.log("network error"); 
       });
   }, []);
 
