@@ -54,6 +54,9 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import { useReactToPrint } from "react-to-print";
+
+import { ComponentToPrint } from "./sales-invoice-print";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -909,6 +912,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   //const [selectedDate, handleDateChange] = useState(new Date().toISOString());
   const [selectedDate, handleDateChange] = useState(new Date());
   const [selectedDueDate, handleDueDateChange] = useState(new Date());
+
+const componentRef = useRef();
+const handlePrint = useReactToPrint({
+  content: () => componentRef.current,
+});
+
+
 
   renderCount++;
 
@@ -1954,9 +1964,21 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         variant="contained"
         color="primary"
         // disabled={isSubmitting}
-        style={{marginTop: "50px"}}
+        style={{ marginTop: "50px" }}
       >
         Save
+      </Button>
+      <div style={{ display: "none" }}>
+        <ComponentToPrint ref={componentRef} />
+      </div>
+      <Button
+        type="button"
+        color="primary"
+        variant="contained"
+        style={{ marginTop: "50px", marginLeft: "100px" }}
+        onClick={handlePrint}
+      >
+        Print
       </Button>
     </form>
   ) : (

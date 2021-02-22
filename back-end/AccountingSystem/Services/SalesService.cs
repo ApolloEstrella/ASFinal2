@@ -234,11 +234,11 @@ namespace AccountingSystem.Services
                                                                   join b in _serverContext.LedgerDetails
                                                                   on a.Id equals b.InvoiceSalesItemId
                                                                   join c in _serverContext.TaxRates
-                                                                  on b.InvoiceSalesItemId equals c.Id
+                                                                  on b.InvoiceTaxRateId equals c.Id
                                                                   join d in _serverContext.Trackings
-                                                                  on b.InvoiceTaxRateId equals d.Id
-                                                                  join e in _serverContext.Trackings
-                                                                  on b.InvoiceTrackingId equals e.Id
+                                                                  on b.InvoiceTrackingId equals d.Id
+                                                                  //join e in _serverContext.Trackings
+                                                                  //on b.InvoiceTrackingId equals e.Id
                                                                   select new
                                                                   {
                                                                       b.LedgerMasterId,
@@ -246,9 +246,9 @@ namespace AccountingSystem.Services
                                                                       b.InvoiceDescription,
                                                                       b.InvoiceQuantity,
                                                                       b.InvoiceUnitPrice,
-                                                                      TaxRateItem = d.Description,
+                                                                      TaxRateItem = c.Description,
                                                                       Amount = (b.InvoiceQuantity * b.InvoiceQuantity),
-                                                                      TrackingItem = e.Description
+                                                                      TrackingItem = d.Description
                                                                   }).ToList()
                                                                   .Where(x => x.LedgerMasterId == id)
                                                                   .Select(x => new PrintCustomerInvoiceDetailModel
@@ -259,7 +259,7 @@ namespace AccountingSystem.Services
                                                                       UnitPrice = x.InvoiceUnitPrice,
                                                                       TaxItem = x.TaxRateItem,
                                                                       SubTotal = Math.Round(x.InvoiceQuantity * x.InvoiceUnitPrice, 2),
-                                                                      TrackingItem = x.TaxRateItem
+                                                                      TrackingItem = x.TrackingItem
                                                                   }).ToList();
 
 
@@ -287,7 +287,7 @@ namespace AccountingSystem.Services
                                                                        DueDate = x.InvoiceDueDate,
                                                                        Terms = x.InvoiceTerms,
                                                                        Reference = x.InvoiceReference,
-                                                                       InvoiceItems = null
+                                                                       InvoiceItems = InvoiceItems
                                                                    }
                                                                    ).SingleOrDefault();
 
