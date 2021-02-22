@@ -33,6 +33,8 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 
 import SalesInvoiceApp from "./sales-invoice-app";
 import SalesInvoice from "./sales-invoice";
+import configData from "../../config.json";
+
 const columns = [
   { id: "customer", label: "Customer", minWidth: 170 },
   { id: "invoiceNo", label: "Invoice No", minWidth: 100 },
@@ -111,7 +113,7 @@ export default function StickyHeadTable(props) {
   }
 
 useEffect(() => {
-  fetch("https://localhost:44367/api/sales/GetAllAccounts", {
+  fetch(configData.SERVER_URL + "sales/GetAllAccounts", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -121,7 +123,7 @@ useEffect(() => {
     .then((data) => {
       console.log(data);
       setList(data);
-      setRows(data)
+      setRows(data);
     })
     .catch(function (error) {
       console.log("network error");

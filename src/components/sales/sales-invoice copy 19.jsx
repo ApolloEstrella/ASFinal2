@@ -48,11 +48,13 @@ import MomentUtils from "@date-io/moment";
 import { ptBR } from "date-fns/locale";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import configData from "../../config.json";
+import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
+import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 
 const useStyles = makeStyles((theme) =>
@@ -237,7 +239,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
   const invoice = useRef();
   const tax = useRef();
-
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [inv, setInv] = useState();
 
   //invoice.current = {
@@ -308,6 +311,14 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   //const onLoadInvoiceItems = useRef(true);
   const [addInvoiceItems, setAddInvoiceItems] = useState(false);
   const x = configData.SERVER_URL;
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
   //useEffect(() => {
   //  if (!addInvoiceItems) {
   //    onLoadInvoiceItems.current = true;
@@ -765,7 +776,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     setFiles(result);
   };
 
-  {/* var fileList2 = files.map((file) => (
+  {
+    /* var fileList = files.map((file) => (
     <li key={file.path}>
        
       <a
@@ -778,14 +790,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       </a>
       {
         <DeleteForeverIcon
-          style={{ paddingTop: "0px" }}
+          style={{ margin: "0px" }}
           onClick={() => removeAttachment(file, files)}
         />
       }
     </li>
-    )); */}
-
- 
+    )); */
+  }
 
   const onSubmit = (values, { resetForm }) => {
     const x = JSON.stringify(values);
@@ -1458,6 +1469,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         );
       })}
 
+      
       <Button
         type="button"
         color="primary"
@@ -1906,44 +1918,64 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
           <section className="container">
             <div {...getRootProps({ className: "dropzone" })}>
               <input {...getInputProps()} />
-              <p>Drag 'n' drop some files here, or click to select files</p>
+              <p>
+                Drag 'n' drop some files here, or click to select files.....
+              </p>
             </div>
             <aside>
-              <Table
-                style={{ width: "400px" }}
-                className={classes.table}
-                size="small"
-                aria-label="a dense table"
-              >
-                <TableHead>
-                  <TableRow>
-                    <TableCell>File(s) Attachment</TableCell>
-                    <TableCell align="right">Delete Item</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {files.map((row) => (
-                    <TableRow key={row.path}>
-                      <TableCell component="th" scope="row">
-                        <a
-                          href={configData.FILES_URL + row.path}
-                          target="_blank"
-                          rel="noreferrer"
-                          download={row.path}
-                        >
-                          {row.path}
-                        </a>
-                      </TableCell>
-                      <TableCell align="right">
-                        <DeleteForeverIcon
-                          style={{ paddingTop: "0px" }}
-                          onClick={() => removeAttachment(row, files)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                <TableContainer style={{ width: "500px" }}>
+                  <Table stickyHeader aria-label="sticky table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>File Attachment(s)</TableCell>
+                        <TableCell>Delete</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {files
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row, index) => {
+                          return (
+                            <TableRow
+                              hover
+                              role="checkbox"
+                              tabIndex={-1}
+                              key={row.path}
+                            >
+                              <TableCell key={row.path}>
+                                <a
+                                  href={configData.FILES_URL + row.path}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  download={row.path}
+                                >
+                                  {row.path}
+                                </a>
+                              </TableCell>
+                              <TableCell>
+                                <DeleteForeverIcon
+                                  onClick={() => removeAttachment(row, files)}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  style={{ width: "500px" }}
+                  rowsPerPageOptions={[10, 25, 100]}
+                  component="div"
+                  count={files.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onChangePage={handleChangePage}
+                  onChangeRowsPerPage={handleChangeRowsPerPage}
+                />
             </aside>
           </section>
         </Grid>
@@ -1954,7 +1986,6 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         variant="contained"
         color="primary"
         // disabled={isSubmitting}
-        style={{marginTop: "50px"}}
       >
         Save
       </Button>

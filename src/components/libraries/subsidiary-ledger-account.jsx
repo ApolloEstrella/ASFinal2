@@ -31,7 +31,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-
+import configData from "../../config.json";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -107,7 +107,7 @@ const SubsidiaryLedgerAccounts = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/SubsidiaryLedger/get", {
+    fetch(configData.SERVER_URL + "SubsidiaryLedger/get", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -127,7 +127,7 @@ const SubsidiaryLedgerAccounts = () => {
     values = {id: values.value, name: values.label}
     if (addMode) {
       values.id = 0;
-      fetch("https://localhost:44302/api/SubsidiaryLedger/addaccount", {
+      fetch(configData.SERVER_URL + "SubsidiaryLedger/addaccount", {
         method: "POST",
         body: JSON.stringify(values),
         headers: {
@@ -148,7 +148,7 @@ const SubsidiaryLedgerAccounts = () => {
           setAddMode(true);
         });
     } else {
-      fetch("https://localhost:44302/api/SubsidiaryLedger/EditAccount", {
+      fetch(configData.SERVER_URL + "SubsidiaryLedger/EditAccount", {
         method: "PUT",
         body: JSON.stringify(values),
         headers: {
@@ -179,7 +179,7 @@ const SubsidiaryLedgerAccounts = () => {
 
   const handleDelete = () => {
     const id = deleteItemId;
-    fetch("https://localhost:44302/api/SubsidiaryLedger/deleteaccount/" + id, {
+    fetch(configData.SERVER_URL + "SubsidiaryLedger/deleteaccount/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

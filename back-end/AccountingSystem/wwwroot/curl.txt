@@ -1,0 +1,14 @@
+curl -XDELETE "http://localhost:9200/userindex7/_doc/_search" -d" {"query":"{match:{"is_deleted":0}}"}"
+
+curl -XDELETE "http://localhost:9200/userindex7/_doc/_delete_by_query?q=is_deleted:0"
+
+
+curl -XPOST "http://localhost:9200/userindex7/_doc/_delete_by_query?q=is_deleted:0"
+
+
+curl -XPOST "http://localhost:9200/userindex7/_doc/_delete_by_query?q=is_deleted:1"
+
+curl -XPOST http://localhost:9200/userindex8/_doc/_delete_by_query?q=is_deleted:0
+
+
+bin\Release\netcoreapp3.1\publish\

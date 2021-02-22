@@ -1,0 +1,27 @@
+ && typeof values.customer === "object"
+
+
+<Grid item xs={4}></Grid>
+      <Grid item xs={4}></Grid>
+      <Grid item xs={4}></Grid>
+
+
+
+<TextField
+                                      name={`items[${index}].amount`}
+                                      //value={r.qty * r.unitPrice}
+                                      //value={(Math.round((r.qty * r.unitPrice) * 100) / 100)}
+                                      value={commaNumber(
+                                        Math.round(r.qty * r.unitPrice * 100) /
+                                          100
+                                      )}
+                                      //margin="dense"
+                                      //className={classes.textFieldReadOnly}
+                                      //className={classes.textField}
+                                      //InputProps={{
+                                      //  readOnly: true,
+                                      //}}
+                                      label="Sub Total"
+                                      size="small"
+                                      variant="outlined"
+                                    />

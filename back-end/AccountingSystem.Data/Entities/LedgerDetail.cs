@@ -11,7 +11,7 @@ namespace AccountingSystem.Data.Entities
         public int LedgerMasterId { get; set; }
         public int InvoiceSalesItemId { get; set; }
         public string InvoiceDescription { get; set; }
-        public int InvoiceQuantity { get; set; }
+        public decimal InvoiceQuantity { get; set; }
         public decimal InvoiceUnitPrice { get; set; }
         public int InvoiceTaxRateId { get; set; }
         public int InvoiceTrackingId { get; set; }

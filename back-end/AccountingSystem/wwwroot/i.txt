@@ -1,0 +1,10 @@
+PUT /my_task/task/6
+{
+ "type" : "Database Design",
+ "first_name" : "Joey123",
+ "last_name" : "De Leon123",
+ "priority" : 1
+}
+
+GET /my_task/task/1
+

@@ -36,6 +36,7 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
 import FormHelperText from "@material-ui/core/FormHelperText";
+import configData from "../../config.json";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -120,7 +121,7 @@ const ChartOfAccounts = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/chartofaccount/gettypes", {
+    fetch(configData.SERVER_URL + "chartofaccount/gettypes", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -136,7 +137,7 @@ const ChartOfAccounts = () => {
   }, [count]);
 
   useEffect(() => {
-    fetch("https://localhost:44302/api/chartofaccount/get", {
+    fetch(configData.SERVER_URL + "chartofaccount/get", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +156,7 @@ const ChartOfAccounts = () => {
   const handleSubmit = (values, resetForm) => {
     if (addMode) {
       values.id = 0;
-      fetch("https://localhost:44302/api/chartofaccount/addaccount", {
+      fetch(configData.SERVER_URL + "chartofaccount/addaccount", {
         method: "POST",
         body: JSON.stringify(values),
         headers: {
@@ -176,7 +177,7 @@ const ChartOfAccounts = () => {
           setAddMode(true);
         });
     } else {
-      fetch("https://localhost:44302/api/chartofaccount/EditAccount", {
+      fetch(configData.SERVER_URL + "chartofaccount/EditAccount", {
         method: "PUT",
         body: JSON.stringify(values),
         headers: {
@@ -207,7 +208,7 @@ const ChartOfAccounts = () => {
 
   const handleDelete = () => {
     const id = deleteItemId;
-    fetch("https://localhost:44302/api/chartofaccount/deleteaccount/" + id, {
+    fetch(configData.SERVER_URL + "chartofaccount/deleteaccount/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

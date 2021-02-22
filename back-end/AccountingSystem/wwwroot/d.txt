@@ -1,0 +1,33 @@
+
+
+
+
+<div class="mat-app-background">
+    <mat-toolbar color="primary">
+        <button mat-button routerLink="/">
+            <mat-icon>home</mat-icon>
+            {{title}}
+        </button>
+
+        <span class="fill-remaining-space"></span>
+
+        <div fxLayout="row" fxHide fxShow.gt-sm>
+            <button mat-button disabled=true>{{ loginUser.Email }}</button>
+            <button mat-button routerLink="shipping">Shipping</button>
+            <button mat-button routerLink="register">Register</button>
+            <button mat-button routerLink="login">Log In</button>
+        </div>
+        <button mat-button [mat-menu-trigger-for]="menu" fxShow fxHide.gt-sm>
+            <mat-icon>menu</mat-icon>
+        </button> 
+
+    </mat-toolbar>
+    <mat-menu x-position="before" #menu>
+        <button mat-button routerLink="shipping">Shipping</button>
+        <button mat-menu-item routerLink="register">Register</button>
+        <button mat-menu-item routerLink="login">Log In</button>
+    </mat-menu>
+</div>
+Message: {{loginUser.Email}}
+<app-login *ngIf="loginUser.Email" (messageEvent)="receiveMessage($event)"></app-login>
+<router-outlet></router-outlet>

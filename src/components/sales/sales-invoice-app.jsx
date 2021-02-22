@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 //import "./App.css";
 //import { getUserData } from "./api";
 import SalesInvoice from "./sales-invoice";
+import configData from "../../config.json";
 
 function SalesInvoiceApp(invoiceParam) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
     fetch(
-      "https://localhost:44367/api/sales/GetAccount?id=" +
+      configData.SERVER_URL + "sales/GetAccount?id=" +
         invoiceParam.id.current,
       {
         method: "GET",

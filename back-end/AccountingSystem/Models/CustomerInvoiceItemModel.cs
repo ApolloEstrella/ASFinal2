@@ -11,7 +11,7 @@ namespace AccountingSystem.Models
         public int LedgerMasterId { get; set; }
         public SalesItem SalesItem { get; set; }
         public string Description { get; set; }
-        public int Qty { get; set; }
+        public decimal Qty { get; set; }
         public decimal UnitPrice { get; set; }
         public int TaxRateId { get; set; }
         public TaxRateItem TaxRateItem { get; set; }

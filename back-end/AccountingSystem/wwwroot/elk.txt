@@ -1,0 +1,3 @@
+Elasticsearch version 7.3.2
+Logstash version 7.3.2
+Kibana version 7.3.2

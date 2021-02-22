@@ -50,5 +50,11 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_salesService.GetAllSalesInvoices());
         }
+
+        [HttpGet]
+        public ActionResult PrintInvoice(int id)
+        {
+            return Ok(_salesService.PrintCustomerInvoice(id));
+        }
     }
 }
