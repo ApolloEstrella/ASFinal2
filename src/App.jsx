@@ -22,7 +22,9 @@ import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-a
 import SalesInvoice from "./components/sales/sales-invoice.jsx";
 import MaterialUIPickers from "./components/sales/test"
 import SalesInvoiceList from "./components/sales/sales-invoice-list";
-//import SalesInvoiceApp from "./components/sales/sales-invoice-app"
+//import SalesInvoiceApp from "./components/sales/sales-invoice-app";
+import FunctionalComponentWithHook from "./components/sales/test";
+
 
 const storageService = new StorageService();
 
@@ -221,7 +223,7 @@ const App = (props) => {
         <Route
           exact
           path="/test"
-          render={(props) => <MaterialUIPickers {...props} />}
+          render={(props) => <FunctionalComponentWithHook {...props} />}
         />
       </Switch>
     </div>

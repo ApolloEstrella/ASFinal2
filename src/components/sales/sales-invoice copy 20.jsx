@@ -408,15 +408,15 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         console.log("network error");
       });
   }, [invoiceCounter, preloadedValues.id]); */
-  const [origId, setOrigId] = useState(preloadedValues.id);
-  const [preId, setPreId] = useState(preloadedValues.id);
+  const [origId, setOrigId] = useState(preloadedValues.id)
+  const [preId, setPreId] = useState(preloadedValues.id)
   const [isLoading, setIsLoading] = useState(false);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      setPreId(origId);
-      await fetch(
+      setPreId(origId)
+      const result = await fetch(
         configData.SERVER_URL + "Sales/PrintInvoice?id=" + preId,
         {
           method: "GET",
@@ -573,11 +573,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     }),
   };
 
+
   function changePreId() {
     //preloadedValues.id = Number(preloadedValues.id) + 1;
     setPreId(preId + 1);
     handlePrint();
   }
+
 
   const loadBillingAddress = (id) => {
     const sL = subsidiaryLedgerAccounts.find((x) => x.value === id);

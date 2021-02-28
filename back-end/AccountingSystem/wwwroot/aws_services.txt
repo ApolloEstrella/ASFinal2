@@ -1,0 +1,10 @@
+- AWS Lambda
+- AWS RDS
+- AWS S3
+- AWS EC2, Elasticbeanstalk
+- AWS Cloudwatch
+- AWS Dynamodb
+- AWS Elasticsearch
+- AWS SQS/SNS
+- AWS ElasticCache (Redis)
+- AWS CLI
