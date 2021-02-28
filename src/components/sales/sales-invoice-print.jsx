@@ -12,7 +12,8 @@ export class ComponentToPrint extends React.Component {
   state = { invoiceData: {}, items: [{}], counter: 0 };
 
   static getDerivedStateFromProps(props, state) {
-    return (state.invoiceData = props.loadInfo);
+    state.invoiceData = props.loadInfo;
+    return true;
   }
 
   render() {
@@ -100,44 +101,46 @@ export class ComponentToPrint extends React.Component {
                             <td>Sub Total</td>
                             <td>Tracking</td>
                           </tr>
-                          {this.state.items.map((item, i) => {
-                            return [
-                              <tr key={i}>
-                                <td>{item.salesItem}</td>
-                                <td>{item.description}</td>
-                                <td>
-                                  <NumberFormat
-                                    value={item.quantity}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                  />
-                                </td>
-                                <td>
-                                  <NumberFormat
-                                    value={item.unitPrice}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                  />
-                                </td>
+                          {this.state.invoiceData.invoiceItems.map(
+                            (item, i) => {
+                              return [
+                                <tr key={i}>
+                                  <td>{item.salesItem}</td>
+                                  <td>{item.description}</td>
+                                  <td>
+                                    <NumberFormat
+                                      value={item.quantity}
+                                      displayType={"text"}
+                                      thousandSeparator={true}
+                                      decimalScale={2}
+                                      fixedDecimalScale={true}
+                                    />
+                                  </td>
+                                  <td>
+                                    <NumberFormat
+                                      value={item.unitPrice}
+                                      displayType={"text"}
+                                      thousandSeparator={true}
+                                      decimalScale={2}
+                                      fixedDecimalScale={true}
+                                    />
+                                  </td>
 
-                                <td>
-                                  <NumberFormat
-                                    value={item.subTotal}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                  />
-                                </td>
+                                  <td>
+                                    <NumberFormat
+                                      value={item.subTotal}
+                                      displayType={"text"}
+                                      thousandSeparator={true}
+                                      decimalScale={2}
+                                      fixedDecimalScale={true}
+                                    />
+                                  </td>
 
-                                <td>{item.trackingItem}</td>
-                              </tr>,
-                            ];
-                          })}
+                                  <td>{item.trackingItem}</td>
+                                </tr>,
+                              ];
+                            }
+                          )}
                         </tbody>
                       </table>
                     </td>
