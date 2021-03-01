@@ -152,7 +152,7 @@ export class ComponentToPrint extends React.Component {
                               ];
                             }
                           )}
-                          <div></div>
+                          
                         </tbody>
                       </table>
                     </td>

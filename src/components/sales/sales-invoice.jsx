@@ -922,13 +922,15 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
     //values.date = new Date(values.date.replace(/-/g, '/').replace(/T.+/, ''));
     //values.dueDate = new Date(values.date.replace(/-/g, "/").replace(/T.+/, ""));
-
-    values.date = moment(values.date.toString()).toDate();
-    values.dueDate = moment(values.dueDate.toString()).toDate();
-
-
-
+    //values.dueDate = moment(values.dueDate.toString()).toDate();
+    //values.date = moment.tz(values.date, "Asia/Taipei");
+    //values.date = moment.tz(values.dueDate, "Asia/Taipei");
     
+    values.date = moment.parseZone(values.date.toString()).toDate();
+    values.dueDate = moment
+      .parseZone(values.dueDate.toString()).toDate();
+       
+
     if (preloadedValues !== null) values.id = origId;
 
     var url =
