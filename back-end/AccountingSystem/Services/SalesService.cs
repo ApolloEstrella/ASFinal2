@@ -247,8 +247,9 @@ namespace AccountingSystem.Services
                                                                       b.InvoiceQuantity,
                                                                       b.InvoiceUnitPrice,
                                                                       TaxRateItem = c.Description,
-                                                                      Amount = (b.InvoiceQuantity * b.InvoiceQuantity),
-                                                                      TrackingItem = d.Description
+                                                                      //Amount = (b.InvoiceQuantity * b.InvoiceQuantity),
+                                                                      TrackingItem = d.Description,
+                                                                      TaxRate = c.Rate / 100
                                                                   }).ToList()
                                                                   .Where(x => x.LedgerMasterId == id)
                                                                   .Select(x => new PrintCustomerInvoiceDetailModel
@@ -259,8 +260,13 @@ namespace AccountingSystem.Services
                                                                       UnitPrice = x.InvoiceUnitPrice,
                                                                       TaxItem = x.TaxRateItem,
                                                                       SubTotal = Math.Round(x.InvoiceQuantity * x.InvoiceUnitPrice, 2),
+                                                                      TotalTaxes = x.TaxRate * Math.Round(x.InvoiceQuantity * x.InvoiceUnitPrice, 2),
                                                                       TrackingItem = x.TrackingItem
                                                                   }).ToList();
+
+
+            var itemSums = InvoiceItems.Aggregate((SubTotal: Convert.ToDecimal(0), TotalTaxes: Convert.ToDecimal(0), Total: Convert.ToDecimal(0)), (sums, item) =>
+             (sums.SubTotal + item.SubTotal, sums.TotalTaxes + item.TotalTaxes, sums.Total + item.TotalTaxes));
 
 
             PrintCustomerInvoiceModel printCustomerInvoiceModel = (from a in _serverContext.LedgerMasters
@@ -287,7 +293,10 @@ namespace AccountingSystem.Services
                                                                        DueDate = x.InvoiceDueDate,
                                                                        Terms = x.InvoiceTerms,
                                                                        Reference = x.InvoiceReference,
-                                                                       InvoiceItems = InvoiceItems
+                                                                       InvoiceItems = InvoiceItems,
+                                                                       SubTotal = itemSums.SubTotal,
+                                                                       TotalTaxes = itemSums.TotalTaxes,
+                                                                       Total = itemSums.SubTotal + itemSums.TotalTaxes
                                                                    }
                                                                    ).SingleOrDefault();
 

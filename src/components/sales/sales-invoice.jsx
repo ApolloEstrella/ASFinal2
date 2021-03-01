@@ -408,23 +408,24 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         console.log("network error");
       });
   }, [invoiceCounter, preloadedValues.id]); */
-  const [origId, setOrigId] = useState(preloadedValues.id);
-  const [preId, setPreId] = useState(preloadedValues.id);
+  const [origId, setOrigId] = useState(
+    preloadedValues !== null ? preloadedValues.id : 0
+  );
+  const [preId, setPreId] = useState(
+    preloadedValues !== null ? preloadedValues.id : 0
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setPreId(origId);
-      await fetch(
-        configData.SERVER_URL + "Sales/PrintInvoice?id=" + preId,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      await fetch(configData.SERVER_URL + "Sales/PrintInvoice?id=" + preId, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
         .then((results) => results.json())
         .then((data) => {
           console.log(data);
@@ -924,7 +925,11 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
     values.date = moment(values.date.toString()).toDate();
     values.dueDate = moment(values.dueDate.toString()).toDate();
-    values.id = origId;
+
+
+
+    
+    if (preloadedValues !== null) values.id = origId;
 
     var url =
       preloadedValues === null
@@ -2074,7 +2079,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       >
         Save
       </Button>
-      <Button
+      {/* <Button
         type="button"
         color="primary"
         variant="contained"
@@ -2091,7 +2096,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         }
       >
         Print Invoice
-      </Button>
+      </Button> */}
 
       <Button
         type="button"
@@ -2100,13 +2105,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         style={{ marginTop: "50px", marginLeft: "100px" }}
         onClick={() => changePreId()}
       >
-        Test
+        Print Invoice
       </Button>
 
       <div style={{ display: "none" }}>
         <ComponentToPrint
           ref={componentRef}
-          id={preloadedValues.id}
+          id={preloadedValues !== null ? preloadedValues.id : 0}
           loadInfo={invoiceData}
           isLoading={isLoading}
         />

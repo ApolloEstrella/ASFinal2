@@ -12,7 +12,9 @@ namespace AccountingSystem.Models
         public decimal Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public string TaxItem { get; set; }
-        public decimal SubTotal { get; set; }
         public string TrackingItem { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal TotalTaxes { get; set; }
+        public decimal Total { get; set; }
     }
 }

@@ -15,5 +15,8 @@ namespace AccountingSystem.Models
         public int Terms { get; set; }
         public string Reference { get; set; }
         public List<PrintCustomerInvoiceDetailModel> InvoiceItems { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal TotalTaxes { get; set; }
+        public decimal Total { get; set; }
     }
 }

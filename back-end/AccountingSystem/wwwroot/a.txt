@@ -1,5 +1,0 @@
-const url =
-    invoiceParam.id.current !== undefined
-      ? "https://localhost:44367/api/sales/GetAccount?id=" +
-        invoiceParam.id.current
-      : "https://localhost:44367/api/sales/AddAccount";

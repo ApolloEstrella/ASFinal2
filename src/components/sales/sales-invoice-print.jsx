@@ -7,6 +7,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import configData from "../../config.json";
 import NumberFormat from "react-number-format";
+import { format } from "date-fns";
 
 export class ComponentToPrint extends React.Component {
   state = { invoiceData: {}, items: [{}], counter: 0 };
@@ -62,7 +63,12 @@ export class ComponentToPrint extends React.Component {
                       <h3>DATE:</h3>
                     </td>
                     <td style={{ paddingTop: "0px" }}>
-                      <h3>{this.state.invoiceData.invoiceDate}</h3>
+                      <h3>
+                        {format(
+                          new Date(this.state.invoiceData.invoiceDate),
+                          "MM/dd/yyyy"
+                        )}
+                      </h3>
                     </td>
                   </tr>
                   <tr>
@@ -70,7 +76,12 @@ export class ComponentToPrint extends React.Component {
                       <h3>DUE DATE:</h3>
                     </td>
                     <td style={{ paddingTop: "0px" }}>
-                      <h3>{this.state.invoiceData.dueDate}</h3>
+                      <h3>
+                        {format(
+                          new Date(this.state.invoiceData.dueDate),
+                          "MM/dd/yyyy"
+                        )}
+                      </h3>
                     </td>
                   </tr>
                   <tr>
@@ -91,7 +102,7 @@ export class ComponentToPrint extends React.Component {
                   </tr>
                   <tr>
                     <td style={{ width: "140px" }} colSpan="2">
-                      <table style={{ width: "120%" }}>
+                      <table cellPadding="5px" style={{ width: "120%" }}>
                         <tbody>
                           <tr>
                             <td>Sales Item</td>
@@ -141,6 +152,7 @@ export class ComponentToPrint extends React.Component {
                               ];
                             }
                           )}
+                          <div></div>
                         </tbody>
                       </table>
                     </td>
@@ -149,6 +161,62 @@ export class ComponentToPrint extends React.Component {
                 <tfoot></tfoot>
               </table>
             </div>
+            <br />
+            <table style={{ paddingLeft: "400px" }}>
+              <tbody>
+                <tr>
+                  <td>
+                    <h3>Sub Total:</h3>
+                  </td>
+                  <td>
+                    <h3>
+                      <NumberFormat
+                        value={this.state.invoiceData.subTotal}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                      />
+                    </h3>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h3>Taxes:</h3>
+                  </td>
+                  <td>
+                    <h3>
+                      <NumberFormat
+                        value={this.state.invoiceData.totalTaxes}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                      />
+                    </h3>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <h3>Total:</h3>
+                  </td>
+                  <td>
+                    <h3>
+                      <NumberFormat
+                        value={
+                          this.state.invoiceData.subTotal +
+                          this.state.invoiceData.totalTaxes
+                        }
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        decimalScale={2}
+                        fixedDecimalScale={true}
+                      />
+                    </h3>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         ) : (
           "ok"

@@ -35,6 +35,8 @@ import SalesInvoiceApp from "./sales-invoice-app";
 import SalesInvoice from "./sales-invoice";
 import configData from "../../config.json";
 
+import { format } from "date-fns";
+
 const columns = [
   { id: "customer", label: "Customer", minWidth: 170 },
   { id: "invoiceNo", label: "Invoice No", minWidth: 100 },
@@ -179,7 +181,7 @@ useEffect(() => {
                             ) : column.format && typeof value === "number" ? (
                               column.format(value)
                             ) : (
-                              value
+                             column.id === "invoiceDate" ? format(new Date(value), "MM/dd/yyyy")  : value
                             )}
                           </TableCell>
                         );
