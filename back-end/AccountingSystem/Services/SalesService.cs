@@ -28,8 +28,28 @@ namespace AccountingSystem.Services
             return (from a in _serverContext.LedgerMasters
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
-                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name }).ToList()
-                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void }).ToList()
+                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name, Void = x.Void, InvoiceAmount = 0, UnPaidBalance = 0 }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
+        }
+
+        public List<CustomerInvoiceForListModel> GetAllSalesInvoicesByCustomerName(string customerName)
+        {
+            return (from a in _serverContext.LedgerMasters
+                    join b in _serverContext.SubsidiaryLedgerAccountNames
+                    on a.SubsidiaryLedgerAccountId equals b.Id
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void }).ToList()
+                    .Where(x => x.Name.ToLower().Contains(customerName.ToLower()))
+                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name, Void = x.Void, InvoiceAmount = 0, UnPaidBalance = 0 }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
+        }
+
+        public List<CustomerInvoiceForListModel> GetAllSalesInvoicesByInvoiceNo(string invoiceNo)
+        {
+            return (from a in _serverContext.LedgerMasters
+                    join b in _serverContext.SubsidiaryLedgerAccountNames
+                    on a.SubsidiaryLedgerAccountId equals b.Id
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void }).ToList()
+                    .Where(x => x.InvoiceNo.ToLower().Contains(invoiceNo.ToLower()))
+                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name, Void = x.Void, InvoiceAmount = 0, UnPaidBalance   = 0 }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
         public CustomerInvoiceModel GetSalesInvoice(int id)
         {
@@ -127,6 +147,7 @@ namespace AccountingSystem.Services
                 ledgerMaster.InvoiceDueDate = customerInvoiceModel.DueDate;
                 ledgerMaster.InvoiceTerms = customerInvoiceModel.Terms;
                 ledgerMaster.InvoiceReference = customerInvoiceModel.Reference;
+                ledgerMaster.InvoiceCreatedDate = DateTime.Now;
                 ledgerMaster.TransactionType = "INV";
                 _serverContext.LedgerMasters.Add(ledgerMaster);
                 _serverContext.SaveChanges();
@@ -168,6 +189,7 @@ namespace AccountingSystem.Services
                 ledgerMaster.InvoiceDueDate = customerInvoiceModel.DueDate;
                 ledgerMaster.InvoiceTerms = customerInvoiceModel.Terms;
                 ledgerMaster.InvoiceReference = customerInvoiceModel.Reference;
+                ledgerMaster.InvoiceModifiedDate = DateTime.Now;
                 ledgerMaster.TransactionType = "INV";
                 _serverContext.SaveChanges();
 
@@ -303,6 +325,24 @@ namespace AccountingSystem.Services
 
 
             return printCustomerInvoiceModel;
+        }
+
+        public int DeleteSalesInvoice(int id)
+        {
+            LedgerMaster ledgerMaster = _serverContext.LedgerMasters.Find(id);
+            _serverContext.LedgerMasters.Remove(ledgerMaster);
+            _serverContext.SaveChanges();
+            return id;
+        }
+
+        public int VoidSalesInvoice(int id)
+        {
+            LedgerMaster ledgerMaster = _serverContext.LedgerMasters.Find(id);
+            ledgerMaster.InvoiceModifiedDate = DateTime.Now;
+            ledgerMaster.Void = true;
+            _serverContext.SaveChanges();
+
+            return id;
         }
     }
 }

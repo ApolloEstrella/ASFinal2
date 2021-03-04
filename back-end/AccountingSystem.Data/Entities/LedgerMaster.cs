@@ -22,6 +22,9 @@ namespace AccountingSystem.Data.Entities
         public short InvoiceTerms { get; set; }
         public string InvoiceReference { get; set; }
         public string TransactionType { get; set; }
+        public bool? Void { get; set; }
+        public DateTime? InvoiceModifiedDate { get; set; }
+        public DateTime? InvoiceCreatedDate { get; set; }
 
         public virtual SubsidiaryLedgerAccountName SubsidiaryLedgerAccount { get; set; }
         public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }

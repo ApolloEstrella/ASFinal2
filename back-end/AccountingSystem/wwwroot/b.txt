@@ -1,0 +1,68 @@
+public PrintCustomerInvoiceModel PrintCustomerInvoice(int id)
+        {
+
+            List<PrintCustomerInvoiceDetailModel> InvoiceItems = (from a in _serverContext.IncomeItems
+                                                                  join b in _serverContext.LedgerDetails
+                                                                  on a.Id equals b.InvoiceSalesItemId
+                                                                  join c in _serverContext.TaxRates
+                                                                  on b.InvoiceSalesItemId equals c.Id
+                                                                  join d in _serverContext.Trackings
+                                                                  on b.InvoiceTaxRateId equals d.Id
+                                                                  join e in _serverContext.Trackings
+                                                                  on b.InvoiceTrackingId equals e.Id
+                                                                  select new
+                                                                  {
+                                                                      b.LedgerMasterId,
+                                                                      a.Name,
+                                                                      b.InvoiceDescription,
+                                                                      b.InvoiceQuantity,
+                                                                      b.InvoiceUnitPrice,
+                                                                      TaxRateItem = d.Description,
+                                                                      Amount = (b.InvoiceQuantity * b.InvoiceQuantity),
+                                                                      TrackingItem = e.Description
+                                                                  }).ToList()
+                                                                  .Where(x => x.LedgerMasterId == id)
+                                                                  .Select(x => new PrintCustomerInvoiceDetailModel
+                                                                  {
+                                                                      SalesItem = x.Name,
+                                                                      Description = x.InvoiceDescription,
+                                                                      Quantity = x.InvoiceQuantity,
+                                                                      UnitPrice = x.InvoiceUnitPrice,
+                                                                      TaxItem = x.TaxRateItem,
+                                                                      SubTotal = Math.Round(x.InvoiceQuantity * x.InvoiceUnitPrice,2),
+                                                                      TrackingItem = x.TaxRateItem
+                                                                  }).ToList();
+
+
+            PrintCustomerInvoiceModel printCustomerInvoiceModel = (from a in _serverContext.LedgerMasters
+                                                                   join b in _serverContext.SubsidiaryLedgerAccountNames
+                                                                   on a.SubsidiaryLedgerAccountId equals b.Id
+                                                                   select new
+                                                                   {
+                                                                       a.Id,
+                                                                       b.Name,
+                                                                       a.InvoiceBillingAddress,
+                                                                       a.InvoiceNo,
+                                                                       a.InvoiceDate,
+                                                                       a.InvoiceDueDate,
+                                                                       a.InvoiceTerms,
+                                                                       a.InvoiceReference
+                                                                   })
+                                                                   .Where(x => x.Id == id)
+                                                                   .Select(x => new PrintCustomerInvoiceModel
+                                                                   {
+                                                                      CustomerName = x.Name,
+                                                                      BillingAddress = x.InvoiceBillingAddress,
+                                                                      InvoiceNo = x.InvoiceNo,
+                                                                      InvoiceDate = x.InvoiceDate,
+                                                                      DueDate = x.InvoiceDueDate,
+                                                                      Terms = x.InvoiceTerms,
+                                                                      Reference = x.InvoiceReference,
+                                                                      InvoiceItems = null
+                                                                   }
+                                                                   ).SingleOrDefault();
+
+
+
+            return printCustomerInvoiceModel;
+        }

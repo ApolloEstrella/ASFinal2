@@ -608,7 +608,7 @@ export default function EnhancedTable() {
                       <TableCell align="right">
                         {format(new Date(row.invoiceDate), "MM/dd/yyyy")}
                       </TableCell>
-                      <TableCell align="right">{row.void}</TableCell>
+                      <TableCell align="right">{row.void === true ? "Void" : ""}</TableCell>
                       <TableCell align="right">
                         {" "}
                         <EditIcon onClick={() => handleEdit(row.id)} />{" "}

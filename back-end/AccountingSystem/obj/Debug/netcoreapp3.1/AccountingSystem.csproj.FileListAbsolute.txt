@@ -82,8 +82,6 @@ D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\n
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\AccountingSystem.runtimeconfig.dev.json
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\AccountingSystem.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\AccountingSystem.pdb
-D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.Net.Http.Formatting.dll
-D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.Web.Http.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Microsoft.Data.SqlClient.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Microsoft.DotNet.PlatformAbstractions.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Microsoft.EntityFrameworkCore.dll
@@ -108,7 +106,6 @@ D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\n
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Microsoft.IdentityModel.Tokens.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
-D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Newtonsoft.Json.Bson.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.Collections.Immutable.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.ComponentModel.Annotations.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.Configuration.ConfigurationManager.dll
@@ -136,3 +133,7 @@ D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\n
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\staticwebassets\AccountingSystem.StaticWebAssets.xml
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\AccountingSystem.genruntimeconfig.cache
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\obj\Debug\netcoreapp3.1\scopedcss\bundle\AccountingSystem.styles.css
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Humanizer.dll
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.Net.Http.Formatting.dll
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\System.Web.Http.dll
+D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem\bin\Debug\netcoreapp3.1\Newtonsoft.Json.Bson.dll

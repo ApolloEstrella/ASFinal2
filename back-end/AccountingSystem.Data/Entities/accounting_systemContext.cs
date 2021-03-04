@@ -40,6 +40,8 @@ namespace AccountingSystem.Data.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
             modelBuilder.Entity<ChartOfAccount>(entity =>
             {
                 entity.ToTable("chart_of_account");
@@ -147,7 +149,9 @@ namespace AccountingSystem.Data.Entities
                     .HasMaxLength(500)
                     .HasColumnName("invoice_description");
 
-                entity.Property(e => e.InvoiceQuantity).HasColumnName("invoice_quantity");
+                entity.Property(e => e.InvoiceQuantity)
+                    .HasColumnType("decimal(10, 2)")
+                    .HasColumnName("invoice_quantity");
 
                 entity.Property(e => e.InvoiceSalesItemId).HasColumnName("invoice_sales_item_id");
 
@@ -157,8 +161,7 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.InvoiceUnitPrice)
                     .HasColumnType("money")
-                    .HasColumnName("invoice_unit_price")
-                    .HasAnnotation("Relational:ColumnType", "money");
+                    .HasColumnName("invoice_unit_price");
 
                 entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
 
@@ -183,7 +186,6 @@ namespace AccountingSystem.Data.Entities
                 entity.HasOne(d => d.LedgerMaster)
                     .WithMany(p => p.LedgerDetails)
                     .HasForeignKey(d => d.LedgerMasterId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ledger_detail_id");
             });
 
@@ -198,15 +200,22 @@ namespace AccountingSystem.Data.Entities
                     .HasMaxLength(1000)
                     .HasColumnName("invoice_billing_address");
 
+                entity.Property(e => e.InvoiceCreatedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("invoice_created_date");
+
                 entity.Property(e => e.InvoiceDate)
                     .HasColumnType("date")
-                    .HasColumnName("invoice_date")
-                    .HasAnnotation("Relational:ColumnType", "date");
+                    .HasColumnName("invoice_date");
 
                 entity.Property(e => e.InvoiceDueDate)
                     .HasColumnType("date")
-                    .HasColumnName("invoice_due_date")
-                    .HasAnnotation("Relational:ColumnType", "date");
+                    .HasColumnName("invoice_due_date");
+
+                entity.Property(e => e.InvoiceModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("invoice_modified_date")
+                    .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.InvoiceNo)
                     .IsRequired()
@@ -226,6 +235,10 @@ namespace AccountingSystem.Data.Entities
                     .IsRequired()
                     .HasMaxLength(5)
                     .HasColumnName("transaction_type");
+
+                entity.Property(e => e.Void)
+                    .HasColumnName("void")
+                    .HasDefaultValueSql("((0))");
 
                 entity.HasOne(d => d.SubsidiaryLedgerAccount)
                     .WithMany(p => p.LedgerMasters)
@@ -263,8 +276,7 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.Rate)
                     .HasColumnType("decimal(5, 2)")
-                    .HasColumnName("rate")
-                    .HasAnnotation("Relational:ColumnType", "decimal(5, 2)");
+                    .HasColumnName("rate");
             });
 
             modelBuilder.Entity<Tracking>(entity =>
@@ -294,7 +306,6 @@ namespace AccountingSystem.Data.Entities
                 entity.HasOne(d => d.LedgerMaster)
                     .WithMany(p => p.UploadedFiles)
                     .HasForeignKey(d => d.LedgerMasterId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ledger_master_id");
             });
 

@@ -43,8 +43,6 @@ namespace AccountingSystem.Controllers
             return Ok(_salesService.GetSalesInvoice(id));
         }
 
-        
-
         [HttpGet]
         public ActionResult GetAllAccounts()
         {
@@ -52,9 +50,31 @@ namespace AccountingSystem.Controllers
         }
 
         [HttpGet]
+        public ActionResult GetAllAccountsByCustomerName(string customerName)
+        {
+            return Ok(_salesService.GetAllSalesInvoicesByCustomerName(customerName));
+        }
+
+        [HttpGet]
+        public ActionResult GetAllAccountsByInvoiceNo(string invoiceNo)
+        {
+            return Ok(_salesService.GetAllSalesInvoicesByInvoiceNo(invoiceNo));
+        }
+
+        [HttpGet]
         public ActionResult PrintInvoice(int id)
         {
             return Ok(_salesService.PrintCustomerInvoice(id));
+        }
+        [HttpDelete]
+        public ActionResult DeleteSalesInvoice(int id)
+        {
+            return Ok(_salesService.DeleteSalesInvoice(id));
+        }
+        [HttpPut]
+        public ActionResult VoidSalesInvoice(int id)
+        {
+            return Ok(_salesService.VoidSalesInvoice(id));
         }
     }
 }
