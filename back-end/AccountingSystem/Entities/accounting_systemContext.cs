@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace AccountingSystem.Data.Entities
+namespace AccountingSystem.Entities
 {
     public partial class accounting_systemContext : DbContext
     {
@@ -174,8 +174,6 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
 
-                entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
-
                 entity.HasOne(d => d.ChartOfAccount)
                     .WithMany(p => p.InvoicePayments)
                     .HasForeignKey(d => d.ChartOfAccountId)
@@ -186,12 +184,6 @@ namespace AccountingSystem.Data.Entities
                     .WithMany(p => p.InvoicePayments)
                     .HasForeignKey(d => d.LedgerMasterId)
                     .HasConstraintName("FK_invoice_payment_ledger_master_id");
-
-                entity.HasOne(d => d.SubsidiaryLedgerAccount)
-                    .WithMany(p => p.InvoicePayments)
-                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_invoice_payment_subsidiary_ledger_account_id");
             });
 
             modelBuilder.Entity<InvoicePaymentDetail>(entity =>
@@ -204,12 +196,12 @@ namespace AccountingSystem.Data.Entities
                     .HasColumnType("decimal(12, 2)")
                     .HasColumnName("invoice_payment_detail_amount");
 
-                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+                entity.Property(e => e.InvoicePaymentId).HasColumnName("invoice_payment_id");
 
-                entity.HasOne(d => d.LedgerMaster)
+                entity.HasOne(d => d.InvoicePayment)
                     .WithMany(p => p.InvoicePaymentDetails)
-                    .HasForeignKey(d => d.LedgerMasterId)
-                    .HasConstraintName("FK_invoice_payment_detail_ledger_master_id");
+                    .HasForeignKey(d => d.InvoicePaymentId)
+                    .HasConstraintName("FK_invoice_payment_detail_invoice_payment_id");
             });
 
             modelBuilder.Entity<LedgerDetail>(entity =>

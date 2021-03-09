@@ -12,8 +12,9 @@ namespace AccountingSystem.Models
        public string InvoiceNo { get; set; }
        public string Customer { get; set; }
        public bool? Void { get; set; }
-       public decimal InvoiceAmount { get; set; }
+       public decimal? InvoiceAmount { get; set; }
        public decimal UnPaidBalance { get; set; }
+       public int CustomerId { get; set; }
 
     }
 }

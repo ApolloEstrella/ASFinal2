@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AccountingSystem.Models;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace AccountingSystem.Services.Interfaces
 {
@@ -17,5 +18,8 @@ namespace AccountingSystem.Services.Interfaces
         PrintCustomerInvoiceModel PrintCustomerInvoice(int id);
         int DeleteSalesInvoice(int id);
         int VoidSalesInvoice(int id);
+        int Payment(CustomerInvoicePaymentModel customerInvoicePaymentModel);
+        //CustomerInvoicePaymentItemModel GetInvoicePayment(int customerId);
+        List<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId);
     }
 }

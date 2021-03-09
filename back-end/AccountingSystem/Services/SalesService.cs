@@ -25,11 +25,23 @@ namespace AccountingSystem.Services
 
         public List<CustomerInvoiceForListModel> GetAllSalesInvoices()
         {
+
             return (from a in _serverContext.LedgerMasters
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
-                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void }).ToList()
-                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name, Void = x.Void, InvoiceAmount = 0, UnPaidBalance = 0 }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void, a.InvoiceAmount, a.SubsidiaryLedgerAccountId }).ToList()
+                    .Select(x => new CustomerInvoiceForListModel
+                    {
+                        Id = x.Id,
+                        InvoiceDate = x.InvoiceDate,
+                        InvoiceNo = x.InvoiceNo,
+                        Customer = x.Name,
+                        Void = x.Void,
+                        InvoiceAmount = x.InvoiceAmount,
+                        UnPaidBalance = 0,
+                        CustomerId = x.SubsidiaryLedgerAccountId
+                    })
+                    .OrderByDescending(x => x.Customer.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
 
         public List<CustomerInvoiceForListModel> GetAllSalesInvoicesByCustomerName(string customerName)
@@ -37,9 +49,19 @@ namespace AccountingSystem.Services
             return (from a in _serverContext.LedgerMasters
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
-                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void }).ToList()
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void, a.InvoiceAmount, a.SubsidiaryLedgerAccountId }).ToList()
                     .Where(x => x.Name.ToLower().Contains(customerName.ToLower()))
-                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name, Void = x.Void, InvoiceAmount = 0, UnPaidBalance = 0 }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
+                    .Select(x => new CustomerInvoiceForListModel
+                    {
+                        Id = x.Id,
+                        InvoiceDate = x.InvoiceDate,
+                        InvoiceNo = x.InvoiceNo,
+                        Customer = x.Name,
+                        Void = x.Void,
+                        InvoiceAmount = 0,
+                        UnPaidBalance = 0,
+                        CustomerId = x.SubsidiaryLedgerAccountId
+                    }).OrderByDescending(x => x.Customer.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
 
         public List<CustomerInvoiceForListModel> GetAllSalesInvoicesByInvoiceNo(string invoiceNo)
@@ -47,9 +69,19 @@ namespace AccountingSystem.Services
             return (from a in _serverContext.LedgerMasters
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
-                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void }).ToList()
+                    select new { a.Id, a.InvoiceDate, a.InvoiceNo, b.Name, a.Void, a.InvoiceAmount, a.SubsidiaryLedgerAccountId }).ToList()
                     .Where(x => x.InvoiceNo.ToLower().Contains(invoiceNo.ToLower()))
-                    .Select(x => new CustomerInvoiceForListModel { Id = x.Id, InvoiceDate = x.InvoiceDate, InvoiceNo = x.InvoiceNo, Customer = x.Name, Void = x.Void, InvoiceAmount = 0, UnPaidBalance   = 0 }).OrderByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
+                    .Select(x => new CustomerInvoiceForListModel
+                    {
+                        Id = x.Id,
+                        InvoiceDate = x.InvoiceDate,
+                        InvoiceNo = x.InvoiceNo,
+                        Customer = x.Name,
+                        Void = x.Void,
+                        InvoiceAmount = 0,
+                        UnPaidBalance = 0,
+                        CustomerId = x.SubsidiaryLedgerAccountId
+                    }).OrderByDescending(x => x.InvoiceNo.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => invoiceNo).ToList();
         }
         public CustomerInvoiceModel GetSalesInvoice(int id)
         {
@@ -343,6 +375,74 @@ namespace AccountingSystem.Services
             _serverContext.SaveChanges();
 
             return id;
+        }
+
+        public int Payment(CustomerInvoicePaymentModel customerInvoicePaymentModel)
+        {
+            int Id = 0;
+            _serverContext.Database.BeginTransaction();
+            var Invoice = (from a in _serverContext.LedgerMasters
+                           where a.SubsidiaryLedgerAccountId == customerInvoicePaymentModel.CustomerId
+                           select new { a.SubsidiaryLedgerAccountId });
+            try
+            {
+                InvoicePayment invoice = new InvoicePayment();
+                invoice.LedgerMasterId = customerInvoicePaymentModel.LedgerMasterId;
+                invoice.SubsidiaryLedgerAccountId = customerInvoicePaymentModel.CustomerId;
+                invoice.InvoicePaymentAmount = customerInvoicePaymentModel.InvoiceAmount;
+                invoice.ChartOfAccountId = customerInvoicePaymentModel.ChartOfAccountId;
+                invoice.InvoicePaymentReferenceNo = customerInvoicePaymentModel.ReferenceNo;
+                invoice.InvoicePaymentDate = customerInvoicePaymentModel.PaymentDate;
+                invoice.InvoicePaymentCreatedDate = DateTime.Now;
+                _serverContext.InvoicePayments.Add(invoice);
+                invoice.InvoicePaymentModifiedDate = DateTime.Now;
+                _serverContext.SaveChanges();
+                Id = invoice.Id;
+                foreach (CustomerInvoicePostPaymentItemModel item in customerInvoicePaymentModel.Items)
+                {
+                    InvoicePaymentDetail invoicePaymentDetail = new InvoicePaymentDetail();
+                    invoicePaymentDetail.LedgerMasterId = item.Id;
+                    invoicePaymentDetail.InvoicePaymentDetailAmount = item.Amount;
+                    _serverContext.InvoicePaymentDetails.Add(invoicePaymentDetail);
+                    _serverContext.SaveChanges();
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            return Id;
+        }
+        public List<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId)
+        {
+
+            List<CustomerInvoicePaymentItemModel> customerInvoicePaymentItemModel = (from a in _serverContext.LedgerMasters
+                                                                                     join b in _serverContext.InvoicePaymentDetails
+                                                                                     on a.Id equals b.LedgerMasterId into jts
+                                                                                     from jtResult in jts.DefaultIfEmpty()
+                                                                                     select new { a.Id, a.InvoiceNo, a.SubsidiaryLedgerAccountId, a.InvoiceAmount, a.InvoiceDueDate })
+                                                                               .Where(x => x.SubsidiaryLedgerAccountId == customerId)
+                                                                               .Select(x => new CustomerInvoicePaymentItemModel
+                                                                               {
+                                                                                   Id = x.Id,
+                                                                                   InvoiceNo = x.InvoiceNo,
+                                                                                   InvoiceDueDate = x.InvoiceDueDate,
+                                                                                   InvoiceAmount = (decimal)x.InvoiceAmount,
+                                                                                   UnPaidBalance = (decimal)x.InvoiceAmount - (from a in _serverContext.InvoicePaymentDetails
+                                                                                                                               join b in _serverContext.LedgerMasters
+                                                                                                                               on a.LedgerMasterId equals b.Id
+                                                                                                                               where a.LedgerMasterId == x.Id &&
+                                                                                                                                     b.InvoiceNo == x.InvoiceNo
+                                                                                                                               select a.InvoicePaymentDetailAmount).Sum()
+                                                                               }).Distinct().ToList();
+
+
+
+
+
+
+            return customerInvoicePaymentItemModel;
         }
     }
 }

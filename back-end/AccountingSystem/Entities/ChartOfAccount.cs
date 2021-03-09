@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace AccountingSystem.Data.Entities
+namespace AccountingSystem.Entities
 {
     public partial class ChartOfAccount
     {
