@@ -11,10 +11,10 @@ namespace AccountingSystem.Services.Interfaces
         List<CustomerInvoiceForListModel> GetAllSalesInvoices();
         List<CustomerInvoiceForListModel> GetAllSalesInvoicesByCustomerName(string customerName);
         List<CustomerInvoiceForListModel> GetAllSalesInvoicesByInvoiceNo(string invoiceNo);
-        int AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel);
+        CustomerInvoiceModel AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel);
         int AddUploadFiles(int id, FileModel files);
         CustomerInvoiceModel GetSalesInvoice(int id);
-        int EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel);
+        CustomerInvoiceModel EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel);
         PrintCustomerInvoiceModel PrintCustomerInvoice(int id);
         int DeleteSalesInvoice(int id);
         int VoidSalesInvoice(int id);

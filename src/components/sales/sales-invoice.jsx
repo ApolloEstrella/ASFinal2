@@ -213,14 +213,15 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   const [costs, setCosts] = useState([]);
   const [files, setFiles] = useState([]);
   const loadPreLoadedValues = useRef(true);
+  const [loadInvoice, setLoadInvoice] = useState(preloadedValues);
   useEffect(() => {
-    if (preloadedValues !== null) {
-      setCosts(preloadedValues.items);
-      preloadedValues.date = moment(preloadedValues.date).format("MM/DD/YYYY");
-      preloadedValues.dueDate = moment(preloadedValues.dueDate).format(
+    if (loadInvoice !== null) {
+      setCosts(loadInvoice.items);
+      loadInvoice.date = moment(loadInvoice.date).format("MM/DD/YYYY");
+      loadInvoice.dueDate = moment(loadInvoice.dueDate).format(
         "MM/DD/YYYY"
       );
-      setFiles(preloadedValues.loadFiles);
+      setFiles(loadInvoice.loadFiles);
     }
   }, []);
   const {
@@ -234,7 +235,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     getValues,
   } = useForm({
     //mode: "onChange",
-    defaultValues: preloadedValues === null ? {} : preloadedValues,
+    defaultValues: loadInvoice === null ? {} : loadInvoice,
 
     resolver: yupResolver(validationSchema),
   });
@@ -391,7 +392,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   /* useEffect(() => {
     //setOpenEdit(true)
     fetch(
-      configData.SERVER_URL + "Sales/PrintInvoice?id=" + preloadedValues.id,
+      configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id,
       {
         method: "GET",
         headers: {
@@ -407,20 +408,21 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       .catch(function (error) {
         console.log("network error");
       });
-  }, [invoiceCounter, preloadedValues.id]); */
+  }, [invoiceCounter, loadInvoice.id]); */
   const [origId, setOrigId] = useState(
-    preloadedValues !== null ? preloadedValues.id : 0
+    loadInvoice !== null ? loadInvoice.id : 0
   );
   const [preId, setPreId] = useState(
-    preloadedValues !== null ? preloadedValues.id : 0
+    loadInvoice !== null ? loadInvoice.id : 0
   );
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (loadInvoice === null) { return}
+    const fetchData = () => {
       setIsLoading(true);
       setPreId(origId);
-      await fetch(configData.SERVER_URL + "Sales/PrintInvoice?id=" + preId, {
+      fetch(configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -440,7 +442,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     };
 
     fetchData();
-  }, [preId, origId]);
+  }, [preId, origId, loadInvoice]);
 
   const tv2 = [2011, 2];
 
@@ -525,7 +527,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   function loadInvoiceData() {
     setInvoiceData({});
     fetch(
-      configData.SERVER_URL + "Sales/PrintInvoice?id=" + preloadedValues.id,
+      configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id,
       {
         method: "GET",
         headers: {
@@ -545,7 +547,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
   const loadInvoiceData1 = () => {
     fetch(
-      configData.SERVER_URL + "Sales/PrintInvoice?id=" + preloadedValues.id,
+      configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id,
       {
         method: "GET",
         headers: {
@@ -575,8 +577,9 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   };
 
   function changePreId() {
-    //preloadedValues.id = Number(preloadedValues.id) + 1;
+    //loadInvoice.id = Number(loadInvoice.id) + 1;
     setPreId(preId + 1);
+    setPreId(Number(loadInvoice.id));
     handlePrint();
   }
 
@@ -713,8 +716,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
   const handleDeleteDisplayTotal = (handleDelete) => {
     var _tempCosts =
-      preloadedValues != null && loadPreLoadedValues.current === true
-        ? preloadedValues.items
+      loadInvoice != null && loadPreLoadedValues.current === true
+        ? loadInvoice.items
         : costs;
 
     loadPreLoadedValues.current = false;
@@ -929,17 +932,21 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     values.date = moment.parseZone(values.date.toString()).toDate();
     values.dueDate = moment
       .parseZone(values.dueDate.toString()).toDate();
-       
+    
+    values.total = subTotal + totalTaxes;
 
-    if (preloadedValues !== null) values.id = origId;
+    if (loadInvoice !== null) values.id = origId;
 
     var url =
-      preloadedValues === null
+      loadInvoice === null
         ? configData.SERVER_URL + "sales/addaccount"
         : configData.SERVER_URL + "sales/editaccount";
 
-    var urlMethod = preloadedValues === null ? "POST" : "PUT";
-
+    var urlMethod = loadInvoice === null ? "POST" : "PUT";
+    if (urlMethod === "PUT") {
+      values.id = loadInvoice.id;
+    }
+      
     fetch(url, {
       method: urlMethod,
       body: JSON.stringify(values),
@@ -949,6 +956,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     })
       .then((results) => results.json())
       .then((data) => {
+        setLoadInvoice(data);
+        setPreId(data.id)
         var formData = new FormData();
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
@@ -964,20 +973,21 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
         })
           .then((results) => results.json())
           .then((data) => {
-            if (preloadedValues === null) {
+            //loadInvoice = data;
+            if (loadInvoice === null) {
               //resetForm(initialValues);
-              reset(initialValues);
+              //reset(initialValues);
               //fileList = [null];
-              setFiles([]);
+              //setFiles([]);
               //subTotal = 0;
               //totalTaxes = 0;
               //totalAmount = 0;
-              setSubTotal(0);
-              setTotalTaxes(0);
-              setTotalAmount(0);
-              setValue("terms", null);
-              setValue("customer", null);
-              setOpenEdit(false);
+              //setSubTotal(0);
+              //setTotalTaxes(0);
+              //setTotalAmount(0);
+              //setValue("terms", null);
+              //setValue("customer", null);
+              //setOpenEdit(false);
               console.log("successful");
             }
           })
@@ -1038,8 +1048,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   return salesItems.length > 0 &&
     taxRates.length > 0 &&
     trackings.length > 0 &&
-    subsidiaryLedgerAccounts.length > 0 ? (
-    //return (
+    subsidiaryLedgerAccounts.length > 0  ? (
+   
     <form id="salesInvoiceForm" onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container justify="space-around" direction="row">
@@ -1079,10 +1089,10 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
                 isClearable
                 options={subsidiaryLedgerAccounts}
                 defaultValue={
-                  preloadedValues !== null
+                  loadInvoice !== null
                     ? subsidiaryLedgerAccounts.find(
                         (obj) =>
-                          Number(obj.value) === preloadedValues.customer.value
+                          Number(obj.value) === loadInvoice.customer.value
                       )
                     : null
                 }
@@ -1313,8 +1323,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
                         handleChange(e, `items[${index}].salesItem`)
                       }
                       defaultValue={
-                        preloadedValues !== null &&
-                        index < preloadedValues.items.length &&
+                        loadInvoice !== null &&
+                        index < loadInvoice.items.length &&
                         !addInvoiceItems
                           ? salesItems.find(
                               (obj) =>
@@ -1446,8 +1456,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
                         )
                       }
                       defaultValue={
-                        preloadedValues !== null &&
-                        index < preloadedValues.items.length &&
+                        loadInvoice !== null &&
+                        index < loadInvoice.items.length &&
                         !addInvoiceItems
                           ? taxRates.find(
                               (obj) =>
@@ -1521,8 +1531,8 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
                                   )
                                 }
                                 defaultValue={
-                                  preloadedValues !== null &&
-                                  index < preloadedValues.items.length &&
+                                  loadInvoice !== null &&
+                                  index < loadInvoice.items.length &&
                                   !addInvoiceItems
                                     ? trackings.find(
                                         (obj) =>
@@ -2090,10 +2100,10 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
           () => changePreId
           //setOpenEdit(true);
           //setInvoiceCounter(invoiceCounter + 1);
-          //const id = preloadedValues.id;
-          //preloadedValues.id = preloadedValues.id + 1;
+          //const id = loadInvoice.id;
+          //loadInvoice.id = loadInvoice.id + 1;
 
-          //preloadedValues.id = id;
+          //loadInvoice.id = id;
           //handlePrint();
         }
       >
@@ -2113,14 +2123,14 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       <div style={{ display: "none" }}>
         <ComponentToPrint
           ref={componentRef}
-          id={preloadedValues !== null ? preloadedValues.id : 0}
+          id={loadInvoice !== null ? loadInvoice.id : 0}
           loadInfo={invoiceData}
           isLoading={isLoading}
         />
       </div>
     </form>
   ) : (
-    //);
+    
     "loading...."
   );
 };

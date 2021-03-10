@@ -78,7 +78,7 @@ const App = (props) => {
   ];
 
   return (
-    <div className={classes.root}>
+      <>
       <Grid container spacing={0}>
         <Grid item xs={12}>
           <div className={classes.root}>
@@ -87,7 +87,7 @@ const App = (props) => {
                 <Typography variant="h6" className={classes.title}>
                   THE DAILY PLANET
                 </Typography>
-                {isMobile ? (
+                {isMobile ? ( 
                   <>
                     <IconButton
                       edge="start"
@@ -226,7 +226,7 @@ const App = (props) => {
           render={(props) => <FunctionalComponentWithHook {...props} />}
         />
       </Switch>
-    </div>
+    </>
   );
 };
 

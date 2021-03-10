@@ -38,8 +38,15 @@ namespace AccountingSystem.Services
                         Customer = x.Name,
                         Void = x.Void,
                         InvoiceAmount = x.InvoiceAmount,
-                        UnPaidBalance = 0,
-                        CustomerId = x.SubsidiaryLedgerAccountId
+                        CustomerId = x.SubsidiaryLedgerAccountId,
+                        //UnPaidBalance = 0
+                        UnPaidBalance = (decimal)x.InvoiceAmount - (from a in _serverContext.InvoicePaymentDetails
+                                                           join b in _serverContext.LedgerMasters
+                                                           on a.LedgerMasterId equals b.Id
+                                                           where a.LedgerMasterId == x.Id &&
+                                                                 b.InvoiceNo == x.InvoiceNo
+                                                           select a.InvoicePaymentDetailAmount).Sum(),
+                        
                     })
                     .OrderByDescending(x => x.Customer.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
@@ -165,7 +172,7 @@ namespace AccountingSystem.Services
 
 
         }
-        public int AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
+        public CustomerInvoiceModel AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
             int Id = 0;
             _serverContext.Database.BeginTransaction();
@@ -180,6 +187,7 @@ namespace AccountingSystem.Services
                 ledgerMaster.InvoiceTerms = customerInvoiceModel.Terms;
                 ledgerMaster.InvoiceReference = customerInvoiceModel.Reference;
                 ledgerMaster.InvoiceCreatedDate = DateTime.Now;
+                ledgerMaster.InvoiceAmount = customerInvoiceModel.Total;
                 ledgerMaster.TransactionType = "INV";
                 _serverContext.LedgerMasters.Add(ledgerMaster);
                 _serverContext.SaveChanges();
@@ -205,10 +213,11 @@ namespace AccountingSystem.Services
             {
                 _serverContext.Database.RollbackTransaction();
             }
-            return Id;
+            customerInvoiceModel.Id = Id;
+            return customerInvoiceModel;
         }
 
-        public int EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
+        public CustomerInvoiceModel EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
             _serverContext.Database.BeginTransaction();
             try
@@ -256,7 +265,7 @@ namespace AccountingSystem.Services
             {
                 _serverContext.Database.RollbackTransaction();
             }
-            return customerInvoiceModel.Id;
+            return customerInvoiceModel;
         }
 
         public int AddUploadFiles(int id, FileModel files)

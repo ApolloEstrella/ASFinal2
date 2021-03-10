@@ -46,25 +46,7 @@ import {
 } from "@material-ui/pickers";
 import configData from "../../config.json";
 import moment from "moment";
-/* function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Donut", 452, 25.0, 51, 4.9),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Honeycomb", 408, 3.2, 87, 6.5),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Jelly Bean", 375, 0.0, 94, 0.0),
-  createData("KitKat", 518, 26.0, 65, 7.0),
-  createData("Lollipop", 392, 0.2, 98, 0.0),
-  createData("Marshmallow", 318, 0, 81, 2.0),
-  createData("Nougat", 360, 19.0, 9, 37.0),
-  createData("Oreo", 437, 18.0, 63, 4.0),
-]; */ 
+import { format } from "date-fns";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -100,7 +82,12 @@ const headCells = [
     label: "Invoice No",
   },
   { id: "dueDate", numeric: false, disablePadding: false, label: "Due Date" },
-  { id: "invoiceAmount", numeric: true, disablePadding: false, label: "Invoice Amount" },
+  {
+    id: "invoiceAmount",
+    numeric: true,
+    disablePadding: false,
+    label: "Invoice Amount",
+  },
   { id: "balance", numeric: true, disablePadding: false, label: "Balance" },
   { id: "payment", numeric: true, disablePadding: false, label: "Payment" },
 ];
@@ -122,14 +109,6 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{ "aria-label": "select all desserts" }}
-          />
-        </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -221,8 +200,7 @@ const EnhancedTableToolbar = (props) => {
           variant="h6"
           id="tableTitle"
           component="div"
-        >
-        </Typography>
+        ></Typography>
       )}
 
       {numSelected > 0 ? (
@@ -278,12 +256,12 @@ const useStyles = makeStyles((theme) => ({
 export default function EnhancedTable(props) {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("calories");
+  const [orderBy, setOrderBy] = React.useState("customer");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [rows, setRows] = React.useState([])
+  const [dense, setDense] = React.useState(true);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
+  const [rows, setRows] = React.useState([]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -325,7 +303,7 @@ export default function EnhancedTable(props) {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(parseInt(event.target.value, 20));
     setPage(0);
   };
 
@@ -343,7 +321,7 @@ export default function EnhancedTable(props) {
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
   const [salesItems, getSalesItems] = useState([]);
   const [counterSales, setCounterSales] = useState(0);
-  
+
   const validationSchema = Yup.object().shape({
     invoiceAmount: Yup.number()
       .nullable()
@@ -396,8 +374,6 @@ export default function EnhancedTable(props) {
     );
   };
 
- 
-
   useEffect(() => {
     fetch(configData.SERVER_URL + "ChartOfAccount/GetSelect", {
       method: "GET",
@@ -415,12 +391,17 @@ export default function EnhancedTable(props) {
   }, [counterSales]);
 
   useEffect(() => {
-    fetch(configData.SERVER_URL + "Sales/GetCustomerInvoicePayment?customerId=" + props.customerId , {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    fetch(
+      configData.SERVER_URL +
+        "Sales/GetCustomerInvoicePayment?customerId=" +
+        props.customerId,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((results) => results.json())
       .then((data) => {
         setRows(data);
@@ -435,7 +416,9 @@ export default function EnhancedTable(props) {
     values.ledgerMasterId = props.ledgerMasterId;
     values.customerId = props.customerId;
     values.chartOfAccountId = values.chartOfAccountId.value;
-    values.paymentDate = moment(values.paymentDate.toString()).toDate();
+    values.paymentDate = moment
+      .parseZone(values.paymentDate.toString())
+      .toDate();
     console.log("data", values);
     fetch(configData.SERVER_URL + "sales/CustomerInvoicePayment", {
       method: "POST",
@@ -447,11 +430,11 @@ export default function EnhancedTable(props) {
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
-      })    
+      })
       .catch(function (error) {
         console.log("network error");
       });
-  }
+  };
 
   return (
     <form id="salesInvoiceForm" onSubmit={handleSubmit(onSubmit)}>
@@ -636,25 +619,6 @@ export default function EnhancedTable(props) {
                         key={row.invoiceNo}
                         selected={isItemSelected}
                       >
-                        {/*  <TableCell padding="checkbox">
-                          <Controller
-                            control={control}
-                            name={`items[${index}].checkBoxPayment`}
-                            render={(
-                              { onChange, onBlur, value, name, ref },
-                              { invalid, isTouched, isDirty }
-                            ) => (
-                              <Checkbox
-                                name={`items[${index}].checkBoxPayment`}
-                                onClick={(event) =>
-                                  handleClick(event, row.invoiceNo)
-                                }
-                                checked={isItemSelected}
-                                inputProps={{ "aria-labelledby": labelId }}
-                              />
-                            )}
-                              /> 
-                        </TableCell>*/}
                         <TableCell
                           component="th"
                           id={labelId}
@@ -663,8 +627,8 @@ export default function EnhancedTable(props) {
                         >
                           {row.invoiceNo}
                         </TableCell>
-                        <TableCell align="right">
-                          {row.invoiceDueDate}
+                        <TableCell align="left">
+                          {format(new Date(row.invoiceDueDate), "MM/dd/yyyy")}
                         </TableCell>
                         <TableCell align="right">{row.invoiceAmount}</TableCell>
                         <TableCell align="right">{row.unPaidBalance}</TableCell>
@@ -678,7 +642,7 @@ export default function EnhancedTable(props) {
                             ) => (
                               <TextField
                                 name={`items[${index}].amount`}
-                                //defaultValue={0}
+                                defaultValue={0}
                                 label="Amount"
                                 onChange={(e) =>
                                   handleNumeric(e, `items[${index}].amount`)
@@ -703,6 +667,7 @@ export default function EnhancedTable(props) {
                             name={`items[${index}].id`}
                             defaultValue={row.id}
                             inputRef={register()}
+                            className={classes.visuallyHidden}
                           />
                         </TableCell>
                       </TableRow>

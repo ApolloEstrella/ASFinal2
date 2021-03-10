@@ -49,7 +49,7 @@ import SalesInvoice from "./sales-invoice";
 
 import configData from "../../config.json";
 import PaymentIcon from "@material-ui/icons/Payment";
-import SalesInvoicePayment from "../../components/sales/sales-invoice-payment"
+import SalesInvoicePayment from "../../components/sales/sales-invoice-payment";
 
 /*
 function createData(name, calories, fat, carbs, protein) {
@@ -172,14 +172,6 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        {/* <TableCell padding="checkbox" style>
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{ "aria-label": "select all desserts" }}
-          />
-  </TableCell> */}
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -252,8 +244,10 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   paper: {
-    width: "100%",
-    marginBottom: theme.spacing(2),
+    padding: theme.spacing(1),
+    textAlign: "left",
+    color: theme.palette.text.secondary,
+    width: "100%"
   },
   table: {
     minWidth: 750,
@@ -274,11 +268,11 @@ const useStyles = makeStyles((theme) => ({
 export default function EnhancedTable() {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("calories");
+  const [orderBy, setOrderBy] = React.useState("customer");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [dense, setDense] = React.useState(true);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
 
   const [rows, setRows] = useState([]);
   const [listCounter, setListCounter] = useState(0);
@@ -511,9 +505,14 @@ export default function EnhancedTable() {
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
   return (
-    <div className={classes.root}>
-      <Grid container justify="space-around" direction="row" spacing={0}>
-        <Grid item xs={2}>
+    <Grid
+      container
+      //direction="row"
+      //justify="flex-end"
+      //alignItems="center"
+      //alignContent="flex-end"
+    >
+      <Grid item xs={12} sm={12} md={2} lg={12} xl={2} >
           <Button
             variant="outlined"
             color="primary"
@@ -523,151 +522,166 @@ export default function EnhancedTable() {
           >
             Create Invoice
           </Button>
-        </Grid>
-        <Grid item xs={6}>
-          <FormControl component="fieldset" style={{ paddingLeft: "510px" }}>
-            <RadioGroup
-              aria-label="gender"
-              name="searchValue"
-              value={searchValue}
-              onChange={handleChangeSearchValue}
-              row={true}
-            >
-              <FormControlLabel
-                value={"customer"}
-                control={<Radio />}
-                label="Customer"
-              />
-              <FormControlLabel
-                value="invoiceNo"
-                control={<Radio />}
-                label="Invoice No."
-              />
-            </RadioGroup>
-          </FormControl>
-        </Grid>
-        <Grid item xs={2}>
-          <TextField
-            label="Search"
-            id="searchBox"
-            name="searchBox"
-            defaultValue=""
-            variant="filled"
-            size="small"
-            style={{ width: "100%", marginLeft: "90px" }}
-            //onBlur={handleSearch}
-          />
-        </Grid>
-        <Grid item xs={1}>
-          <Button
-            variant="outlined"
-            color="primary"
-            style={{ marginLeft: "100px", marginTop: "10px" }}
-            onClick={() => handleSearch()}
-          >
-            Go
-          </Button>
-        </Grid>
-        <Grid item xs={1}>
-          <Button
-            variant="outlined"
-            color="primary"
-            style={{ marginLeft: "52px", marginTop: "10px" }}
-            onClick={() => setListCounter(listCounter + 1)}
-          >
-            Reset
-          </Button>
-        </Grid>
       </Grid>
-      <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selected.length} />
-        <TableContainer>
-          <Table
-            className={classes.table}
-            aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
-            aria-label="enhanced table"
+      <Grid
+        item
+        xs={12}
+        sm={12}
+        md={10}
+        lg={12}
+        xl={10}
+        container
+        direction="column"
+        alignItems="flex-end"
+        justify="flex-start"
+      >
+         
+          <RadioGroup
+            aria-label="gender"
+            name="searchValue"
+            value={searchValue}
+            onChange={handleChangeSearchValue}
+            row={true}
           >
-            <EnhancedTableHead
-              classes={classes}
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+            <FormControlLabel
+              value={"customer"}
+              control={<Radio />}
+              label="Customer"
             />
-            <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+            <FormControlLabel
+              value="invoiceNo"
+              control={<Radio />}
+              label="Invoice No."
+            />
+            <TextField
+              label="Search"
+              id="searchBox"
+              name="searchBox"
+              defaultValue=""
+              variant="filled"
+              size="small"
+              //style={{ width: "100%", marginLeft: "90px" }}
+              //onBlur={handleSearch}
+            />
+            <Button
+              variant="outlined"
+              color="primary"
+              //style={{ marginLeft: "100px", marginTop: "10px" }}
+              onClick={() => handleSearch()}
+            >
+              Go
+            </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              //style={{ marginLeft: "52px", marginTop: "10px" }}
+              onClick={() => setListCounter(listCounter + 1)}
+            >
+              Reset
+            </Button>
+          </RadioGroup>
+         
+      </Grid>
 
-                  return (
-                    <TableRow key={row.id}>
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        padding="none"
-                      >
-                        {" "}
-                        {row.customer}
-                      </TableCell>
-                      <TableCell align="right">{row.invoiceNo}</TableCell>
-                      <TableCell align="right">{row.invoiceAmount}</TableCell>
-                      <TableCell align="right">{row.unPaidBalance}</TableCell>
-                      <TableCell align="right">
-                        {format(new Date(row.invoiceDate), "MM/dd/yyyy")}
-                      </TableCell>
-                      <TableCell align="right">
-                        {row.void === true ? "Void" : ""}
-                      </TableCell>
-                      <TableCell align="right">
-                        {" "}
-                        <EditIcon onClick={() => handleEdit(row.id)} />{" "}
-                      </TableCell>
-                      <TableCell align="right">
-                        <DeleteForeverIcon
-                          onClick={() => handleDelete(row.id)}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <PhonelinkEraseIcon
-                          onClick={() => handleVoid(row.id)}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <PaymentIcon
-                          onClick={() => handleInvoicePayment(row.customerId,row.customer, row.id)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
+      <Grid item xs={12}>
+        <Paper className={classes.paper}>
+          <EnhancedTableToolbar numSelected={selected.length} />
+          <TableContainer>
+            <Table
+              className={classes.table}
+              aria-labelledby="tableTitle"
+              size={dense ? "small" : "medium"}
+              aria-label="enhanced table"
+            >
+              <EnhancedTableHead
+                classes={classes}
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={rows.length}
+              />
+              <TableBody>
+                {stableSort(rows, getComparator(order, orderBy))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => {
+                    const isItemSelected = isSelected(row.name);
+                    const labelId = `enhanced-table-checkbox-${index}`;
+
+                    return (
+                      <TableRow key={row.id}>
+                        <TableCell
+                          component="th"
+                          id={labelId}
+                          scope="row"
+                          padding="none"
+                        >
+                          {" "}
+                          {row.customer}
+                        </TableCell>
+                        <TableCell align="right">{row.invoiceNo}</TableCell>
+                        <TableCell align="right">{row.invoiceAmount}</TableCell>
+                        <TableCell align="right">{row.unPaidBalance}</TableCell>
+                        <TableCell align="right">
+                          {format(new Date(row.invoiceDate), "MM/dd/yyyy")}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.void === true ? "Void" : ""}
+                        </TableCell>
+                        <TableCell align="right">
+                          {" "}
+                          <EditIcon onClick={() => handleEdit(row.id)} />{" "}
+                        </TableCell>
+                        <TableCell align="right">
+                          <DeleteForeverIcon
+                            onClick={() => handleDelete(row.id)}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <PhonelinkEraseIcon
+                            onClick={() => handleVoid(row.id)}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <PaymentIcon
+                            onClick={() =>
+                              handleInvoicePayment(
+                                row.customerId,
+                                row.customer,
+                                row.id
+                              )
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+          />
+        </Paper>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControlLabel
+          control={<Switch checked={dense} onChange={handleChangeDense} />}
+          label="Dense padding"
         />
-      </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
+      </Grid>
       <div>
         <Dialog
           disableBackdropClick
@@ -706,7 +720,10 @@ export default function EnhancedTable() {
               type="button"
               variant="contained"
               autoFocus
-              onClick={() => setOpenEdit(false)}
+              onClick={() => {
+                setListCounter(listCounter + 1);
+                setOpenEdit(false);
+              }}
               color="primary"
             >
               Close123
@@ -862,7 +879,11 @@ export default function EnhancedTable() {
                 }}
               >
                 <DialogContentText></DialogContentText>
-                <SalesInvoicePayment customerName={customerName.current} customerId={customerId.current} ledgerMasterId={ledgerMasterId.current} />
+                <SalesInvoicePayment
+                  customerName={customerName.current}
+                  customerId={customerId.current}
+                  ledgerMasterId={ledgerMasterId.current}
+                />
               </div>
             </div>
           </DialogContent>
@@ -871,7 +892,10 @@ export default function EnhancedTable() {
               type="button"
               variant="contained"
               autoFocus
-              onClick={() => setOpenInvoicePayment(false)}
+              onClick={() => {
+                setListCounter(listCounter + 1);
+                setOpenInvoicePayment(false);
+              }}
               color="primary"
             >
               Close
@@ -879,6 +903,6 @@ export default function EnhancedTable() {
           </DialogActions>
         </Dialog>
       </div>
-    </div>
+    </Grid>
   );
 }
