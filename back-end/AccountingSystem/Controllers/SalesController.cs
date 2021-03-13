@@ -5,6 +5,7 @@ using AccountingSystem.Models;
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AccountingSystem.Controllers
 {
@@ -43,6 +44,7 @@ namespace AccountingSystem.Controllers
             return Ok(_salesService.GetSalesInvoice(id));
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult GetAllAccounts()
         {

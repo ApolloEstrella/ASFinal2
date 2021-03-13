@@ -49,7 +49,7 @@ const App = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("xs"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -64,7 +64,35 @@ const App = (props) => {
     history.push(pageURL);
   };
 
-  const menuItems = [
+  var menuItems = [
+    {
+      key: 0,
+      menuTitle: "Chart of Accounts",
+      pageURL: "/chart-of-accounts",
+    },
+    {
+      key: 1,
+      menuTitle: "Subsidiary Ledger Account Names",
+      pageURL: "/subsidiary-ledger-accounts",
+    },
+    {
+      key: 2,
+      menuTitle: "Sales Invoice",
+      pageURL: "/sales-invoice",
+    },
+    {
+      key: 3,
+      menuTitle: "Test",
+      pageURL: "/test",
+    },
+    {
+      key: 4,
+      menuTitle: "Logout",
+      pageURL: "/logout",
+    },
+  ];
+
+  const menuItemsLogin = [
     {
       key: 0,
       menuTitle: "Login",
@@ -77,17 +105,18 @@ const App = (props) => {
     },
   ];
 
+
+
+
+
   return (
-      <>
+    <>
       <Grid container spacing={0}>
         <Grid item xs={12}>
           <div className={classes.root}>
             <AppBar position="static">
               <Toolbar>
-                <Typography variant="h6" className={classes.title}>
-                  THE DAILY PLANET
-                </Typography>
-                {isMobile ? ( 
+                {isMobile ? (
                   <>
                     <IconButton
                       edge="start"
@@ -98,6 +127,9 @@ const App = (props) => {
                     >
                       <MenuIcon />
                     </IconButton>
+                    <Typography variant="h6" className={classes.title}>
+                      THE DAILY PLANET
+                    </Typography>
                     <Menu
                       id="menu-appbar"
                       anchorEl={anchorEl}
@@ -113,17 +145,37 @@ const App = (props) => {
                       open={open}
                       onClose={() => setAnchorEl(null)}
                     >
-                      {menuItems.map((menuItem, index) => {
-                        const { menuTitle, pageURL } = menuItem;
-                        return (
-                          <MenuItem
-                            key={index}
-                            onClick={() => handleMenuClick(pageURL)}
-                          >
-                            {menuTitle}
-                          </MenuItem>
-                        );
-                      })}
+                      {storageService.secureStorage.getItem("isLogin") ===
+                        true ||
+                      store.getState().accountReducer.isLogin === true ? (
+                        <>
+                          {menuItems.map((menuItem, index) => {
+                            const { menuTitle, pageURL } = menuItem;
+                            return (
+                              <MenuItem
+                                key={index}
+                                onClick={() => handleMenuClick(pageURL)}
+                              >
+                                {menuTitle}
+                              </MenuItem>
+                            );
+                          })}
+                        </>
+                      ) : (
+                        <>
+                          {menuItemsLogin.map((menuItem, index) => {
+                            const { menuTitle, pageURL } = menuItem;
+                            return (
+                              <MenuItem
+                                key={index}
+                                onClick={() => handleMenuClick(pageURL)}
+                              >
+                                {menuTitle}
+                              </MenuItem>
+                            );
+                          })}
+                        </>
+                      )}
                     </Menu>
                   </>
                 ) : (
@@ -134,6 +186,9 @@ const App = (props) => {
                     {storageService.secureStorage.getItem("isLogin") === true ||
                     store.getState().accountReducer.isLogin === true ? (
                       <>
+                        <Typography variant="h6" className={classes.title}>
+                          THE DAILY PLANET
+                        </Typography>
                         <Button
                           color="inherit"
                           onClick={() =>

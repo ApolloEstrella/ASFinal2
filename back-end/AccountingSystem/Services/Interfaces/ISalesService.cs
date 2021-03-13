@@ -20,6 +20,6 @@ namespace AccountingSystem.Services.Interfaces
         int VoidSalesInvoice(int id);
         int Payment(CustomerInvoicePaymentModel customerInvoicePaymentModel);
         //CustomerInvoicePaymentItemModel GetInvoicePayment(int customerId);
-        List<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId);
+        IEnumerable<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId);
     }
 }

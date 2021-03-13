@@ -28,8 +28,10 @@ export class ComponentToPrint extends React.Component {
               style={{
                 textAlign: "left",
                 //paddingLeft: "300px",
-                marginLeft: "-170px",
-                marginTop: "30px",
+                marginLeft: "10px",
+                marginRight: "10px",
+                //marginTop: "30px",
+                //margin: "auto"
               }}
             >
               <table>
@@ -39,7 +41,9 @@ export class ComponentToPrint extends React.Component {
                       <h3>CUSTOMER: </h3>
                     </td>
                     <td style={{ paddingRight: "5px" }}>
-                      <h3>{this.state.invoiceData.customerName}</h3>
+                      <h3 style={{ wordBreak: "break-word" }}>
+                        {this.state.invoiceData.customerName}
+                      </h3>
                     </td>
                   </tr>
                   <tr>
@@ -102,7 +106,7 @@ export class ComponentToPrint extends React.Component {
                   </tr>
                   <tr>
                     <td style={{ width: "140px" }} colSpan="2">
-                      <table cellPadding="5px" style={{ width: "120%" }}>
+                      <table cellPadding="5px">
                         <tbody>
                           <tr>
                             <td>Sales Item</td>
@@ -152,7 +156,6 @@ export class ComponentToPrint extends React.Component {
                               ];
                             }
                           )}
-                          
                         </tbody>
                       </table>
                     </td>
@@ -162,7 +165,7 @@ export class ComponentToPrint extends React.Component {
               </table>
             </div>
             <br />
-            <table style={{ paddingLeft: "400px" }}>
+            <table style={{ paddingLeft: "550px" }}>
               <tbody>
                 <tr>
                   <td>

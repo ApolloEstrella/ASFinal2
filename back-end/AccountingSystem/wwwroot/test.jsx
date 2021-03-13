@@ -48,10 +48,26 @@ import SalesInvoiceApp from "./sales-invoice-app";
 import SalesInvoice from "./sales-invoice";
 
 import configData from "../../config.json";
-import PaymentIcon from "@material-ui/icons/Payment";
-import SalesInvoicePayment from "../../components/sales/sales-invoice-payment";
-import NumberFormat from "react-number-format";
-import commaNumber from "comma-number";
+/*
+function createData(name, calories, fat, carbs, protein) {
+  return { name, calories, fat, carbs, protein };
+}
+
+const rows = [
+  createData("Cupcake", 305, 3.7, 67, 4.3),
+  createData("Donut", 452, 25.0, 51, 4.9),
+  createData("Eclair", 262, 16.0, 24, 6.0),
+  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
+  createData("Gingerbread", 356, 16.0, 49, 3.9),
+  createData("Honeycomb", 408, 3.2, 87, 6.5),
+  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
+  createData("Jelly Bean", 375, 0.0, 94, 0.0),
+  createData("KitKat", 518, 26.0, 65, 7.0),
+  createData("Lollipop", 392, 0.2, 98, 0.0),
+  createData("Marshmallow", 318, 0, 81, 2.0),
+  createData("Nougat", 360, 19.0, 9, 37.0),
+  createData("Oreo", 437, 18.0, 63, 4.0),
+]; */
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -134,12 +150,6 @@ const headCells = [
     disablePadding: false,
     label: "",
   },
-  {
-    id: "paymentIcon",
-    numeric: true,
-    disablePadding: false,
-    label: "",
-  },
 ];
 
 function EnhancedTableHead(props) {
@@ -159,6 +169,14 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
+        {/* <TableCell padding="checkbox" style>
+          <Checkbox
+            indeterminate={numSelected > 0 && numSelected < rowCount}
+            checked={rowCount > 0 && numSelected === rowCount}
+            onChange={onSelectAllClick}
+            inputProps={{ "aria-label": "select all desserts" }}
+          />
+  </TableCell> */}
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -220,7 +238,7 @@ const EnhancedTableToolbar = (props) => {
   const { numSelected } = props;
 
   return null;
-};
+}
 
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
@@ -231,19 +249,8 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   paper: {
-    padding: theme.spacing(0),
-    textAlign: "left",
-    color: theme.palette.text.secondary,
     width: "100%",
-    margin: "auto",
-  },
-  paper2: {
-    padding: theme.spacing(0),
-    textAlign: "left",
-    color: theme.palette.text.secondary,
-    width: "38%",
-    marginRight: "371px",
-    padding: "0px 0px 0px 0px",
+    marginBottom: theme.spacing(2),
   },
   table: {
     minWidth: 750,
@@ -264,20 +271,17 @@ const useStyles = makeStyles((theme) => ({
 export default function EnhancedTable() {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("customer");
+  const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(true);
-  const [rowsPerPage, setRowsPerPage] = React.useState(25);
+  const [dense, setDense] = React.useState(false);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const [rows, setRows] = useState([]);
   const [listCounter, setListCounter] = useState(0);
   const [customerListCounter, setCustomerListCounter] = useState(0);
   const [invoiceListCounter, setInvoiceListCounter] = useState(0);
   const invoiceId = useRef(0);
-  const customerName = useRef("");
-  const customerId = useRef();
-  const ledgerMasterId = useRef();
 
   const [openAdd, setAdd] = useState(false);
   const [openEdit, setEdit] = useState(false);
@@ -310,7 +314,7 @@ export default function EnhancedTable() {
 
   const handleSearch = () => {
     setSearchText(document.getElementById("searchBox").value);
-    if (selectedValue === "customer") {
+    if (searchValue === "customer") {
       setCustomerListCounter(customerListCounter + 1);
     } else {
       setInvoiceListCounter(invoiceListCounter + 1);
@@ -351,20 +355,7 @@ export default function EnhancedTable() {
     setOpenVoid(true);
   };
 
-  const handleInvoicePayment = (custId, customer, id) => {
-    customerId.current = custId;
-    customerName.current = customer;
-    ledgerMasterId.current = id;
-    setOpenInvoicePayment(true);
-  };
   const [openVoid, setOpenVoid] = useState(false);
-  const [openInvoicePayment, setOpenInvoicePayment] = useState(false);
-
-  const [selectedValue, setSelectedValue] = React.useState("customer");
-
-  const handleChange = (event) => {
-    setSelectedValue(event.target.value);
-  };
 
   const handleVoidInvoice = () => {
     fetch(
@@ -404,7 +395,7 @@ export default function EnhancedTable() {
   }, [listCounter]);
 
   useEffect(() => {
-    if (selectedValue !== "customer" || searchText === "") return setRows([]);
+    if (searchValue !== "customer" || searchText === "") return setRows([]);
     fetch(
       configData.SERVER_URL +
         "sales/GetAllAccountsByCustomerName?customerName=" +
@@ -424,10 +415,14 @@ export default function EnhancedTable() {
       .catch(function (error) {
         console.log("network error");
       });
-  }, [customerListCounter, searchText, searchValue, selectedValue]);
+  }, [customerListCounter, searchText, searchValue]);
 
+  /* const urlInvoice =
+  searchText === ""
+    ? "sales/GetAllAccounts"
+    : "sales/GetAllAccountsByInvoiceNo?invoiceNo=" + searchText; */
   useEffect(() => {
-    if (selectedValue !== "invoiceNo" || searchText === "") return setRows([]);
+    if (searchValue !== "invoiceNo" || searchText === "") return setRows([]);
     fetch(
       configData.SERVER_URL +
         "sales/GetAllAccountsByInvoiceNo?invoiceNo=" +
@@ -447,7 +442,7 @@ export default function EnhancedTable() {
       .catch(function (error) {
         console.log("network error");
       });
-  }, [invoiceListCounter, searchText, selectedValue]);
+  }, [invoiceListCounter, searchText, searchValue]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -502,90 +497,74 @@ export default function EnhancedTable() {
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
-  const [selectedRadioValue, setSelectedRadioValue] = React.useState(
-    "customer"
-  );
-
-  const handleRadioChange = (event) => {
-    setSelectedRadioValue(event.target.value);
-  };
-
   return (
-    <Grid
-      container
-      //direction="row"
-      //justify="flex-end"
-      //alignItems="center"
-      //alignContent="flex-end"
-      spacing={0}
-      style={{ width: "60%" }}
-    >
-      <Grid item xs={12} sm={12} md={2} align="center">
-        <Button
-          variant="outlined"
-          color="primary"
-          style={{ height: "39px" }}
-          onClick={() => {
-            setAdd(true);
-          }}
-          fullWidth
-        >
-          New Invoice
-        </Button>
-      </Grid>
-      <Grid item xs={12} sm={2} md={2} align="center">
-        <Radio
-          checked={selectedValue === "customer"}
-          onChange={handleChange}
-          value="customer"
-          name="radio-button-demo"
-          inputProps={{ "aria-label": "customer" }}
-        />{" "}
-        Customer
-      </Grid>
-      <Grid item xs={12} sm={2} md={2} align="center">
-        <Radio
-          checked={selectedValue === "invoiceNo"}
-          onChange={handleChange}
-          value="invoiceNo"
-          name="radio-button-demo"
-          inputProps={{ "aria-label": "invoiceNo" }}
-        />{" "}
-        Invoice No.
-      </Grid>
-      <Grid item xs={12} sm={4} md={2} align="center">
-        <TextField
-          label="Search"
-          id="searchBox"
-          name="searchBox"
-          defaultValue=""
-          variant="outlined"
-          size="small"
-          //style={{ width: "100%", marginLeft: "90px" }}
-          //onBlur={handleSearch}
-        />
-      </Grid>
-      <Grid item xs={12} sm={2} md={2} align="center">
-        <Button
-          variant="outlined"
-          color="primary"
-          style={{ height: "39px" }}
-          onClick={() => handleSearch()}
-          fullWidth
-        >
-          Go
-        </Button>
-      </Grid>
-      <Grid item xs={12} sm={2} md={2} align="center">
-        <Button
-          variant="outlined"
-          color="primary"
-          style={{ height: "39px" }}
-          onClick={() => setListCounter(listCounter + 1)}
-          fullWidth
-        >
-          Reset
-        </Button>
+    <div className={classes.root}>
+      <Grid container justify="space-around" direction="row" spacing={0}>
+        <Grid item xs={2}>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              setAdd(true);
+            }}
+          >
+            Create Invoice
+          </Button>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl component="fieldset" style={{ paddingLeft: "510px" }}>
+            <RadioGroup
+              aria-label="gender"
+              name="searchValue"
+              value={searchValue}
+              onChange={handleChangeSearchValue}
+              row={true}
+            >
+              <FormControlLabel
+                value={"customer"}
+                control={<Radio />}
+                label="Customer"
+              />
+              <FormControlLabel
+                value="invoiceNo"
+                control={<Radio />}
+                label="Invoice No."
+              />
+            </RadioGroup>
+          </FormControl>
+        </Grid>
+        <Grid item xs={2}>
+          <TextField
+            label="Search"
+            id="searchBox"
+            name="searchBox"
+            defaultValue=""
+            variant="filled"
+            size="small"
+            style={{ width: "100%", marginLeft: "90px" }}
+            //onBlur={handleSearch}
+          />
+        </Grid>
+        <Grid item xs={1}>
+          <Button
+            variant="outlined"
+            color="primary"
+            style={{ marginLeft: "100px", marginTop: "10px" }}
+            onClick={() => handleSearch()}
+          >
+            Go
+          </Button>
+        </Grid>
+        <Grid item xs={1}>
+          <Button
+            variant="outlined"
+            color="primary"
+            style={{ marginLeft: "52px", marginTop: "10px" }}
+            onClick={() => setListCounter(listCounter + 1)}
+          >
+            Reset
+          </Button>
+        </Grid>
       </Grid>
       <Paper className={classes.paper}>
         <EnhancedTableToolbar numSelected={selected.length} />
@@ -613,30 +592,23 @@ export default function EnhancedTable() {
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
-                    <TableRow key={row.id}>
+                    <TableRow key={row.name}>
                       <TableCell
                         component="th"
                         id={labelId}
                         scope="row"
                         padding="none"
-                        style={{ wordBreak: "break-word" }}
                       >
                         {" "}
                         {row.customer}
                       </TableCell>
                       <TableCell align="right">{row.invoiceNo}</TableCell>
-                      <TableCell align="right">
-                        {commaNumber(row.invoiceAmount).toString()}
-                      </TableCell>
-                      <TableCell align="right">
-                        {commaNumber(row.unPaidBalance).toString()}
-                      </TableCell>
+                      <TableCell align="right">{row.invoiceAmount}</TableCell>
+                      <TableCell align="right">{row.unPaidBalance}</TableCell>
                       <TableCell align="right">
                         {format(new Date(row.invoiceDate), "MM/dd/yyyy")}
                       </TableCell>
-                      <TableCell align="right">
-                        {row.void === true ? "Void" : ""}
-                      </TableCell>
+                      <TableCell align="right">{row.void === true ? "Void" : ""}</TableCell>
                       <TableCell align="right">
                         {" "}
                         <EditIcon onClick={() => handleEdit(row.id)} />{" "}
@@ -649,17 +621,6 @@ export default function EnhancedTable() {
                       <TableCell align="right">
                         <PhonelinkEraseIcon
                           onClick={() => handleVoid(row.id)}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <PaymentIcon
-                          onClick={() =>
-                            handleInvoicePayment(
-                              row.customerId,
-                              row.customer,
-                              row.id
-                            )
-                          }
                         />
                       </TableCell>
                     </TableRow>
@@ -683,7 +644,10 @@ export default function EnhancedTable() {
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
       </Paper>
-
+      <FormControlLabel
+        control={<Switch checked={dense} onChange={handleChangeDense} />}
+        label="Dense padding"
+      />
       <div>
         <Dialog
           disableBackdropClick
@@ -722,10 +686,7 @@ export default function EnhancedTable() {
               type="button"
               variant="contained"
               autoFocus
-              onClick={() => {
-                setListCounter(listCounter + 1);
-                setOpenEdit(false);
-              }}
+              onClick={() => setOpenEdit(false)}
               color="primary"
             >
               Close123
@@ -847,55 +808,7 @@ export default function EnhancedTable() {
             </Button>
           </DialogActions>
         </Dialog>
-
-        <Dialog
-          //fullScreen
-          disableBackdropClick
-          disableEscapeKeyDown
-          maxWidth={"md"}
-          fullWidth
-          open={openInvoicePayment}
-          onClose={() => setOpenInvoicePayment(false)}
-          aria-labelledby="responsive-dialog-title"
-        >
-          <DialogTitle id="responsive-dialog-title">
-            Invoice Payment
-          </DialogTitle>
-          <DialogContent>
-            <div
-              style={{
-                overflowX: "hidden",
-                overflowY: "hidden",
-                height: "100%",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{
-                  paddingRight: "17px",
-                  height: "100%",
-                  width: "100%",
-                  boxSizing: "content-box",
-                  //overflow: "scroll",
-                  overflow: "visible",
-                }}
-              >
-                <DialogContentText></DialogContentText>
-                <SalesInvoicePayment
-                  customerName={customerName.current}
-                  customerId={customerId.current}
-                  ledgerMasterId={ledgerMasterId.current}
-                  parentMethod={() => {
-                    setListCounter(listCounter + 1);
-                    setOpenInvoicePayment(false);
-                  }}
-                />
-              </div>
-            </div>
-          </DialogContent>
-          <DialogActions></DialogActions>
-        </Dialog>
       </div>
-    </Grid>
+    </div>
   );
 }

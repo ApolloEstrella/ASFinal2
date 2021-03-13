@@ -260,7 +260,7 @@ export default function EnhancedTable(props) {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(true);
-  const [rowsPerPage, setRowsPerPage] = React.useState(25);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [rows, setRows] = React.useState([]);
 
   const handleRequestSort = (event, property) => {
@@ -321,6 +321,7 @@ export default function EnhancedTable(props) {
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
   const [salesItems, getSalesItems] = useState([]);
   const [counterSales, setCounterSales] = useState(0);
+  const [counterList, setCounterList] = useState(0);
 
   const validationSchema = Yup.object().shape({
     invoiceAmount: Yup.number()
@@ -409,10 +410,9 @@ export default function EnhancedTable(props) {
       .catch(function (error) {
         console.log("network error");
       });
-  }, []);
+  }, [props.customerId, counterList]);
 
   const onSubmit = (values, { resetForm }) => {
-    const x = JSON.stringify(values);
     values.ledgerMasterId = props.ledgerMasterId;
     values.customerId = props.customerId;
     values.chartOfAccountId = values.chartOfAccountId.value;
@@ -430,6 +430,8 @@ export default function EnhancedTable(props) {
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
+        setCounterList(counterList + 1);
+        props.parentMethod();
       })
       .catch(function (error) {
         console.log("network error");
@@ -695,8 +697,15 @@ export default function EnhancedTable(props) {
           control={<Switch checked={dense} onChange={handleChangeDense} />}
           label="Dense padding"
         />
-        <Button type="submit" color="primary">
-          Add
+        <Button type="submit" variant="contained" color="primary" style={{marginRight: "20px"}}>
+          Save and Close
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={props.parentMethod}
+        >
+          Close
         </Button>
       </div>
     </form>

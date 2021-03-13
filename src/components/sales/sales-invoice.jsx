@@ -13,7 +13,7 @@ import {
   useFieldArray,
   Controller,
   useWatch,
-  useFormContext,
+  useFormContext
 } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
@@ -218,9 +218,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     if (loadInvoice !== null) {
       setCosts(loadInvoice.items);
       loadInvoice.date = moment(loadInvoice.date).format("MM/DD/YYYY");
-      loadInvoice.dueDate = moment(loadInvoice.dueDate).format(
-        "MM/DD/YYYY"
-      );
+      loadInvoice.dueDate = moment(loadInvoice.dueDate).format("MM/DD/YYYY");
       setFiles(loadInvoice.loadFiles);
     }
   }, []);
@@ -233,12 +231,16 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     watch,
     setValue,
     getValues,
+    formState,
   } = useForm({
     //mode: "onChange",
     defaultValues: loadInvoice === null ? {} : loadInvoice,
 
     resolver: yupResolver(validationSchema),
   });
+
+  // Read the formState before render to subscribe the form state through Proxy
+  const { dirty, isSubmitting, touched, submitCount } = formState;
 
   const invoice = useRef();
   const tax = useRef();
@@ -412,13 +414,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   const [origId, setOrigId] = useState(
     loadInvoice !== null ? loadInvoice.id : 0
   );
-  const [preId, setPreId] = useState(
-    loadInvoice !== null ? loadInvoice.id : 0
-  );
+  const [preId, setPreId] = useState(loadInvoice !== null ? loadInvoice.id : 0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (loadInvoice === null) { return}
+    if (loadInvoice === null) {
+      return;
+    }
     const fetchData = () => {
       setIsLoading(true);
       setPreId(origId);
@@ -526,15 +528,12 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
   function loadInvoiceData() {
     setInvoiceData({});
-    fetch(
-      configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    fetch(configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
@@ -546,15 +545,12 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   }
 
   const loadInvoiceData1 = () => {
-    fetch(
-      configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    fetch(configData.SERVER_URL + "Sales/PrintInvoice?id=" + loadInvoice.id, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
@@ -877,29 +873,9 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     setFiles(result);
   };
 
-  {
-    /* var fileList2 = files.map((file) => (
-    <li key={file.path}>
-       
-      <a
-        href={configData.FILES_URL + file.path}
-        target="_blank"
-        rel="noreferrer"
-        download={file.path}
-      >
-        {file.path}
-      </a>
-      {
-        <DeleteForeverIcon
-          style={{ paddingTop: "0px" }}
-          onClick={() => removeAttachment(file, files)}
-        />
-      }
-    </li>
-    )); */
-  }
-
   const onSubmit = (values, { resetForm }) => {
+    //document.getElementById("submitButton").disabled = true;
+
     const x = JSON.stringify(values);
     console.log("data", values);
     //values.files = files;
@@ -928,11 +904,10 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     //values.dueDate = moment(values.dueDate.toString()).toDate();
     //values.date = moment.tz(values.date, "Asia/Taipei");
     //values.date = moment.tz(values.dueDate, "Asia/Taipei");
-    
+
     values.date = moment.parseZone(values.date.toString()).toDate();
-    values.dueDate = moment
-      .parseZone(values.dueDate.toString()).toDate();
-    
+    values.dueDate = moment.parseZone(values.dueDate.toString()).toDate();
+
     values.total = subTotal + totalTaxes;
 
     if (loadInvoice !== null) values.id = origId;
@@ -946,7 +921,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
     if (urlMethod === "PUT") {
       values.id = loadInvoice.id;
     }
-      
+
     fetch(url, {
       method: urlMethod,
       body: JSON.stringify(values),
@@ -957,7 +932,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       .then((results) => results.json())
       .then((data) => {
         setLoadInvoice(data);
-        setPreId(data.id)
+        setPreId(data.id);
         var formData = new FormData();
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
@@ -966,7 +941,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
             formData.append("Files", files[i]);
           }
         }
-        formData.append("id", Number(data));
+        formData.append("id", Number(data.id));
         fetch(configData.SERVER_URL + "sales/AddUploadedFiles", {
           method: "POST",
           body: formData,
@@ -1048,8 +1023,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   return salesItems.length > 0 &&
     taxRates.length > 0 &&
     trackings.length > 0 &&
-    subsidiaryLedgerAccounts.length > 0  ? (
-   
+    subsidiaryLedgerAccounts.length > 0 ? (
     <form id="salesInvoiceForm" onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container justify="space-around" direction="row">
@@ -2083,11 +2057,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       </Grid>
 
       <Button
+        id="submitButton"
         type="submit"
         variant="contained"
         color="primary"
-        // disabled={isSubmitting}
+        disabled={isSubmitting}
         style={{ marginTop: "50px" }}
+        //disabled="true"
       >
         Save
       </Button>
@@ -2130,7 +2106,6 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       </div>
     </form>
   ) : (
-    
     "loading...."
   );
 };

@@ -65,8 +65,13 @@ namespace AccountingSystem.Services
                         InvoiceNo = x.InvoiceNo,
                         Customer = x.Name,
                         Void = x.Void,
-                        InvoiceAmount = 0,
-                        UnPaidBalance = 0,
+                        InvoiceAmount = x.InvoiceAmount,
+                        UnPaidBalance = (decimal)x.InvoiceAmount - (from a in _serverContext.InvoicePaymentDetails
+                                                                    join b in _serverContext.LedgerMasters
+                                                                    on a.LedgerMasterId equals b.Id
+                                                                    where a.LedgerMasterId == x.Id &&
+                                                                          b.InvoiceNo == x.InvoiceNo
+                                                                    select a.InvoicePaymentDetailAmount).Sum(),
                         CustomerId = x.SubsidiaryLedgerAccountId
                     }).OrderByDescending(x => x.Customer.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
@@ -85,8 +90,13 @@ namespace AccountingSystem.Services
                         InvoiceNo = x.InvoiceNo,
                         Customer = x.Name,
                         Void = x.Void,
-                        InvoiceAmount = 0,
-                        UnPaidBalance = 0,
+                        InvoiceAmount = x.InvoiceAmount,
+                        UnPaidBalance = (decimal)x.InvoiceAmount - (from a in _serverContext.InvoicePaymentDetails
+                                                                    join b in _serverContext.LedgerMasters
+                                                                    on a.LedgerMasterId equals b.Id
+                                                                    where a.LedgerMasterId == x.Id &&
+                                                                          b.InvoiceNo == x.InvoiceNo
+                                                                    select a.InvoicePaymentDetailAmount).Sum(),
                         CustomerId = x.SubsidiaryLedgerAccountId
                     }).OrderByDescending(x => x.InvoiceNo.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => invoiceNo).ToList();
         }
@@ -423,10 +433,10 @@ namespace AccountingSystem.Services
             }
             return Id;
         }
-        public List<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId)
+        public IEnumerable<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId)
         {
 
-            List<CustomerInvoicePaymentItemModel> customerInvoicePaymentItemModel = (from a in _serverContext.LedgerMasters
+            IEnumerable<CustomerInvoicePaymentItemModel> customerInvoicePaymentItemModel = (from a in _serverContext.LedgerMasters
                                                                                      join b in _serverContext.InvoicePaymentDetails
                                                                                      on a.Id equals b.LedgerMasterId into jts
                                                                                      from jtResult in jts.DefaultIfEmpty()
@@ -451,7 +461,7 @@ namespace AccountingSystem.Services
 
 
 
-            return customerInvoicePaymentItemModel;
+            return customerInvoicePaymentItemModel.Where(x => x.UnPaidBalance != 0);
         }
     }
 }
