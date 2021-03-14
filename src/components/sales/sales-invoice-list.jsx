@@ -46,12 +46,13 @@ import FormControl from "@material-ui/core/FormControl";
 
 import SalesInvoiceApp from "./sales-invoice-app";
 import SalesInvoice from "./sales-invoice";
-
+import SalesInvoiceDetailPayment from "./sales-invoice-detail-payment";
 import configData from "../../config.json";
 import PaymentIcon from "@material-ui/icons/Payment";
 import SalesInvoicePayment from "../../components/sales/sales-invoice-payment";
 import NumberFormat from "react-number-format";
 import commaNumber from "comma-number";
+import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -357,8 +358,17 @@ export default function EnhancedTable() {
     ledgerMasterId.current = id;
     setOpenInvoicePayment(true);
   };
+
+  const handleInvoicePaymentDetail = (custId, customer, id) => {
+    customerId.current = custId;
+    customerName.current = customer;
+    ledgerMasterId.current = id;
+    setOpenInvoicePaymentDetail(true);
+  };
+
   const [openVoid, setOpenVoid] = useState(false);
   const [openInvoicePayment, setOpenInvoicePayment] = useState(false);
+  const [openInvoicePaymentDetail, setOpenInvoicePaymentDetail] = useState(false);
 
   const [selectedValue, setSelectedValue] = React.useState("customer");
 
@@ -662,6 +672,17 @@ export default function EnhancedTable() {
                           }
                         />
                       </TableCell>
+                      <TableCell align="right">
+                        <DeleteSweepIcon
+                          onClick={() =>
+                            handleInvoicePaymentDetail(
+                              row.customerId,
+                              row.customer,
+                              row.id
+                            )
+                          }
+                        />
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -895,6 +916,55 @@ export default function EnhancedTable() {
           </DialogContent>
           <DialogActions></DialogActions>
         </Dialog>
+
+        <Dialog
+          //fullScreen
+          disableBackdropClick
+          disableEscapeKeyDown
+          maxWidth={"md"}
+          fullWidth
+          open={openInvoicePaymentDetail}
+          onClose={() => setOpenInvoicePaymentDetail(false)}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            Cancel Payment
+          </DialogTitle>
+          <DialogContent>
+            <div
+              style={{
+                overflowX: "hidden",
+                overflowY: "hidden",
+                height: "100%",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  paddingRight: "17px",
+                  height: "100%",
+                  width: "100%",
+                  boxSizing: "content-box",
+                  //overflow: "scroll",
+                  overflow: "visible",
+                }}
+              >
+                <DialogContentText></DialogContentText>
+                <SalesInvoiceDetailPayment
+                  customerName={customerName.current}
+                  customerId={customerId.current}
+                  ledgerMasterId={ledgerMasterId.current}
+                  parentMethod={() => {
+                    setListCounter(listCounter + 1);
+                    setOpenInvoicePaymentDetail(false);
+                  }}
+                />
+              </div>
+            </div>
+          </DialogContent>
+          <DialogActions></DialogActions>
+        </Dialog>
+
       </div>
     </Grid>
   );

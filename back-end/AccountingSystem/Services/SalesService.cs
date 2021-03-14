@@ -41,12 +41,12 @@ namespace AccountingSystem.Services
                         CustomerId = x.SubsidiaryLedgerAccountId,
                         //UnPaidBalance = 0
                         UnPaidBalance = (decimal)x.InvoiceAmount - (from a in _serverContext.InvoicePaymentDetails
-                                                           join b in _serverContext.LedgerMasters
-                                                           on a.LedgerMasterId equals b.Id
-                                                           where a.LedgerMasterId == x.Id &&
-                                                                 b.InvoiceNo == x.InvoiceNo
-                                                           select a.InvoicePaymentDetailAmount).Sum(),
-                        
+                                                                    join b in _serverContext.LedgerMasters
+                                                                    on a.LedgerMasterId equals b.Id
+                                                                    where a.LedgerMasterId == x.Id &&
+                                                                          b.InvoiceNo == x.InvoiceNo
+                                                                    select a.InvoicePaymentDetailAmount).Sum(),
+
                     })
                     .OrderByDescending(x => x.Customer.ToLower()).ThenByDescending(x => x.InvoiceDate).ThenByDescending(x => x.InvoiceNo).ToList();
         }
@@ -406,7 +406,7 @@ namespace AccountingSystem.Services
             try
             {
                 InvoicePayment invoice = new InvoicePayment();
-                invoice.LedgerMasterId = customerInvoicePaymentModel.LedgerMasterId;
+                //invoice.LedgerMasterId = customerInvoicePaymentModel.LedgerMasterId;
                 invoice.SubsidiaryLedgerAccountId = customerInvoicePaymentModel.CustomerId;
                 invoice.InvoicePaymentAmount = customerInvoicePaymentModel.InvoiceAmount;
                 invoice.ChartOfAccountId = customerInvoicePaymentModel.ChartOfAccountId;
@@ -420,6 +420,7 @@ namespace AccountingSystem.Services
                 foreach (CustomerInvoicePostPaymentItemModel item in customerInvoicePaymentModel.Items)
                 {
                     InvoicePaymentDetail invoicePaymentDetail = new InvoicePaymentDetail();
+                    invoicePaymentDetail.InvoicePaymentId = Id;
                     invoicePaymentDetail.LedgerMasterId = item.Id;
                     invoicePaymentDetail.InvoicePaymentDetailAmount = item.Amount;
                     _serverContext.InvoicePaymentDetails.Add(invoicePaymentDetail);
@@ -437,10 +438,10 @@ namespace AccountingSystem.Services
         {
 
             IEnumerable<CustomerInvoicePaymentItemModel> customerInvoicePaymentItemModel = (from a in _serverContext.LedgerMasters
-                                                                                     join b in _serverContext.InvoicePaymentDetails
-                                                                                     on a.Id equals b.LedgerMasterId into jts
-                                                                                     from jtResult in jts.DefaultIfEmpty()
-                                                                                     select new { a.Id, a.InvoiceNo, a.SubsidiaryLedgerAccountId, a.InvoiceAmount, a.InvoiceDueDate })
+                                                                                            join b in _serverContext.InvoicePaymentDetails
+                                                                                            on a.Id equals b.LedgerMasterId into jts
+                                                                                            from jtResult in jts.DefaultIfEmpty()
+                                                                                            select new { a.Id, a.InvoiceNo, a.SubsidiaryLedgerAccountId, a.InvoiceAmount, a.InvoiceDueDate })
                                                                                .Where(x => x.SubsidiaryLedgerAccountId == customerId)
                                                                                .Select(x => new CustomerInvoicePaymentItemModel
                                                                                {
@@ -455,13 +456,94 @@ namespace AccountingSystem.Services
                                                                                                                                      b.InvoiceNo == x.InvoiceNo
                                                                                                                                select a.InvoicePaymentDetailAmount).Sum()
                                                                                }).Distinct().ToList();
-
-
-
-
-
-
             return customerInvoicePaymentItemModel.Where(x => x.UnPaidBalance != 0);
+        }
+
+        public List<InvoiceSalesPaymentModel> GetInvoiceSalesPayment(int customerId)
+        {
+            List<InvoiceSalesPaymentModel> InvoiceSalesPayment = (from a in _serverContext.InvoicePaymentDetails
+                                                                  join b in _serverContext.LedgerMasters
+                                                                  on a.LedgerMasterId equals b.Id
+                                                                  join c in _serverContext.SubsidiaryLedgerAccountNames
+                                                                  on b.SubsidiaryLedgerAccountId equals c.Id
+                                                                  select new { b.SubsidiaryLedgerAccountId, b.InvoiceNo, a.LedgerMasterId, a.InvoicePaymentDetailAmount })
+                                                                    .Where(x => x.SubsidiaryLedgerAccountId == customerId)
+                                                                    .Select(x => new InvoiceSalesPaymentModel
+                                                                    {
+                                                                        InvoiceNo = x.InvoiceNo,
+                                                                        LedgerMasterId = x.LedgerMasterId,
+                                                                        SubsidiaryLedgerId = x.SubsidiaryLedgerAccountId,
+                                                                        Amount = (from a in _serverContext.InvoicePaymentDetails
+                                                                                  join b in _serverContext.LedgerMasters
+                                                                                  on a.LedgerMasterId equals b.Id
+                                                                                  join c in _serverContext.SubsidiaryLedgerAccountNames
+                                                                                  on b.SubsidiaryLedgerAccount.Id equals c.Id
+                                                                                  where b.SubsidiaryLedgerAccountId == customerId &&
+                                                                                        a.LedgerMasterId == x.LedgerMasterId
+                                                                                  select a.InvoicePaymentDetailAmount
+                                                                                  ).Sum(),
+                                                                        /* Items = (from a in _serverContext.InvoicePaymentDetails
+                                                                                  join b in _serverContext.InvoicePayments
+                                                                                  on a.InvoicePaymentId equals b.Id
+                                                                                  join c in _serverContext.LedgerMasters
+                                                                                  on a.LedgerMasterId equals c.Id
+                                                                                  where (c.SubsidiaryLedgerAccountId == customerId &&
+                                                                                        c.Id == a.LedgerMasterId)
+                                                                                  select new { c.InvoiceNo, x.InvoicePaymentDetailAmount, c.SubsidiaryLedgerAccountId }
+                                                                                  )
+                                                                                  .Where(x => x.SubsidiaryLedgerAccountId == customerId)
+                                                                                  .Select(x => new InvoiceSalesPaymentItemModel
+                                                                                  {
+                                                                                      InvoiceNo = x.InvoiceNo,
+                                                                                      InvoicePaymentDetailAmount = x.InvoicePaymentDetailAmount
+                                                                                  }).ToList() */
+                                                                    })
+                                                                    .Distinct().ToList();
+
+
+
+
+            return InvoiceSalesPayment;
+        }
+
+        public int DeleteInvoicePayment(int id)
+        {
+            try
+            {
+                
+                IList<int> invoicePaymentListId = new List<int>();
+                _serverContext.Database.BeginTransaction();
+                var invoicePaymentDetails = _serverContext.InvoicePaymentDetails.Where(x => x.LedgerMasterId == id).ToList();
+                foreach (InvoicePaymentDetail item in invoicePaymentDetails)
+                {
+                    _serverContext.InvoicePaymentDetails.Remove(_serverContext.InvoicePaymentDetails.Find(item.Id));
+                    _serverContext.SaveChanges();
+                    invoicePaymentListId.Add(item.InvoicePaymentId);
+                }
+                for (int i = 0; i < invoicePaymentListId.Count(); i++)
+                {
+                    var invoicePaymentDetail = _serverContext.InvoicePaymentDetails.Where(x => x.InvoicePaymentId == invoicePaymentListId[i]).ToList();
+                    if (invoicePaymentDetail == null || invoicePaymentDetail.Count() == 0)
+                    {
+                        var invoicePayment = _serverContext.InvoicePayments.Find(invoicePaymentListId[i]);
+                        if (invoicePayment != null)
+                        {
+                            _serverContext.InvoicePayments.Remove(_serverContext.InvoicePayments.Find(invoicePaymentListId[i]));
+                            _serverContext.SaveChanges();
+                        }
+                    }
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            finally 
+            {
+                //_serverContext.Dispose();
+            }
+            return 1;
         }
     }
 }

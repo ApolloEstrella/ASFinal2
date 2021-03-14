@@ -47,6 +47,7 @@ import {
 import configData from "../../config.json";
 import moment from "moment";
 import { format } from "date-fns";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -81,14 +82,6 @@ const headCells = [
     disablePadding: true,
     label: "Invoice No",
   },
-  { id: "dueDate", numeric: false, disablePadding: false, label: "Due Date" },
-  {
-    id: "invoiceAmount",
-    numeric: true,
-    disablePadding: false,
-    label: "Invoice Amount",
-  },
-  { id: "balance", numeric: true, disablePadding: false, label: "Balance" },
   { id: "payment", numeric: true, disablePadding: false, label: "Payment" },
 ];
 
@@ -353,7 +346,7 @@ export default function EnhancedTable(props) {
   } = useForm({
     //mode: "onChange",
     //defaultValues: preloadedValues === null ? {} : preloadedValues,
-    resolver: yupResolver(validationSchema),
+    //resolver: yupResolver(validationSchema),
   });
 
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
@@ -375,26 +368,32 @@ export default function EnhancedTable(props) {
     );
   };
 
-  useEffect(() => {
-    fetch(configData.SERVER_URL + "ChartOfAccount/GetSelect", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((results) => results.json())
-      .then((data) => {
-        getSalesItems(data);
-      })
-      .catch(function (error) {
-        console.log("network error");
-      });
-  }, [counterSales]);
+    const handleDeleteInvoicePayment = (id) => {
+      fetch(
+        configData.SERVER_URL +
+          "sales/DeleteInvoicePayment?id=" +
+          id,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((results) => results.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch(function (error) {
+          console.log("network error");
+        });
+    };
+
 
   useEffect(() => {
     fetch(
       configData.SERVER_URL +
-        "Sales/GetCustomerInvoicePayment?customerId=" +
+        "Sales/GetInvoiceSalesPayment?customerId=" +
         props.customerId,
       {
         method: "GET",
@@ -421,7 +420,7 @@ export default function EnhancedTable(props) {
       .toDate();
     console.log("data", values);
     fetch(configData.SERVER_URL + "sales/CustomerInvoicePayment", {
-      method: "POST",
+      method: "DELETE",
       body: JSON.stringify(values),
       headers: {
         "Content-Type": "application/json",
@@ -441,152 +440,6 @@ export default function EnhancedTable(props) {
   return (
     <form id="salesInvoiceForm" onSubmit={handleSubmit(onSubmit)}>
       <div className={classes.root}>
-        <Grid container justify="space-around" direction="row">
-          <Grid item xs={6}>
-            <Controller
-              control={control}
-              name="ledgerMasterId"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <TextField
-                  name="ledgerMasterId"
-                  value={props.ledgerMasterId}
-                  className={classes.visuallyHidden}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="invoiceAmount"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <TextField
-                  name="invoiceAmount"
-                  onChange={(e) => handleNumeric(e, "invoiceAmount")}
-                  //defaultValue={0}
-                  inputRef={register()}
-                  label="Amount Paid"
-                  fullWidth
-                />
-              )}
-            />
-            <p className={classes.p}>{errors.invoiceAmount?.message}</p>
-          </Grid>
-
-          <Grid
-            item
-            xs={6}
-            //className={classes.textField}
-            styles={{ zIndex: "9999" }}
-          >
-            <Controller
-              control={control}
-              name="chartOfAccountId"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <CreatableSelect
-                  name="chartOfAccountId"
-                  onBlur={onBlur}
-                  onChange={(e) => handleChange(e, "chartOfAccountId")}
-                  defaultValue=""
-                  inputRef={register()}
-                  options={salesItems}
-                  //className={classes.reactSelect}
-                  style={{
-                    paddingTop: "8px",
-                    fontSize: "13px",
-                    width: "100%",
-                    zIndex: "5",
-                  }}
-                  placeholder="Please select cash or bank account"
-                />
-              )}
-            />
-            <p className={classes.p}>{errors.chartOfAccountId?.message}</p>
-          </Grid>
-          <Grid item xs={12}>
-            <Controller
-              control={control}
-              name="customer"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <TextField
-                  name="customer"
-                  inputRef={register()}
-                  label="Customer"
-                  defaultValue={props.customerName}
-                  fullWidth
-                  disabled={true}
-                />
-              )}
-            />
-            <TextField
-              name="customerId"
-              inputRef={register()}
-              label="Customer"
-              defaultValue={props.customerId}
-              fullWidth
-              disabled={true}
-              className={classes.visuallyHidden}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <Controller
-              control={control}
-              name="referenceNo"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <TextField
-                  name="referenceNo"
-                  defaultValue=""
-                  inputRef={register()}
-                  label="Reference No."
-                  style={{ width: "100%" }}
-                />
-              )}
-            />
-            <p className={classes.p}>{errors.referenceNo?.message}</p>
-          </Grid>
-          <Grid
-            item
-            xs={6}
-            className={classes.textField}
-            styles={{ zIndex: "0" }}
-          >
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Controller
-                control={control}
-                name="paymentDate"
-                render={({ onChange, onBlur, value, name, ref }) => (
-                  <KeyboardDatePicker
-                    name="paymentDate"
-                    value={value}
-                    format="MM/dd/yyyy"
-                    inputRef={register()}
-                    label="Payment Date"
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    size="small"
-                    variant="filled"
-                    //value={value}
-                    style={{ marginTop: "3px", zIndex: "0" }}
-                    fullWidth
-                  />
-                )}
-              />
-            </MuiPickersUtilsProvider>
-          </Grid>
-        </Grid>
         <Paper className={classes.paper}>
           <TableContainer>
             <Table
@@ -629,48 +482,22 @@ export default function EnhancedTable(props) {
                         >
                           {row.invoiceNo}
                         </TableCell>
-                        <TableCell align="left">
-                          {format(new Date(row.invoiceDueDate), "MM/dd/yyyy")}
-                        </TableCell>
-                        <TableCell align="right">{row.invoiceAmount}</TableCell>
-                        <TableCell align="right">{row.unPaidBalance}</TableCell>
                         <TableCell align="right">
-                          <Controller
-                            control={control}
-                            name={`items[${index}].amount`}
-                            render={(
-                              { onChange, onBlur, value, name, ref },
-                              { invalid, isTouched, isDirty }
-                            ) => (
-                              <TextField
-                                name={`items[${index}].amount`}
-                                defaultValue={0}
-                                label="Amount"
-                                onChange={(e) =>
-                                  handleNumeric(e, `items[${index}].amount`)
-                                }
-                                className={classes.textField}
-                                margin="dense"
-                                variant="outlined"
-                                inputRef={register()}
-                                fullWidth
-                                style={{ zIndex: "0" }}
-                              />
-                            )}
-                          />
-                          <p className={classes.p}>
-                            {
-                              errors?.["items"]?.[index]?.["amount"]?.[
-                                "message"
-                              ]
-                            }
-                          </p>
+                          {row.amount}
                           <TextField
                             name={`items[${index}].id`}
                             defaultValue={row.id}
                             inputRef={register()}
                             className={classes.visuallyHidden}
                           />
+                        </TableCell>
+                        <TableCell
+                          component="th"
+                          id={labelId}
+                          scope="row"
+                          padding="none"
+                        >
+                          <DeleteForeverIcon onClick={() => handleDeleteInvoicePayment(row.ledgerMasterId)} /> 
                         </TableCell>
                       </TableRow>
                     );
@@ -697,14 +524,6 @@ export default function EnhancedTable(props) {
           control={<Switch checked={dense} onChange={handleChangeDense} />}
           label="Dense padding"
         />
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          style={{ marginRight: "20px" }}
-        >
-          Save and Close
-        </Button>
         <Button
           variant="contained"
           color="primary"

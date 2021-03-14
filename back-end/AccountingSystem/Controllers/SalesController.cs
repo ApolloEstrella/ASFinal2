@@ -88,5 +88,16 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_salesService.GetInvoicePayment(customerId));
         }
+        [HttpGet]
+        public ActionResult GetInvoiceSalesPayment(int customerId)
+        {
+            return Ok(_salesService.GetInvoiceSalesPayment(customerId));
+        }
+        [HttpDelete]
+        public ActionResult DeleteInvoicePayment(int id)
+        {
+            return Ok(_salesService.DeleteInvoicePayment(id));
+        }
+
     }
 }

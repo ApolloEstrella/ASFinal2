@@ -21,5 +21,7 @@ namespace AccountingSystem.Services.Interfaces
         int Payment(CustomerInvoicePaymentModel customerInvoicePaymentModel);
         //CustomerInvoicePaymentItemModel GetInvoicePayment(int customerId);
         IEnumerable<CustomerInvoicePaymentItemModel> GetInvoicePayment(int customerId);
+        List<InvoiceSalesPaymentModel> GetInvoiceSalesPayment(int customerId);
+        int DeleteInvoicePayment(int id);
     }
 }

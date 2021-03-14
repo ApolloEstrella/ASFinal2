@@ -172,8 +172,6 @@ namespace AccountingSystem.Data.Entities
                     .HasMaxLength(30)
                     .HasColumnName("invoice_payment_reference_no");
 
-                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
-
                 entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
 
                 entity.HasOne(d => d.ChartOfAccount)
@@ -181,11 +179,6 @@ namespace AccountingSystem.Data.Entities
                     .HasForeignKey(d => d.ChartOfAccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_invoice_payment_chart_of_account_id");
-
-                entity.HasOne(d => d.LedgerMaster)
-                    .WithMany(p => p.InvoicePayments)
-                    .HasForeignKey(d => d.LedgerMasterId)
-                    .HasConstraintName("FK_invoice_payment_ledger_master_id");
 
                 entity.HasOne(d => d.SubsidiaryLedgerAccount)
                     .WithMany(p => p.InvoicePayments)
@@ -204,11 +197,19 @@ namespace AccountingSystem.Data.Entities
                     .HasColumnType("decimal(12, 2)")
                     .HasColumnName("invoice_payment_detail_amount");
 
+                entity.Property(e => e.InvoicePaymentId).HasColumnName("invoice_payment_id");
+
                 entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+
+                entity.HasOne(d => d.InvoicePayment)
+                    .WithMany(p => p.InvoicePaymentDetails)
+                    .HasForeignKey(d => d.InvoicePaymentId)
+                    .HasConstraintName("FK_invoice_payment_detail_invoice_payment_id");
 
                 entity.HasOne(d => d.LedgerMaster)
                     .WithMany(p => p.InvoicePaymentDetails)
                     .HasForeignKey(d => d.LedgerMasterId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_invoice_payment_detail_ledger_master_id");
             });
 
