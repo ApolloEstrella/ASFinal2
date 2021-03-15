@@ -114,7 +114,10 @@ const App = (props) => {
       <Grid container spacing={0}>
         <Grid item xs={12}>
           <div className={classes.root}>
-            <AppBar position="static">
+            <AppBar
+              position="static"
+              style={{ background: "#F0544F", color: "white" }}
+            >
               <Toolbar>
                 {isMobile ? (
                   <>

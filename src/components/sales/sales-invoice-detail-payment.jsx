@@ -383,6 +383,7 @@ export default function EnhancedTable(props) {
         .then((results) => results.json())
         .then((data) => {
           console.log(data);
+          setCounterList(counterList + 1)
         })
         .catch(function (error) {
           console.log("network error");

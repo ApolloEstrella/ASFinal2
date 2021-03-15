@@ -54,6 +54,24 @@ import NumberFormat from "react-number-format";
 import commaNumber from "comma-number";
 import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
 
+const StyledTableCell = withStyles((theme) => ({
+  head: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  body: {
+    fontSize: 14,
+  },
+}))(TableCell);
+
+const StyledTableRow = withStyles((theme) => ({
+  root: {
+    "&:nth-of-type(odd)": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+}))(TableRow);
+
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -141,6 +159,12 @@ const headCells = [
     disablePadding: false,
     label: "",
   },
+  {
+    id: "cancelPaymentIcon",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
 ];
 
 function EnhancedTableHead(props) {
@@ -158,7 +182,7 @@ function EnhancedTableHead(props) {
   };
 
   return (
-    <TableHead>
+    <TableHead style={{ background: "#DFE7F6", color: "#189AB4" }}>
       <TableRow>
         {headCells.map((headCell) => (
           <TableCell
@@ -532,7 +556,7 @@ export default function EnhancedTable() {
     >
       <Grid item xs={12} sm={12} md={2} align="center">
         <Button
-          variant="outlined"
+          variant="contained"
           color="primary"
           style={{ height: "39px" }}
           onClick={() => {
@@ -577,7 +601,7 @@ export default function EnhancedTable() {
       </Grid>
       <Grid item xs={12} sm={2} md={2} align="center">
         <Button
-          variant="outlined"
+          variant="contained"
           color="primary"
           style={{ height: "39px" }}
           onClick={() => handleSearch()}
@@ -588,7 +612,7 @@ export default function EnhancedTable() {
       </Grid>
       <Grid item xs={12} sm={2} md={2} align="center">
         <Button
-          variant="outlined"
+          variant="contained"
           color="primary"
           style={{ height: "39px" }}
           onClick={() => setListCounter(listCounter + 1)}
@@ -597,7 +621,7 @@ export default function EnhancedTable() {
           Reset
         </Button>
       </Grid>
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} style={{paddingTop: "10px"}}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
           <Table
@@ -623,8 +647,8 @@ export default function EnhancedTable() {
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
-                    <TableRow key={row.id}>
-                      <TableCell
+                    <StyledTableRow key={row.id}>
+                      <StyledTableCell
                         component="th"
                         id={labelId}
                         scope="row"
@@ -633,36 +657,42 @@ export default function EnhancedTable() {
                       >
                         {" "}
                         {row.customer}
-                      </TableCell>
-                      <TableCell align="right">{row.invoiceNo}</TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">{row.invoiceNo}</StyledTableCell>
+                      <StyledTableCell align="right">
                         {commaNumber(row.invoiceAmount).toString()}
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         {commaNumber(row.unPaidBalance).toString()}
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         {format(new Date(row.invoiceDate), "MM/dd/yyyy")}
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         {row.void === true ? "Void" : ""}
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         {" "}
-                        <EditIcon onClick={() => handleEdit(row.id)} />{" "}
-                      </TableCell>
-                      <TableCell align="right">
+                        <EditIcon
+                          color="primary"
+                          onClick={() => handleEdit(row.id)}
+                        />{" "}
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         <DeleteForeverIcon
+                          color="secondary"
                           onClick={() => handleDelete(row.id)}
                         />
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         <PhonelinkEraseIcon
+                          color="secondary"
                           onClick={() => handleVoid(row.id)}
                         />
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         <PaymentIcon
+                          color="primary"
                           onClick={() =>
                             handleInvoicePayment(
                               row.customerId,
@@ -671,9 +701,10 @@ export default function EnhancedTable() {
                             )
                           }
                         />
-                      </TableCell>
-                      <TableCell align="right">
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
                         <DeleteSweepIcon
+                          color="primary"
                           onClick={() =>
                             handleInvoicePaymentDetail(
                               row.customerId,
@@ -682,8 +713,8 @@ export default function EnhancedTable() {
                             )
                           }
                         />
-                      </TableCell>
-                    </TableRow>
+                      </StyledTableCell>
+                    </StyledTableRow>
                   );
                 })}
               {emptyRows > 0 && (
@@ -921,15 +952,14 @@ export default function EnhancedTable() {
           //fullScreen
           disableBackdropClick
           disableEscapeKeyDown
+          style={{width: "100%"}}
           maxWidth={"md"}
-          fullWidth
+          //fullWidth
           open={openInvoicePaymentDetail}
           onClose={() => setOpenInvoicePaymentDetail(false)}
           aria-labelledby="responsive-dialog-title"
         >
-          <DialogTitle id="responsive-dialog-title">
-            Cancel Payment
-          </DialogTitle>
+          <DialogTitle id="responsive-dialog-title">Cancel Payment</DialogTitle>
           <DialogContent>
             <div
               style={{
@@ -964,7 +994,6 @@ export default function EnhancedTable() {
           </DialogContent>
           <DialogActions></DialogActions>
         </Dialog>
-
       </div>
     </Grid>
   );
