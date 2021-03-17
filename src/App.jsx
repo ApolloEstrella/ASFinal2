@@ -24,8 +24,10 @@ import MaterialUIPickers from "./components/sales/test"
 import SalesInvoiceList from "./components/sales/sales-invoice-list";
 //import SalesInvoiceApp from "./components/sales/sales-invoice-app";
 import FunctionalComponentWithHook from "./components/sales/test";
+import Purchase from "./components/purchases/purchase";
+import InventoryList from "./components/libraries/inventory-list";
 
-
+  
 const storageService = new StorageService();
 
 const useStyles = makeStyles((theme) =>
@@ -77,16 +79,26 @@ const App = (props) => {
     },
     {
       key: 2,
-      menuTitle: "Sales Invoice",
-      pageURL: "/sales-invoice",
+      menuTitle: "Inventory",
+      pageURL: "/inventory-list",
     },
     {
       key: 3,
+      menuTitle: "Sales Invoices",
+      pageURL: "/sales-invoice",
+    },
+    {
+      key: 4,
+      menuTitle: "Purchases",
+      pageURL: "/purchases",
+    },
+    {
+      key: 5,
       menuTitle: "Test",
       pageURL: "/test",
     },
     {
-      key: 4,
+      key: 6,
       menuTitle: "Logout",
       pageURL: "/logout",
     },
@@ -104,10 +116,6 @@ const App = (props) => {
       pageURL: "/register",
     },
   ];
-
-
-
-
 
   return (
     <>
@@ -210,9 +218,21 @@ const App = (props) => {
                         </Button>
                         <Button
                           color="inherit"
+                          onClick={() => handleButtonClick("/inventory-list")}
+                        >
+                          Inventory
+                        </Button>
+                        <Button
+                          color="inherit"
                           onClick={() => handleButtonClick("/sales-invoice")}
                         >
                           Sales Invoice
+                        </Button>
+                        <Button
+                          color="inherit"
+                          onClick={() => handleButtonClick("/purchases")}
+                        >
+                          Purchases
                         </Button>
                         <Button
                           color="inherit"
@@ -275,8 +295,18 @@ const App = (props) => {
         />
         <Route
           exact
+          path="/inventory-list"
+          render={(props) => <InventoryList {...props} />}
+        />
+        <Route
+          exact
           path="/sales-invoice"
           render={(props) => <SalesInvoiceList {...props} />}
+        />
+        <Route
+          exact
+          path="/purchases"
+          render={(props) => <Purchase {...props} />}
         />
         <Route
           exact

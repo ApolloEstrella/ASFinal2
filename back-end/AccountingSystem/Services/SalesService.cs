@@ -539,10 +539,6 @@ namespace AccountingSystem.Services
             {
                 _serverContext.Database.RollbackTransaction();
             }
-            finally 
-            {
-                //_serverContext.Dispose();
-            }
             return 1;
         }
     }

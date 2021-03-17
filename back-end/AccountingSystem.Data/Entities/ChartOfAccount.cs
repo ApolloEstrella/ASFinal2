@@ -10,7 +10,11 @@ namespace AccountingSystem.Data.Entities
         public ChartOfAccount()
         {
             IncomeItems = new HashSet<IncomeItem>();
+            InventoryInventoryProductServiceAssetAccounts = new HashSet<Inventory>();
+            InventoryInventoryProductServiceExpenseAccounts = new HashSet<Inventory>();
+            InventoryInventoryProductServiceIncomeAccounts = new HashSet<Inventory>();
             InvoicePayments = new HashSet<InvoicePayment>();
+            PurchaseDetails = new HashSet<PurchaseDetail>();
         }
 
         public int Id { get; set; }
@@ -22,6 +26,10 @@ namespace AccountingSystem.Data.Entities
 
         public virtual ChartOfAccountsType AccountType { get; set; }
         public virtual ICollection<IncomeItem> IncomeItems { get; set; }
+        public virtual ICollection<Inventory> InventoryInventoryProductServiceAssetAccounts { get; set; }
+        public virtual ICollection<Inventory> InventoryInventoryProductServiceExpenseAccounts { get; set; }
+        public virtual ICollection<Inventory> InventoryInventoryProductServiceIncomeAccounts { get; set; }
         public virtual ICollection<InvoicePayment> InvoicePayments { get; set; }
+        public virtual ICollection<PurchaseDetail> PurchaseDetails { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace AccountingSystem.Data.Entities
         {
             InvoicePayments = new HashSet<InvoicePayment>();
             LedgerMasters = new HashSet<LedgerMaster>();
+            Purchases = new HashSet<Purchase>();
         }
 
         public int Id { get; set; }
@@ -19,5 +20,6 @@ namespace AccountingSystem.Data.Entities
 
         public virtual ICollection<InvoicePayment> InvoicePayments { get; set; }
         public virtual ICollection<LedgerMaster> LedgerMasters { get; set; }
+        public virtual ICollection<Purchase> Purchases { get; set; }
     }
 }

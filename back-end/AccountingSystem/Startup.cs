@@ -50,6 +50,8 @@ namespace AccountingSystem
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<ISalesService, SalesService>();
             services.AddScoped<IFileAttachmentService, FileAttachmentService>();
+            services.AddScoped<IPurchaseService, PurchaseService>();
+            services.AddScoped<IInventoryService, InventoryService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

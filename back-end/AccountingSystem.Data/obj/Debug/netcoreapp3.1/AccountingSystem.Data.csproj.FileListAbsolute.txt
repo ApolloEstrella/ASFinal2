@@ -21,4 +21,3 @@ D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\De
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.dll
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.pdb
 D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.genruntimeconfig.cache
-D:\TestProjects\accounting-system\ASFinal2\back-end\AccountingSystem.Data\obj\Debug\netcoreapp3.1\AccountingSystem.Data.csprojAssemblyReference.cache
