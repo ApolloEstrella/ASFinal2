@@ -41,12 +41,16 @@ import { Controller, useForm } from "react-hook-form";
 import Radio from "@material-ui/core/Radio";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import Inventory from "../libraries/inventory";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
+import EditIcon from "@material-ui/icons/Edit";
 
 interface Data {
   id: number;
   name: string;
   productServiceCode: string;
   description: string;
+  type: string;
 }
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -108,6 +112,12 @@ const headCells: HeadCell[] = [
     numeric: false,
     disablePadding: false,
     label: "Description",
+  },
+  {
+    id: "type",
+    numeric: false,
+    disablePadding: false, 
+    label: "Type",
   },
 ];
 
@@ -339,7 +349,6 @@ export default function EnhancedTable() {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
@@ -357,8 +366,6 @@ export default function EnhancedTable() {
   const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDense(event.target.checked);
   };
-
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
@@ -378,40 +385,13 @@ export default function EnhancedTable() {
     resolver: yupResolver(validationSchema),
   });
 
-  const handleClose = () => {
-    toggleOpen(false);
-  };
+  const [rowInfo, setRowInfo] = useState(null);
 
-  const [selectedRadioValue, setSelectedRadioValue] = React.useState("P");
-  const handleRadioChange = (event: any) => {
-    setSelectedRadioValue(event.target.value);
-  };
+  const handleEdit = (row: any) => {
+    setRowInfo(row);
+    toggleOpen(true);
+  }
 
-  const onSubmit = (values: any, { resetForm }: any) => {
-    /* values.ledgerMasterId = props.ledgerMasterId;
-    values.customerId = props.customerId;
-    values.chartOfAccountId = values.chartOfAccountId.value;
-    values.paymentDate = moment
-      .parseZone(values.paymentDate.toString())
-      .toDate();
-    console.log("data", values); */
-    fetch(configData.SERVER_URL + "inventory/add", {
-      method: "POST",
-      body: JSON.stringify(values),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((results) => results.json())
-      .then((data) => {
-        console.log(data);
-        //setCounterList(counterList + 1);
-        //props.parentMethod();
-      })
-      .catch(function (error) {
-        console.log("network error");
-      });
-  };
   return (
     <Grid container spacing={0} style={{ width: "60%" }}>
       <Grid item xs={12}>
@@ -422,7 +402,6 @@ export default function EnhancedTable() {
           onClick={() => {
             toggleOpen(true);
           }}
-          //fullWidth
         >
           New Product / Service
         </Button>
@@ -473,6 +452,16 @@ export default function EnhancedTable() {
                             {row.productServiceCode}
                           </TableCell>
                           <TableCell align="left">{row.description}</TableCell>
+                          <TableCell align="left">{row.type}</TableCell>
+                          <TableCell align="left">
+                            <EditIcon
+                              color="primary"
+                              onClick={() => handleEdit(row)}
+                            />
+                          </TableCell>
+                          <TableCell align="left">
+                            <DeleteForeverIcon color="secondary" />
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -502,8 +491,6 @@ export default function EnhancedTable() {
       </Grid>
       <>
         <Dialog
-          //fullScreen={fullScreen}
-          //fullScreen
           disableBackdropClick
           disableEscapeKeyDown
           maxWidth={"xl"}
@@ -512,142 +499,18 @@ export default function EnhancedTable() {
           aria-labelledby="responsive-dialog-title"
         >
           <DialogTitle id="responsive-dialog-title">
-            Create Product/Service
+            {rowInfo === null
+              ? "Create Product/Service"
+              : "Edit Product/Service"}
           </DialogTitle>
           <DialogContent>
-            <form id="inventoryForm" onSubmit={handleSubmit(onSubmit)}>
-              <Grid container spacing={0}>
-                <Grid item xs={12}>
-                  <Controller
-                    control={control}
-                    name="type"
-                    render={(
-                      { onChange, onBlur, value, name, ref },
-                      { invalid, isTouched, isDirty }
-                    ) => (
-                      <Radio
-                        name="type"
-                        inputRef={register()}
-                        checked={selectedRadioValue === "P"}
-                        onChange={handleRadioChange}
-                        value="P"
-                      />
-                    )}
-                  />{" "}
-                  Product
-                  <Controller
-                    control={control}
-                    name="type"
-                    render={(
-                      { onChange, onBlur, value, name, ref },
-                      { invalid, isTouched, isDirty }
-                    ) => (
-                      <Radio
-                        name="type"
-                        inputRef={register()}
-                        checked={selectedRadioValue === "S"}
-                        onChange={handleRadioChange}
-                        value="S"
-                      />
-                    )}
-                  />{" "}
-                  Service
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    control={control}
-                    name="name"
-                    render={(
-                      { onChange, onBlur, value, name, ref },
-                      { invalid, isTouched, isDirty }
-                    ) => (
-                      <TextField
-                        name="name"
-                        inputRef={register()}
-                        label="Name"
-                        margin="normal"
-                        variant="outlined"
-                        //InputLabelProps={{ shrink: true }}
-                        size="small"
-                        style={{ width: "100%" }}
-                      />
-                    )}
-                  />
-                  <p className={classes.p}>{errors.name?.message}</p>
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    control={control}
-                    name="productServiceCode"
-                    render={(
-                      { onChange, onBlur, value, name, ref },
-                      { invalid, isTouched, isDirty }
-                    ) => (
-                      <TextField
-                        name="productServiceCode"
-                        inputRef={register()}
-                        label="Product/Service Code"
-                        margin="normal"
-                        variant="outlined"
-                        //InputLabelProps={{ shrink: true }}
-                        size="small"
-                        style={{ width: "100%" }}
-                      />
-                    )}
-                  />
-                  <p className={classes.p}>
-                    {errors.productServiceCode?.message}
-                  </p>
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    control={control}
-                    name="description"
-                    render={(
-                      { onChange, onBlur, value, name, ref },
-                      { invalid, isTouched, isDirty }
-                    ) => (
-                      <TextField
-                        name="description"
-                        inputRef={register()}
-                        label="Description"
-                        margin="normal"
-                        variant="outlined"
-                        //InputLabelProps={{ shrink: true }}
-                        size="small"
-                        style={{ width: "100%" }}
-                      />
-                    )}
-                  />
-                  <p className={classes.p}>{errors.description?.message}</p>
-                </Grid>
-              </Grid>
-              <div>
-                <Grid container justify="flex-end">
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    autoFocus
-                    color="primary"
-                    style={{ right: "auto" }}
-                  >
-                    Save 
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="contained"
-                    autoFocus
-                    onClick={() => {
-                      handleClose();
-                    }}
-                    color="primary"
-                    style={{marginLeft: "15px"}}
-                  >
-                    Close
-                  </Button>
-                </Grid>
-              </div>
-            </form>
+            <Inventory
+              rowData={rowInfo}
+              closeDialog={() => toggleOpen(false)}
+              updateList={() => {
+                setListCounter(listCounter + 1);
+              }}
+            />
           </DialogContent>
           <DialogActions></DialogActions>
         </Dialog>

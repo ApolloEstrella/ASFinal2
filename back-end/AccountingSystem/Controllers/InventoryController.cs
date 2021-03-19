@@ -25,8 +25,19 @@ namespace AccountingSystem.Controllers
             return Ok(_inventoryService.GetAll());
         }
         public ActionResult Add(InventoryModel inventoryModel)
+        
         {
             return Ok(_inventoryService.Add(inventoryModel));
+        }
+        public ActionResult Update(InventoryModel inventoryModel)
+
+        {
+            return Ok(_inventoryService.Update(inventoryModel));
+        }
+        public ActionResult Delete(int Id)
+
+        {
+            return Ok(_inventoryService.Delete(Id));
         }
     }
 }

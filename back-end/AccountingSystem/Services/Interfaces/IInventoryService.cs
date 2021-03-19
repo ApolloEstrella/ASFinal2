@@ -10,5 +10,7 @@ namespace AccountingSystem.Services.Interfaces
     {
         List<InventoryModel> GetAll();
         int Add(InventoryModel inventoryModel);
+        int Update(InventoryModel inventoryModel);
+        int Delete(int Id);
     }
 }

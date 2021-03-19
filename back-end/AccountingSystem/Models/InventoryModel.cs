@@ -18,19 +18,19 @@ namespace AccountingSystem.Models
     }
     public class IncomeAccount
     {
-        public int Value { get; set; }
+        public int? Value { get; set; }
         public string Label { get; set; }
     }
 
     public class ExpenseAccount
     {
-        public int Value { get; set; }
+        public int? Value { get; set; }
         public string Label { get; set; }
     }
 
     public class AssetAccount
     {
-        public int Value { get; set; }
+        public int? Value { get; set; }
         public string Label { get; set; }
     }
 }
