@@ -116,7 +116,7 @@ const headCells: HeadCell[] = [
   {
     id: "type",
     numeric: false,
-    disablePadding: false, 
+    disablePadding: false,
     label: "Type",
   },
 ];
@@ -333,25 +333,6 @@ export default function EnhancedTable() {
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -390,7 +371,32 @@ export default function EnhancedTable() {
   const handleEdit = (row: any) => {
     setRowInfo(row);
     toggleOpen(true);
-  }
+  };
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(0);
+
+  const showDelete = (id: number) => {
+    setDeleteItemId(id);
+    setOpenDelete(true);
+  };
+
+  const handleDelete = () => {
+    fetch(configData.SERVER_URL + "inventory/delete?Id=" + deleteItemId, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((results) => results.json())
+      .then((data) => {
+        setListCounter(listCounter + 1);
+        setOpenDelete(false)
+      })
+      .catch(function (error) {
+        console.log("network error");
+      });
+  };
 
   return (
     <Grid container spacing={0} style={{ width: "60%" }}>
@@ -400,6 +406,7 @@ export default function EnhancedTable() {
           color="primary"
           style={{ height: "39px" }}
           onClick={() => {
+            setRowInfo(null)
             toggleOpen(true);
           }}
         >
@@ -428,19 +435,8 @@ export default function EnhancedTable() {
                   {stableSort(rows, getComparator(order, orderBy))
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
-                      //const isItemSelected = isSelected(row.name);
-                      //const labelId = `enhanced-table-checkbox-${index}`;
-
                       return (
-                        <TableRow
-                          hover
-                          //onClick={(event) => handleClick(event, row.name)}
-                          //role="checkbox"
-                          //aria-checked={isItemSelected}
-                          //tabIndex={-1}
-                          key={row.id}
-                          //selected={isItemSelected}
-                        >
+                        <TableRow hover key={row.id}>
                           <TableCell
                             component="th"
                             //id={labelId}
@@ -460,7 +456,10 @@ export default function EnhancedTable() {
                             />
                           </TableCell>
                           <TableCell align="left">
-                            <DeleteForeverIcon color="secondary" />
+                            <DeleteForeverIcon
+                              color="secondary"
+                              onClick={() => showDelete(Number(row.id))}
+                            />
                           </TableCell>
                         </TableRow>
                       );
@@ -495,7 +494,6 @@ export default function EnhancedTable() {
           disableEscapeKeyDown
           maxWidth={"xl"}
           open={open}
-          //onClose={() => setShowInventoryForm(false)}
           aria-labelledby="responsive-dialog-title"
         >
           <DialogTitle id="responsive-dialog-title">
@@ -513,6 +511,40 @@ export default function EnhancedTable() {
             />
           </DialogContent>
           <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          //fullScreen={fullScreen}
+          open={openDelete}
+          //onClose={handleClose}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            DELETE CONFIRMATION
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              autoFocus
+              onClick={() => setOpenDelete(false)}
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                handleDelete();
+              }}
+              color="primary"
+              autoFocus
+            >
+              Delete
+            </Button>
+          </DialogActions>
         </Dialog>
       </>
     </Grid>

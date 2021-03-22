@@ -303,7 +303,7 @@ namespace AccountingSystem.Services
         public PrintCustomerInvoiceModel PrintCustomerInvoice(int id)
         {
 
-            List<PrintCustomerInvoiceDetailModel> InvoiceItems = (from a in _serverContext.IncomeItems
+            List<PrintCustomerInvoiceDetailModel> InvoiceItems = (from a in _serverContext.Inventories
                                                                   join b in _serverContext.LedgerDetails
                                                                   on a.Id equals b.InvoiceSalesItemId
                                                                   join c in _serverContext.TaxRates
@@ -315,7 +315,7 @@ namespace AccountingSystem.Services
                                                                   select new
                                                                   {
                                                                       b.LedgerMasterId,
-                                                                      a.Name,
+                                                                      a.InventoryProductServiceName,
                                                                       b.InvoiceDescription,
                                                                       b.InvoiceQuantity,
                                                                       b.InvoiceUnitPrice,
@@ -327,7 +327,7 @@ namespace AccountingSystem.Services
                                                                   .Where(x => x.LedgerMasterId == id)
                                                                   .Select(x => new PrintCustomerInvoiceDetailModel
                                                                   {
-                                                                      SalesItem = x.Name,
+                                                                      SalesItem = x.InventoryProductServiceName,
                                                                       Description = x.InvoiceDescription,
                                                                       Quantity = x.InvoiceQuantity,
                                                                       UnitPrice = x.InvoiceUnitPrice,

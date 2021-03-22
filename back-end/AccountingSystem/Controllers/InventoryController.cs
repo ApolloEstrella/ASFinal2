@@ -24,6 +24,11 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_inventoryService.GetAll());
         }
+
+        public ActionResult GetSelect()
+        {
+            return Ok(_inventoryService.GetSelect());
+        }
         public ActionResult Add(InventoryModel inventoryModel)
         
         {

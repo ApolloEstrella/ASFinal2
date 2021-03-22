@@ -9,7 +9,7 @@ using AccountingSystem.Models;
 
 namespace AccountingSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class PurchaseController : ControllerBase
     {
@@ -19,10 +19,16 @@ namespace AccountingSystem.Controllers
             _purchaseService = purchaseService;
         }
 
-        [HttpGet]
+        [HttpPost]
         public ActionResult Add(PurchaseModel purchaseModel)
         {
             return Ok();
+        }
+
+        [HttpGet]
+        public ActionResult GetAll()
+        {
+            return Ok(_purchaseService.GetAll());
         }
     }
 }

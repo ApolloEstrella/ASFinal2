@@ -7,6 +7,11 @@ namespace AccountingSystem.Data.Entities
 {
     public partial class Inventory
     {
+        public Inventory()
+        {
+            LedgerDetails = new HashSet<LedgerDetail>();
+        }
+
         public int Id { get; set; }
         public string InventoryProductServiceCode { get; set; }
         public string InventoryProductServiceName { get; set; }
@@ -21,5 +26,6 @@ namespace AccountingSystem.Data.Entities
         public virtual ChartOfAccount InventoryProductServiceAssetAccount { get; set; }
         public virtual ChartOfAccount InventoryProductServiceExpenseAccount { get; set; }
         public virtual ChartOfAccount InventoryProductServiceIncomeAccount { get; set; }
+        public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }
     }
 }

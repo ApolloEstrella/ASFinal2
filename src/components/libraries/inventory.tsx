@@ -85,12 +85,14 @@ export default function EnhancedTable(props: Props) {
   });
 
   const [counterSales, setCounterSales] = useState(0);
-  const [selectedRadioValue, setSelectedRadioValue] = React.useState(props.rowData === null ? "P": props.rowData.type);
+  const [selectedRadioValue, setSelectedRadioValue] = useState(props.rowData === null ? "P": props.rowData.type);
   const handleRadioChange = (event: any) => {
     setSelectedRadioValue(event.target.value);
   };
 
   const initialValues = {
+    id: 0,
+    type: "P",
     name: "",
     productServiceCode: "",
     description: "",
@@ -100,8 +102,25 @@ export default function EnhancedTable(props: Props) {
 
   const onSubmit = (values: any, e: any) => {
     values.type = selectedRadioValue;
-    fetch(configData.SERVER_URL + "inventory/update?Id=" + values.id, {
-      method: "PUT",
+    if (values.type === "S") {
+      if (values.expenseAccount !== undefined) {
+        values.expenseAccount.value = null;
+      }
+    }
+    var url: string;
+    var method: string;
+
+    if (props.rowData === null) {
+      url = "inventory/add";
+      method = "POST";
+    }
+    else {
+      url = "inventory/update?Id=" + values.id;
+      method = "PUT";
+    }
+
+    fetch(configData.SERVER_URL + url, {
+      method: method,
       body: JSON.stringify(values),
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +174,7 @@ export default function EnhancedTable(props: Props) {
               <TextField
                 inputRef={register()}
                 name="id"
-                value={props.rowData.id}
+                value={props.rowData === null ? 0 : props.rowData.id}
                 style={{ display: "none" }}
               ></TextField>
               <Controller
@@ -170,7 +189,7 @@ export default function EnhancedTable(props: Props) {
                     inputRef={register()}
                     checked={selectedRadioValue === "P"}
                     onChange={handleRadioChange}
-                    value= "P"
+                    value="P"
                   />
                 )}
               />{" "}
@@ -206,7 +225,9 @@ export default function EnhancedTable(props: Props) {
                     inputRef={register()}
                     label="Name"
                     margin="normal"
-                    defaultValue={props.rowData.name}
+                    defaultValue={
+                      props.rowData === null ? "" : props.rowData.name
+                    }
                     variant="outlined"
                     //InputLabelProps={{ shrink: true }}
                     size="small"
@@ -230,7 +251,11 @@ export default function EnhancedTable(props: Props) {
                     label="Product/Service Code"
                     margin="normal"
                     variant="outlined"
-                    //InputLabelProps={{ shrink: true }}
+                    defaultValue={
+                      props.rowData === null
+                        ? ""
+                        : props.rowData.productServiceCode
+                    }
                     size="small"
                     style={{ width: "100%" }}
                   />
@@ -252,7 +277,9 @@ export default function EnhancedTable(props: Props) {
                     label="Description"
                     margin="normal"
                     variant="outlined"
-                    //InputLabelProps={{ shrink: true }}
+                    defaultValue={
+                      props.rowData === null ? "" : props.rowData.description
+                    }
                     size="small"
                     style={{ width: "100%" }}
                     multiline
@@ -281,11 +308,15 @@ export default function EnhancedTable(props: Props) {
                     placeholder="Please select Sales Items"
                     // styles={customStyles}
                     isClearable
-                    defaultValue={salesItems.find(
-                      (obj) =>
-                        Number(obj["value"]) ===
-                        Number(props.rowData.incomeAccount.value)
-                    )}
+                    defaultValue={
+                      props.rowData === null
+                        ? null
+                        : salesItems.find(
+                            (obj) =>
+                              Number(obj["value"]) ===
+                              Number(props.rowData.incomeAccount.value)
+                          )
+                    }
                   />
                 )}
               />
@@ -313,11 +344,15 @@ export default function EnhancedTable(props: Props) {
                     // styles={customStyles}
                     isClearable
                     isDisabled={selectedRadioValue === "S" ? true : false}
-                    defaultValue={salesItems.find(
-                      (obj) =>
-                        Number(obj["value"]) ===
-                        Number(props.rowData.expenseAccount.value)
-                    )}
+                    defaultValue={
+                      props.rowData === null
+                        ? null
+                        : salesItems.find(
+                            (obj) =>
+                              Number(obj["value"]) ===
+                              Number(props.rowData.expenseAccount.value)
+                          )
+                    }
                   />
                 )}
               />

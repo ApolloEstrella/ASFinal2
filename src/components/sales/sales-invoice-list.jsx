@@ -745,7 +745,7 @@ export default function EnhancedTable() {
           onClose={handleEditClose}
           aria-labelledby="responsive-dialog-title"
         >
-          <DialogTitle id="responsive-dialog-title">Sales Invoice</DialogTitle>
+          <DialogTitle id="responsive-dialog-title">Edit Sales Invoice</DialogTitle>
           <DialogContent>
             <div
               style={{

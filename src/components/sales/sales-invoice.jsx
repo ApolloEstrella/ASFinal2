@@ -341,7 +341,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   }, [counter]);
 
   useEffect(() => {
-    fetch(configData.SERVER_URL + "IncomeItem/get", {
+    fetch(configData.SERVER_URL + "Inventory/GetSelect", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

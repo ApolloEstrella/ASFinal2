@@ -395,6 +395,10 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.Description)
+                    .HasMaxLength(3000)
+                    .HasColumnName("description");
+
                 entity.Property(e => e.PurchaseCreatedDate)
                     .HasColumnType("datetime")
                     .HasColumnName("purchase_created_date");

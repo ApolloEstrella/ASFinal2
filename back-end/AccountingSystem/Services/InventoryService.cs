@@ -36,6 +36,18 @@ namespace AccountingSystem.Services
                                         }).OrderBy(x => x.Name).ToList();
             return list;
         }
+
+        public InventoryItemModel GetInventoryItem()
+        {
+            InventoryItemModel inventoryItemModel = null;
+            return inventoryItemModel;
+        }
+        public List<InventoryItemModel> GetSelect()
+        {
+            return (from a in _serverContext.Inventories
+                    select new { a.Id, a.InventoryProductServiceName }).ToList()
+                     .Select(x => new InventoryItemModel { value = x.Id, label = x.InventoryProductServiceName }).OrderBy(x => x.label).ToList();
+        }
         public int Add(InventoryModel inventoryModel)
         {
             Inventory inventory = new Inventory
@@ -45,7 +57,7 @@ namespace AccountingSystem.Services
                 InventoryProductServiceCode = inventoryModel.ProductServiceCode,
                 InventoryProductDescription = inventoryModel.Description,
                 InventoryProductServiceIncomeAccountId = inventoryModel.IncomeAccount.Value,
-                InventoryProductServiceExpenseAccountId = inventoryModel.ExpenseAccount.Value,
+                InventoryProductServiceExpenseAccountId = inventoryModel.ExpenseAccount == null ? null : inventoryModel.ExpenseAccount.Value,
                 InventoryProductServiceCreatedDate = DateTime.Now,
             };
             _serverContext.Inventories.Add(inventory);

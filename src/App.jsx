@@ -24,7 +24,7 @@ import MaterialUIPickers from "./components/sales/test"
 import SalesInvoiceList from "./components/sales/sales-invoice-list";
 //import SalesInvoiceApp from "./components/sales/sales-invoice-app";
 import FunctionalComponentWithHook from "./components/sales/test";
-import Purchase from "./components/purchases/purchase";
+import PurchaseList from "./components/purchases/purchase-list";
 import InventoryList from "./components/libraries/inventory-list";
 
   
@@ -90,7 +90,7 @@ const App = (props) => {
     {
       key: 4,
       menuTitle: "Purchases",
-      pageURL: "/purchases",
+      pageURL: "/purchase-list",
     },
     {
       key: 5,
@@ -230,7 +230,7 @@ const App = (props) => {
                         </Button>
                         <Button
                           color="inherit"
-                          onClick={() => handleButtonClick("/purchases")}
+                          onClick={() => handleButtonClick("/purchase-list")}
                         >
                           Purchases
                         </Button>
@@ -305,8 +305,8 @@ const App = (props) => {
         />
         <Route
           exact
-          path="/purchases"
-          render={(props) => <Purchase {...props} />}
+          path="/purchase-list"
+          render={(props) => <PurchaseList {...props} />}
         />
         <Route
           exact
