@@ -357,7 +357,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   }, [counterSales]);
 
   useEffect(() => {
-    fetch(configData.SERVER_URL + "TaxRate/get", {
+    fetch(configData.SERVER_URL + "TaxRate/get?type=S", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -373,7 +373,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       .catch(function (error) {
         console.log("network error");
       });
-  }, []);
+  }, [counterTax]);
 
   useEffect(() => {
     fetch(configData.SERVER_URL + "Tracking/get", {
@@ -483,6 +483,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
       body: JSON.stringify({
         description: values.description,
         rate: values.rate,
+        taxType: values.tax_type
       }),
       headers: {
         "Content-Type": "application/json",
@@ -649,6 +650,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   const [dialogValueTax, setDialogValueTax] = useState({
     description: "",
     rate: 0,
+    tax_type: "S"
   });
 
   const [dialogValueTracking, setDialogValueTracking] = useState({
@@ -845,6 +847,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
   const initialTaxValues = {
     description: dialogValueTax.description,
     rate: 0,
+    tax_type: "S"
   };
 
   const initialTrackingValues = {
@@ -1469,6 +1472,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
                       defaultValue={addInvoiceItems ? 0 : `${item.amount}`}
                       label="Sub Total"
                       className={classes.textFieldReadOnly}
+                      inputProps={{readOnly: true }}
                       margin="dense"
                       variant="outlined"
                       size="small"
@@ -1852,6 +1856,13 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
                       fullWidth
                       margin="normal"
                       variant="outlined"
+                    />
+                    <TextField
+                      id="tax_type"
+                      label="Tax Type"
+                      name="tax_type"
+                      value="S"
+                      //className={classes.hide}
                     />
                     <Button type="submit" color="primary">
                       Add

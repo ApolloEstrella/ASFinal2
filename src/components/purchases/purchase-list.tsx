@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
+
 import {
   createStyles,
   lighten,
@@ -46,10 +47,9 @@ import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
 import Purchase from "./purchase";
 
-
 interface Data {
   id: number;
-  vendor: string;
+  name: string;
   date: any;
   dueDate: any;
   description: string;
@@ -100,7 +100,7 @@ interface HeadCell {
 
 const headCells: HeadCell[] = [
   {
-    id: "vendor",
+    id: "name",
     numeric: false,
     disablePadding: true,
     label: "vendor",
@@ -318,7 +318,7 @@ export default function EnhancedTable() {
   }, [listCounter]);
   //const classes = useStyles();
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Data>("vendor");
+  const [orderBy, setOrderBy] = React.useState<keyof Data>("name");
   const [selected, setSelected] = React.useState<string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(true);
@@ -453,7 +453,7 @@ export default function EnhancedTable() {
                             scope="row"
                             padding="none"
                           ></TableCell>
-                          <TableCell align="left">{row.vendor}</TableCell>
+                          <TableCell align="left">{row.name}</TableCell>
                           <TableCell align="left">{row.referenceNo}</TableCell>
                           <TableCell align="left">{row.date}</TableCell>
                           <TableCell align="left">{row.dueDate}</TableCell>
@@ -501,43 +501,46 @@ export default function EnhancedTable() {
         <Dialog
           disableBackdropClick
           disableEscapeKeyDown
-          maxWidth={"lg"}
-          fullWidth
+          //maxWidth={"xl"}
+          //fullWidth
           open={open}
           aria-labelledby="responsive-dialog-title"
+          maxWidth={false}
         >
-          <DialogTitle id="responsive-dialog-title">
-            {rowInfo === null ? "New Bill/Expense" : "Edit Bill/Expense"}
-          </DialogTitle>
-          <DialogContent>
-            <div
-              style={{
-                overflowX: "hidden",
-                overflowY: "hidden",
-                height: "100%",
-                width: "100%",
-              }}
-            >
+          <div style={{ width: 1400 }}>
+            <DialogTitle id="responsive-dialog-title">
+              {rowInfo === null ? "New Bill/Expense" : "Edit Bill/Expense"}
+            </DialogTitle>
+            <DialogContent>
               <div
                 style={{
-                  paddingRight: "17px",
+                  overflowX: "hidden",
+                  overflowY: "hidden",
                   height: "100%",
                   width: "100%",
-                  boxSizing: "content-box",
-                  //overflow: "scroll",
                 }}
               >
-                <DialogContentText></DialogContentText>
-                <Purchase
-                  rowData={rowInfo}
-                  closeDialog={() => toggleOpen(false)}
-                  updateList={() => {
-                    setListCounter(listCounter + 1);
+                <div
+                  style={{
+                    paddingRight: "17px",
+                    height: "100%",
+                    width: "100%",
+                    boxSizing: "content-box",
+                    //overflow: "scroll",
                   }}
-                />
+                >
+                  <DialogContentText></DialogContentText>
+                  <Purchase
+                    rowData={rowInfo}
+                    closeDialog={() => toggleOpen(false)}
+                    updateList={() => {
+                      setListCounter(listCounter + 1);
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          </DialogContent>
+            </DialogContent>
+          </div>
           <DialogActions></DialogActions>
         </Dialog>
 

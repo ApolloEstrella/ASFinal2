@@ -22,13 +22,18 @@ namespace AccountingSystem.Controllers
         [HttpPost]
         public ActionResult Add(PurchaseModel purchaseModel)
         {
-            return Ok();
+            return Ok(_purchaseService.Add(purchaseModel));
         }
 
         [HttpGet]
         public ActionResult GetAll()
         {
             return Ok(_purchaseService.GetAll());
+        }
+        [HttpGet]
+        public ActionResult GetById(int Id)
+        {
+            return Ok(_purchaseService.GetById(Id));
         }
     }
 }

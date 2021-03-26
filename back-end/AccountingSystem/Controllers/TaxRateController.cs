@@ -16,9 +16,9 @@ namespace AccountingSystem.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get(string Type)
         {
-            return Ok(_taxRateService.GetTaxRates());
+            return Ok(_taxRateService.GetTaxRates(Type));
         }
 
         [HttpPost]

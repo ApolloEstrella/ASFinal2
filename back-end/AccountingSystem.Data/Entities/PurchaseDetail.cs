@@ -13,8 +13,12 @@ namespace AccountingSystem.Data.Entities
         public string PurchaseDetailDescription { get; set; }
         public decimal PurchaseQuantity { get; set; }
         public decimal PurchaseUnitPrice { get; set; }
+        public int PurchaseTaxRateId { get; set; }
+        public int? PurchaseInventoryId { get; set; }
 
         public virtual ChartOfAccount ChartOfAccount { get; set; }
         public virtual Purchase Purchase { get; set; }
+        public virtual Inventory PurchaseInventory { get; set; }
+        public virtual TaxRate PurchaseTaxRate { get; set; }
     }
 }

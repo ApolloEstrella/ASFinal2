@@ -179,26 +179,6 @@ interface Props {
 }
 
 export default function Purchase(props: Props) {
-
-  const [purchase, getPurchase] = useState();
-
-  useEffect(() => {
-    fetch(configData.SERVER_URL + "purchase/getbyid?id=" + props.rowData.id, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((results) => results.json())
-      .then((data) => {
-        getPurchase(data);
-      })
-      .catch(function (error) {
-        console.log("network error");
-      });
-  }, []);
-
-
   const classes = useStyles();
   const {
     register,
@@ -211,7 +191,7 @@ export default function Purchase(props: Props) {
     getValues,
   } = useForm({
     //mode: "onChange",
-    defaultValues: purchase === undefined ? {} : purchase,
+    defaultValues: props.rowData === null ? {} : props.rowData,
     resolver: yupResolver(validationSchema),
   });
 
@@ -441,7 +421,7 @@ export default function Purchase(props: Props) {
       quantity: quantity.toString(),
       unitPrice: unitPrice.toString(),
       taxRateItem: taxRateItem,
-      inventoryItem: null,
+      inventoryItem: null
     };
 
     //setCosts({ ...costs, id: id  });
@@ -472,11 +452,13 @@ export default function Purchase(props: Props) {
         const quantity: number = Number(item.quantity);
         const unitPrice: number = Number(item.unitPrice);
         var rate: number = 0;
-        if (item.taxRateItem === null) rate = 0;
-        else rate = Number(item.taxRateItem.rate);
+        if (item.taxRateItem === null)
+          rate = 0;
+        else
+          rate = Number(item.taxRateItem.rate);
         if (isNaN(rate)) rate = 0;
         subTotal = subTotal + quantity * unitPrice;
-        totalTaxes = totalTaxes + (quantity * unitPrice * rate) / 100;
+        totalTaxes = totalTaxes + (quantity * unitPrice * rate/100);
       }
     });
 
@@ -487,17 +469,17 @@ export default function Purchase(props: Props) {
 
   const [openDelete, setOpenDelete] = useState(false);
   const deleteItemId = useRef(0);
-
+  
   const handleUpdateTotal = () => {
     var _tempCosts: ICost[] = costs;
     _tempCosts.splice(deleteItemId.current, 1);
     setCosts(_tempCosts);
-    setFieldCounter(fieldCounter + 1);
-  };
+    setFieldCounter(fieldCounter + 1)
+  }
 
   renderCount++;
 
-  return vendors.length > 0 && purchase !== undefined ? (
+  return vendors.length > 0 ? (
     <form id="inventoryForm" onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container spacing={0}>
@@ -519,7 +501,7 @@ export default function Purchase(props: Props) {
                 placeholder="Please select vendor"
                 style={{ zindex: 999 }}
                 isClearable
-                /* defaultValue={
+                defaultValue={
                   props.rowData === null
                     ? null
                     : vendors.find(
@@ -527,7 +509,7 @@ export default function Purchase(props: Props) {
                           Number(obj["value"]) ===
                           Number(props.rowData.vendors.value)
                       )
-                } */
+                }
               />
             )}
           />
@@ -659,7 +641,7 @@ export default function Purchase(props: Props) {
                       />
                     )}
                   />
-                  {/*   <Controller
+                  <Controller
                     control={control}
                     name={`items[${index}].keyNameId`}
                     render={(
@@ -678,7 +660,7 @@ export default function Purchase(props: Props) {
                         inputRef={register()}
                       />
                     )}
-                    /> */}
+                  />
                   <Controller
                     control={control}
                     name={`items[${index}].inventoryItem`}
@@ -851,7 +833,7 @@ export default function Purchase(props: Props) {
                             e,
                             index,
                             `items[${index}].taxRateItem`
-                          );
+                          )
                         }}
                         inputRef={register()}
                         options={taxRates}
@@ -988,7 +970,7 @@ export default function Purchase(props: Props) {
             </Button>
             <Button
               onClick={() => {
-                remove(deleteItemId.current);
+                remove(deleteItemId.current)
                 handleUpdateTotal();
                 setOpenDelete(false);
               }}

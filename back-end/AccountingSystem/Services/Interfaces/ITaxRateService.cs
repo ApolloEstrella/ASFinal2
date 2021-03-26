@@ -6,7 +6,7 @@ namespace AccountingSystem.Services.Interfaces
 {
     public interface ITaxRateService
     {
-        List<TaxRateModel> GetTaxRates();
+        List<TaxRateModel> GetTaxRates(string Type);
         int AddAccount(TaxRate account);
     }
 }

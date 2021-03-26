@@ -445,9 +445,13 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.PurchaseId).HasColumnName("purchase_id");
 
+                entity.Property(e => e.PurchaseInventoryId).HasColumnName("purchase_inventory_id");
+
                 entity.Property(e => e.PurchaseQuantity)
                     .HasColumnType("decimal(12, 2)")
                     .HasColumnName("purchase_quantity");
+
+                entity.Property(e => e.PurchaseTaxRateId).HasColumnName("purchase_tax_rate_id");
 
                 entity.Property(e => e.PurchaseUnitPrice)
                     .HasColumnType("decimal(12, 2)")
@@ -463,6 +467,17 @@ namespace AccountingSystem.Data.Entities
                     .WithMany(p => p.PurchaseDetails)
                     .HasForeignKey(d => d.PurchaseId)
                     .HasConstraintName("FK_purchase_detail_purchase_id");
+
+                entity.HasOne(d => d.PurchaseInventory)
+                    .WithMany(p => p.PurchaseDetails)
+                    .HasForeignKey(d => d.PurchaseInventoryId)
+                    .HasConstraintName("FK_purchase_detail_inventory_id");
+
+                entity.HasOne(d => d.PurchaseTaxRate)
+                    .WithMany(p => p.PurchaseDetails)
+                    .HasForeignKey(d => d.PurchaseTaxRateId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_purchase_detail_tax_rate_id");
             });
 
             modelBuilder.Entity<SubsidiaryLedgerAccountName>(entity =>
@@ -495,6 +510,13 @@ namespace AccountingSystem.Data.Entities
                 entity.Property(e => e.Rate)
                     .HasColumnType("decimal(5, 2)")
                     .HasColumnName("rate");
+
+                entity.Property(e => e.TaxType)
+                    .IsRequired()
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("tax_type")
+                    .IsFixedLength(true);
             });
 
             modelBuilder.Entity<Tracking>(entity =>

@@ -15,6 +15,7 @@ import bcrypt from "bcryptjs";
 import StorageService from "../../services/storage.service";
 import { SET_LOGIN } from "../../actions/companyAction";
 import store from "../../store";
+import configData from "../../config.json";
 
 const storageService = new StorageService();
 const useStyles = makeStyles((theme) =>
@@ -58,7 +59,7 @@ const Login = () => {
 
   const createNewUser = (data, resetForm) => {
     var statusCode = 200;
-    fetch("https://localhost:44302/api/account?email=" + data.user.email, {
+    fetch(configData.SERVER_URL + "account?email=" + data.user.email, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

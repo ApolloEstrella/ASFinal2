@@ -9,5 +9,7 @@ namespace AccountingSystem.Services.Interfaces
     public interface IPurchaseService
     {
         List<PurchaseModel> GetAll();
+        int Add(PurchaseModel purchaseModel);
+        PurchaseModel GetById(int Id);
     }
 }

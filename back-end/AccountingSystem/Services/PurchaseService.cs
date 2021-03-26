@@ -16,6 +16,51 @@ namespace AccountingSystem.Services
         {
             _serverContext = serverContext;
         }
+
+        public int Add(PurchaseModel purchaseModel)
+        {
+            int Id = 0;
+            _serverContext.Database.BeginTransaction();
+            try
+            {
+                Purchase purchase = new Purchase
+                {
+                    SubsidiaryLedgerAccountId = purchaseModel.Vendor.Value,
+                    PurchaseReferenceNo = purchaseModel.ReferenceNo,
+                    PurchaseDate = purchaseModel.Date,
+                    PurchaseDueDate = purchaseModel.DueDate,
+                    Description = purchaseModel.Description,
+                    PurchaseCreatedDate = DateTime.Now
+                };
+                _serverContext.Purchases.Add(purchase);
+                _serverContext.SaveChanges();
+
+                
+                foreach(PurchaseItemModel item in purchaseModel.Items)
+                {
+                    PurchaseDetail purchaseDetail = new PurchaseDetail();
+                    purchaseDetail.PurchaseId = purchase.Id;
+                    if (item.InventoryItem != null)
+                        purchaseDetail.PurchaseInventoryId = item.InventoryItem.Value;
+                    purchaseDetail.ChartOfAccountId = item.ChartOfAccountItem.Value;
+                    purchaseDetail.PurchaseDetailDescription = item.Description;
+                    purchaseDetail.PurchaseQuantity = item.Quantity;
+                    purchaseDetail.PurchaseUnitPrice = item.UnitPrice;
+                    purchaseDetail.PurchaseTaxRateId = item.TaxRateItem.Value;
+                    _serverContext.PurchaseDetails.Add(purchaseDetail);
+                    _serverContext.SaveChanges();
+                }
+                _serverContext.Database.CommitTransaction();
+                Id = purchase.Id;
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+
+            return Id;
+        }
+
         public List<PurchaseModel> GetAll()
         {
             List<PurchaseModel> list = (from a in _serverContext.Purchases
@@ -38,10 +83,57 @@ namespace AccountingSystem.Services
                                             Vendor = new Vendor { Value = x.SubsidiaryLedgerAccountId },
                                             Date = x.PurchaseDate,
                                             DueDate = x.PurchaseDueDate,
-                                            Description = x.Description
+                                            Description = x.Description,
+                                            ReferenceNo = x.PurchaseReferenceNo
                                         }).OrderBy(x => x.Name).ToList();
-            return list;
-                 
+            return list;                
+        }
+
+        public PurchaseModel GetById(int Id)
+        {
+            PurchaseModel purchaseModel = (from a in _serverContext.Purchases
+                                           select new
+                                           {
+                                               a.Id,
+                                               a.SubsidiaryLedgerAccountId,
+                                               a.PurchaseReferenceNo,
+                                               a.PurchaseDate,
+                                               a.PurchaseDueDate,
+                                               a.Description
+                                           }).ToList()
+                                        .Where(x => x.Id == Id)
+                                        .Select(x => new PurchaseModel
+                                        {
+                                            Id = x.Id,
+                                            Vendor = new Vendor { Value = x.SubsidiaryLedgerAccountId },
+                                            Date = x.PurchaseDate,
+                                            DueDate = x.PurchaseDueDate,
+                                            Description = x.Description,
+                                            ReferenceNo = x.PurchaseReferenceNo,
+                                            Items = (from a in _serverContext.PurchaseDetails
+                                                     select new
+                                                     {
+                                                         PurchaseId = a.PurchaseId,
+                                                         InventoryItem = new InventoryItem { Value = a.PurchaseInventoryId },
+                                                         ChartOfAccountItem = new ChartOfAccountItem { Value = a.ChartOfAccountId },
+                                                         Description = a.PurchaseDetailDescription,
+                                                         Quantity = a.PurchaseQuantity,
+                                                         UnitPrice = a.PurchaseUnitPrice,
+                                                         TaxRateItem = new PurchaseTaxRate { Value = a.PurchaseTaxRateId }
+                                                     }).ToList()
+                                                    .Where(x => x.PurchaseId == Id)
+                                                    .Select(x => new PurchaseItemModel
+                                                    {
+                                                        InventoryItem = x.InventoryItem,
+                                                        ChartOfAccountItem = x.ChartOfAccountItem,
+                                                        Description = x.Description,
+                                                        Quantity = x.Quantity,
+                                                        UnitPrice = x.UnitPrice,
+                                                        TaxRateItem = x.TaxRateItem
+                                                    }).ToList()
+                                        }).FirstOrDefault();                                                   
+                                                    
+            return purchaseModel;
         }
     }
 }
