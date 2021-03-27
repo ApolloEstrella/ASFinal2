@@ -179,7 +179,7 @@ namespace AccountingSystem.Services
                                                         Quantity = x.Quantity,
                                                         UnitPrice = x.UnitPrice,
                                                         TaxRateItem = x.TaxRateItem,
-                                                        Amount = Math.Round(Convert.ToDecimal(x.Quantity * x.UnitPrice), 2)
+                                                        Amount = Math.Round((x.Quantity * x.UnitPrice), 2).ToString("#,##0.00")
                                                     }).ToList()
                                         }).FirstOrDefault();
 

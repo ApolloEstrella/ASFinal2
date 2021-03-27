@@ -15,7 +15,7 @@ namespace AccountingSystem.Models
         public decimal Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public PurchaseTaxRate TaxRateItem { get; set; }
-        public decimal Amount { get; set; }
+        public string Amount { get; set; }
     }
 
     public class InventoryItem

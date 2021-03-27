@@ -494,7 +494,8 @@ export default function Purchase(props: Props) {
         const quantity: number = Number(item.quantity);
         const unitPrice: number = Number(item.unitPrice);
         var rate: number = 0;
-        if (item.taxRateItem === null) rate = 0;
+        if (item.taxRateItem === null || item.taxRateItem === undefined)
+          rate = 0;
         else rate = Number(item.taxRateItem.rate);
         if (isNaN(rate)) rate = 0;
         subTotal = subTotal + quantity * unitPrice;
@@ -948,10 +949,10 @@ export default function Purchase(props: Props) {
                                 label="Sub Total"
                                 className={classes.textField}
                                 size="small"
-                                //  inputProps={{
-                                //    "data-id": index,
-                                //    readOnly: true,
-                                // }}
+                                inputProps={{
+                                  "data-id": index,
+                                  readOnly: true,
+                                }}
                                 inputRef={register()}
                                 InputLabelProps={{ shrink: true }}
                               />
