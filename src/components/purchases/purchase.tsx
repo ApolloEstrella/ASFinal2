@@ -174,12 +174,11 @@ let renderCount = 0;
 
 interface Props {
   closeDialog: any;
-  updateList: any;
+  //updateList: any;
   rowData: any;
 }
 
 export default function Purchase(props: Props) {
-
   const [purchase, getPurchase] = useState();
 
   useEffect(() => {
@@ -198,7 +197,6 @@ export default function Purchase(props: Props) {
       });
   }, []);
 
-
   const classes = useStyles();
   const {
     register,
@@ -211,7 +209,7 @@ export default function Purchase(props: Props) {
     getValues,
   } = useForm({
     //mode: "onChange",
-    defaultValues: purchase === undefined ? {} : purchase,
+    defaultValues: props.rowData === undefined ? {} : props.rowData,
     resolver: yupResolver(validationSchema),
   });
 
@@ -251,7 +249,7 @@ export default function Purchase(props: Props) {
       url = "purchase/add";
       method = "POST";
     } else {
-      url = "purchase/update?Id=" + values.id;
+      url = "purchase/update?Id=" + props.rowData.id;
       method = "PUT";
     }
 
@@ -266,8 +264,8 @@ export default function Purchase(props: Props) {
       .then((data) => {
         console.log(data);
         //reset(initialValues);
-        props.updateList();
-        props.closeDialog();
+        //props.updateList();
+        //props.closeDialog();
       })
       .catch(function (error) {
         console.log("network error");
@@ -290,6 +288,32 @@ export default function Purchase(props: Props) {
   const handleSelectChange = (e: any, field: string) => {
     setValue(field, e, { shouldValidate: true });
   };
+
+  useEffect(() => {
+    setCosts(props.rowData.items);
+
+    var subTotal: number = 0;
+    var totalTaxes: number = 0;
+    // eslint-disable-next-line array-callback-return
+    props.rowData.items.map((item: any, index: number) => {
+      if (!isNaN(Number(item.quantity)) && !isNaN(Number(item.unitPrice))) {
+        const quantity: number = Number(item.quantity);
+        const unitPrice: number = Number(item.unitPrice);
+        var rate: number = 0;
+        if (item.taxRateItem === null) rate = 0;
+        else rate = Number(item.taxRateItem.rate);
+        if (isNaN(rate)) rate = 0;
+        subTotal = subTotal + quantity * unitPrice;
+        totalTaxes = totalTaxes + quantity * unitPrice * (rate / 100); // 100;
+        setValue(
+          `items[${index}].amount`,
+          Number(subTotal).toLocaleString("en", { minimumFractionDigits: 2 })
+        );
+      }
+    });
+
+    //setFieldCounter(fieldCounter + 1);
+  }, []);
 
   const [dialogValueTax, setDialogValueTax] = useState({
     description: "",
@@ -397,7 +421,6 @@ export default function Purchase(props: Props) {
   }
 
   const handleQtyUnitPrice = (e: any, index: number, fieldName: string) => {
-    console.log(costs);
     var rate: number = 0;
     if (e.target === undefined) {
       rate = e.rate / 100;
@@ -463,7 +486,6 @@ export default function Purchase(props: Props) {
   const [fieldCounter, setFieldCounter] = useState(0);
 
   useEffect(() => {
-    console.log(costs);
     var subTotal: number = 0;
     var totalTaxes: number = 0;
     // eslint-disable-next-line array-callback-return
@@ -476,10 +498,9 @@ export default function Purchase(props: Props) {
         else rate = Number(item.taxRateItem.rate);
         if (isNaN(rate)) rate = 0;
         subTotal = subTotal + quantity * unitPrice;
-        totalTaxes = totalTaxes + (quantity * unitPrice * rate) / 100;
+        totalTaxes = totalTaxes + quantity * unitPrice * (rate / 100); // 100;
       }
     });
-
     setSubTotal(Number(subTotal));
     setTotalTaxes(Number(totalTaxes));
     setTotalAmount(Number(subTotal) + totalTaxes);
@@ -495,9 +516,15 @@ export default function Purchase(props: Props) {
     setFieldCounter(fieldCounter + 1);
   };
 
+  const [addPurchaseItem, setAddPurchaseItem] = useState(false);
+
   renderCount++;
 
-  return vendors.length > 0 && purchase !== undefined ? (
+  return vendors.length > 0 &&
+    chartOfAccounts.length > 0 &&
+    inventories.length > 0 &&
+    taxRates.length > 0 &&
+    purchase !== undefined ? (
     <form id="inventoryForm" onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container spacing={0}>
@@ -519,15 +546,15 @@ export default function Purchase(props: Props) {
                 placeholder="Please select vendor"
                 style={{ zindex: 999 }}
                 isClearable
-                /* defaultValue={
+                defaultValue={
                   props.rowData === null
                     ? null
                     : vendors.find(
                         (obj: any) =>
                           Number(obj["value"]) ===
-                          Number(props.rowData.vendors.value)
+                          Number(props.rowData.vendor.value)
                       )
-                } */
+                }
               />
             )}
           />
@@ -546,9 +573,7 @@ export default function Purchase(props: Props) {
                 inputRef={register()}
                 label="Reference No."
                 margin="normal"
-                defaultValue={
-                  props.rowData === null ? "" : props.rowData.referenceNo
-                }
+                defaultValue=""
                 size="small"
                 style={{ width: "100%", marginTop: "3px" }}
                 className={classes.smallFontSize}
@@ -620,9 +645,7 @@ export default function Purchase(props: Props) {
                 label="Notes"
                 margin="normal"
                 variant="outlined"
-                defaultValue={
-                  props.rowData === null ? "" : props.rowData.description
-                }
+                defaultValue=""
                 size="small"
                 className={classes.multiLine}
                 multiline
@@ -688,9 +711,21 @@ export default function Purchase(props: Props) {
                     ) => (
                       <CreatableSelect
                         name={`items[${index}].inventoryItem`}
-                        //defaultValue= {inventories.find(obj: any => Number(object.value) === costs[index].taxRateItem.value)};
+                        //defaultValue= {inventories.find(object => Number(object.value) === costs[index].taxRateItem.value)};
                         onChange={(e: any) =>
                           handleChange(e, `items[${index}].inventoryItem`)
+                        }
+                        defaultValue={
+                          addPurchaseItem === true
+                            ? null
+                            : inventories.find(
+                                (obj: any) =>
+                                  Number(obj["value"]) ===
+                                  Number(
+                                    props.rowData.items[index].inventoryItem
+                                      .value
+                                  )
+                              )
                         }
                         inputRef={register()}
                         options={inventories}
@@ -720,6 +755,18 @@ export default function Purchase(props: Props) {
                             e,
                             `items[${index}].chartOfAccountItem`
                           )
+                        }
+                        defaultValue={
+                          addPurchaseItem === true
+                            ? null
+                            : chartOfAccounts.find(
+                                (obj: any) =>
+                                  Number(obj["value"]) ===
+                                  Number(
+                                    props.rowData.items[index]
+                                      .chartOfAccountItem.value
+                                  )
+                              )
                         }
                         inputRef={register()}
                         options={chartOfAccounts}
@@ -857,6 +904,17 @@ export default function Purchase(props: Props) {
                         options={taxRates}
                         placeholder="Please select tax"
                         className={classes.reactSelect}
+                        defaultValue={
+                          addPurchaseItem === true
+                            ? null
+                            : taxRates.find(
+                                (obj: any) =>
+                                  Number(obj["value"]) ===
+                                  Number(
+                                    props.rowData.items[index].taxRateItem.value
+                                  )
+                              )
+                        }
                       />
                     )}
                   />
@@ -884,16 +942,16 @@ export default function Purchase(props: Props) {
                             ) => (
                               <TextField
                                 name={`items[${index}].amount`}
-                                defaultValue={null}
+                                defaultValue={`${item.amount}`}
                                 variant="outlined"
                                 placeholder=""
                                 label="Sub Total"
                                 className={classes.textField}
                                 size="small"
-                                inputProps={{
-                                  "data-id": index,
-                                  readOnly: true,
-                                }}
+                                //  inputProps={{
+                                //    "data-id": index,
+                                //    readOnly: true,
+                                // }}
                                 inputRef={register()}
                                 InputLabelProps={{ shrink: true }}
                               />
@@ -942,6 +1000,7 @@ export default function Purchase(props: Props) {
           variant="contained"
           onClick={() => {
             setItemCount(itemCount - 1);
+            setAddPurchaseItem(true);
             append(
               {
                 id: itemCount,
@@ -1138,7 +1197,7 @@ export default function Purchase(props: Props) {
         style={{ marginTop: "200px" }}
         //disabled="true"
       >
-        SaveSS
+        Save
       </Button>
       <Button
         type="button"

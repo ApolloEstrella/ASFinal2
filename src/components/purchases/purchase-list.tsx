@@ -45,7 +45,7 @@ import * as Yup from "yup";
 import Inventory from "../libraries/inventory";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
-import Purchase from "./purchase";
+import PurchaseApp from "../purchases/purchase-app";
 
 interface Data {
   id: number;
@@ -324,6 +324,9 @@ export default function EnhancedTable() {
   const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [open, toggleOpen] = useState(false);
+  const [openAdd, setOpenAdd] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const purchaseId: any = useRef(0);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -378,9 +381,9 @@ export default function EnhancedTable() {
 
   const [rowInfo, setRowInfo] = useState(null);
 
-  const handleEdit = (row: any) => {
-    setRowInfo(row);
-    toggleOpen(true);
+  const handleEdit = (id: any) => {
+    purchaseId.current = id;
+    setOpenEdit(true);
   };
 
   const [openDelete, setOpenDelete] = useState(false);
@@ -407,6 +410,8 @@ export default function EnhancedTable() {
         console.log("network error");
       });
   };
+
+  
 
   return (
     <Grid container spacing={0} style={{ width: "60%" }}>
@@ -461,7 +466,7 @@ export default function EnhancedTable() {
                           <TableCell align="left">
                             <EditIcon
                               color="primary"
-                              onClick={() => handleEdit(row)}
+                              onClick={() => handleEdit(row.id)}
                             />
                           </TableCell>
                           <TableCell align="left">
@@ -503,13 +508,13 @@ export default function EnhancedTable() {
           disableEscapeKeyDown
           //maxWidth={"xl"}
           //fullWidth
-          open={open}
+          open={openEdit}
           aria-labelledby="responsive-dialog-title"
           maxWidth={false}
         >
           <div style={{ width: 1400 }}>
             <DialogTitle id="responsive-dialog-title">
-              {rowInfo === null ? "New Bill/Expense" : "Edit Bill/Expense"}
+              {"Edit Bill/Expense"}
             </DialogTitle>
             <DialogContent>
               <div
@@ -530,12 +535,12 @@ export default function EnhancedTable() {
                   }}
                 >
                   <DialogContentText></DialogContentText>
-                  <Purchase
-                    rowData={rowInfo}
-                    closeDialog={() => toggleOpen(false)}
-                    updateList={() => {
-                      setListCounter(listCounter + 1);
-                    }}
+                  <PurchaseApp
+                    id={purchaseId.current}
+                    closeDialog={() => { setListCounter(listCounter + 1); setOpenEdit(false) }}
+                    //updateList={() => {
+                    // setListCounter(listCounter + 1);
+                    //}}
                   />
                 </div>
               </div>
