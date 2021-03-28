@@ -44,19 +44,47 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import Inventory from "../libraries/inventory";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
+import PhonelinkEraseIcon from "@material-ui/icons/PhonelinkErase";
 import EditIcon from "@material-ui/icons/Edit";
 import PurchaseApp from "../purchases/purchase-app";
 import Purchase from "../purchases/purchase"
 import { format } from "date-fns";
+import PaymentIcon from "@material-ui/icons/Payment";
+import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
+
+const StyledTableCell = withStyles((theme) => ({
+  head: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  body: {
+    fontSize: 12,
+  },
+}))(TableCell);
+
+const StyledTableRow = withStyles((theme: Theme) => ({
+  root: {
+    "&:nth-of-type(odd)": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+}))(TableRow);
 
 interface Data {
   id: number;
   name: string;
+  amount: string;
+  unpaidBalance: string;
   date: any;
   dueDate: any;
   description: string;
   referenceNo: string;
-  //type: string;
+  void: string;
+  edit: string;
+  delete: string;
+  voidIcon: string;
+  paymentIcon: string;
+  cancelPaymentIcon: string;
 }
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -105,23 +133,35 @@ const headCells: HeadCell[] = [
     id: "name",
     numeric: false,
     disablePadding: true,
-    label: "vendor",
+    label: "Vendor",
   },
   {
     id: "referenceNo",
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: "Reference No.",
   },
   {
+    id: "amount",
+    numeric: true,
+    disablePadding: false,
+    label: "Amount",
+  },
+  {
+    id: "unpaidBalance",
+    numeric: true,
+    disablePadding: false,
+    label: "Unpaid Balance",
+  },
+  {
     id: "date",
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: "Date",
   },
   {
     id: "dueDate",
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: "Due Date",
   },
@@ -130,6 +170,42 @@ const headCells: HeadCell[] = [
     numeric: false,
     disablePadding: false,
     label: "Description",
+  },
+  {
+    id: "void",
+    numeric: true,
+    disablePadding: false,
+    label: "Status",
+  },
+  {
+    id: "edit",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
+  {
+    id: "delete",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
+  {
+    id: "voidIcon",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
+  {
+    id: "paymentIcon",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
+  {
+    id: "cancelPaymentIcon",
+    numeric: true,
+    disablePadding: false,
+    label: "",
   },
 ];
 
@@ -163,9 +239,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   };
 
   return (
-    <TableHead>
+    <TableHead style={{ background: "#DFE7F6", color: "#189AB4" }}>
       <TableRow>
-        <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -222,44 +297,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
   const { numSelected } = props;
 
-  return (
-    <Toolbar
-      className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          className={classes.title}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          className={classes.title}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          Bills / Expenses
-        </Typography>
-      )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list"></IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  );
+  return null;
 };
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -268,8 +306,11 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
     },
     paper: {
+      padding: theme.spacing(0),
+      textAlign: "left",
+      color: theme.palette.text.secondary,
       width: "100%",
-      marginBottom: theme.spacing(2),
+      margin: "auto",
     },
     table: {
       minWidth: 750,
@@ -416,7 +457,7 @@ export default function EnhancedTable() {
   
 
   return (
-    <Grid container spacing={0} style={{ width: "60%" }}>
+    <Grid container spacing={0} style={{ width: "80%" }}>
       <Grid item xs={12}>
         <Button
           variant="contained"
@@ -453,36 +494,82 @@ export default function EnhancedTable() {
                   {stableSort(rows, getComparator(order, orderBy))
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
+                       const labelId: string = `enhanced-table-checkbox-${index}`; 
+
                       return (
-                        <TableRow hover key={row.id}>
-                          <TableCell
+                        <StyledTableRow hover key={row.id}>
+                          <StyledTableCell
                             component="th"
-                            //id={labelId}
+                            id={labelId}
                             scope="row"
                             padding="none"
-                          ></TableCell>
-                          <TableCell align="left">{row.name}</TableCell>
-                          <TableCell align="left">{row.referenceNo}</TableCell>
-                          <TableCell align="left">
+                            style={{ wordBreak: "break-word" }}
+                          >
+                            {" "}
+                            {row.name}
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            {row.referenceNo}
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                             
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                             
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
                             {format(new Date(row.date), "MM/dd/yyyy")}
-                          </TableCell>
-                          <TableCell align="left">
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
                             {format(new Date(row.dueDate), "MM/dd/yyyy")}
-                          </TableCell>
-                          <TableCell align="left">{row.description}</TableCell>
-                          <TableCell align="left">
+                          </StyledTableCell>
+                          <StyledTableCell align="left">
+                            {row.description}
+                          </StyledTableCell>
+                          <StyledTableCell align="right"></StyledTableCell>
+                          <StyledTableCell align="right">
                             <EditIcon
                               color="primary"
                               onClick={() => handleEdit(row.id)}
                             />
-                          </TableCell>
-                          <TableCell align="left">
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
                             <DeleteForeverIcon
                               color="secondary"
                               onClick={() => showDelete(Number(row.id))}
                             />
-                          </TableCell>
-                        </TableRow>
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <PhonelinkEraseIcon
+                              color="secondary"
+                              //onClick={() => handleVoid(row.id)}
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <PaymentIcon
+                              color="primary"
+                              //onClick={() =>
+                              // handleInvoicePayment(
+                              //   row.customerId,
+                              //   row.customer,
+                              //    row.id
+                              //  )
+                              //}
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <DeleteSweepIcon
+                              color="primary"
+                              //onClick={() =>
+                              //  handleInvoicePaymentDetail(
+                              //    row.customerId,
+                              //    row.customer,
+                              //    row.id
+                              //  )
+                              //}
+                            />
+                          </StyledTableCell>
+                        </StyledTableRow>
                       );
                     })}
                   {emptyRows > 0 && (

@@ -17,6 +17,8 @@ namespace AccountingSystem.Data.Entities
         {
         }
 
+        public virtual DbSet<BillPayment> BillPayments { get; set; }
+        public virtual DbSet<BillPaymentDetail> BillPaymentDetails { get; set; }
         public virtual DbSet<ChartOfAccount> ChartOfAccounts { get; set; }
         public virtual DbSet<ChartOfAccountsCategory> ChartOfAccountsCategories { get; set; }
         public virtual DbSet<ChartOfAccountsType> ChartOfAccountsTypes { get; set; }
@@ -46,6 +48,81 @@ namespace AccountingSystem.Data.Entities
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
+            modelBuilder.Entity<BillPayment>(entity =>
+            {
+                entity.ToTable("bill_payment");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.BillPaymentAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("bill_payment_amount");
+
+                entity.Property(e => e.BillPaymentCreatedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("bill_payment_created_date");
+
+                entity.Property(e => e.BillPaymentDate)
+                    .HasColumnType("date")
+                    .HasColumnName("bill_payment_date");
+
+                entity.Property(e => e.BillPaymentModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("bill_payment_modified_date")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.BillPaymentNotes)
+                    .HasMaxLength(500)
+                    .HasColumnName("bill_payment_notes");
+
+                entity.Property(e => e.BillPaymentReferenceNo)
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasColumnName("bill_payment_reference_no");
+
+                entity.Property(e => e.ChartOfAccountId).HasColumnName("chart_of_account_id");
+
+                entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
+
+                entity.HasOne(d => d.ChartOfAccount)
+                    .WithMany(p => p.BillPayments)
+                    .HasForeignKey(d => d.ChartOfAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_bill_payment_chart_of_account_id");
+
+                entity.HasOne(d => d.SubsidiaryLedgerAccount)
+                    .WithMany(p => p.BillPayments)
+                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_bill_payment_subsidiary_ledger_account_id");
+            });
+
+            modelBuilder.Entity<BillPaymentDetail>(entity =>
+            {
+                entity.ToTable("bill_payment_detail");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.BillPaymentDetailAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("bill_payment_detail_amount");
+
+                entity.Property(e => e.BillPaymentId).HasColumnName("bill_payment_id");
+
+                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+
+                entity.HasOne(d => d.BillPayment)
+                    .WithMany(p => p.BillPaymentDetails)
+                    .HasForeignKey(d => d.BillPaymentId)
+                    .HasConstraintName("FK_bill_payment_detail_bill_payment_id");
+
+                entity.HasOne(d => d.LedgerMaster)
+                    .WithMany(p => p.BillPaymentDetails)
+                    .HasForeignKey(d => d.LedgerMasterId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_bill_payment_detail_ledger_master_id");
+            });
 
             modelBuilder.Entity<ChartOfAccount>(entity =>
             {

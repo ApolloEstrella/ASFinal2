@@ -9,6 +9,7 @@ namespace AccountingSystem.Data.Entities
     {
         public SubsidiaryLedgerAccountName()
         {
+            BillPayments = new HashSet<BillPayment>();
             InvoicePayments = new HashSet<InvoicePayment>();
             LedgerMasters = new HashSet<LedgerMaster>();
             Purchases = new HashSet<Purchase>();
@@ -18,6 +19,7 @@ namespace AccountingSystem.Data.Entities
         public string Name { get; set; }
         public string Address { get; set; }
 
+        public virtual ICollection<BillPayment> BillPayments { get; set; }
         public virtual ICollection<InvoicePayment> InvoicePayments { get; set; }
         public virtual ICollection<LedgerMaster> LedgerMasters { get; set; }
         public virtual ICollection<Purchase> Purchases { get; set; }

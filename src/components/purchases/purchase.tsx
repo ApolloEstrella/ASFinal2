@@ -208,11 +208,14 @@ export default function Purchase(props: Props) {
     watch,
     setValue,
     getValues,
+    formState
   } = useForm({
     //mode: "onChange",
     defaultValues: props.rowData === null ? {} : props.rowData,
     resolver: yupResolver(validationSchema),
   });
+
+  const { isValid, isSubmitting, touched, submitCount } = formState;
 
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
     {
@@ -1212,8 +1215,10 @@ export default function Purchase(props: Props) {
         color="primary"
         //disabled={isSubmitting}
         style={{ marginTop: "200px" }}
+        disabled={formState.isSubmitting}
         //disabled="true"
-      >
+        >
+          {console.log(formState.isSubmitting)}
         Save
       </Button>
       <Button

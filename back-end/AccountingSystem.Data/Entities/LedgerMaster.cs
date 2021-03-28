@@ -9,6 +9,7 @@ namespace AccountingSystem.Data.Entities
     {
         public LedgerMaster()
         {
+            BillPaymentDetails = new HashSet<BillPaymentDetail>();
             InvoicePaymentDetails = new HashSet<InvoicePaymentDetail>();
             LedgerDetails = new HashSet<LedgerDetail>();
             UploadedFiles = new HashSet<UploadedFile>();
@@ -29,6 +30,7 @@ namespace AccountingSystem.Data.Entities
         public decimal? InvoiceAmount { get; set; }
 
         public virtual SubsidiaryLedgerAccountName SubsidiaryLedgerAccount { get; set; }
+        public virtual ICollection<BillPaymentDetail> BillPaymentDetails { get; set; }
         public virtual ICollection<InvoicePaymentDetail> InvoicePaymentDetails { get; set; }
         public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }
         public virtual ICollection<UploadedFile> UploadedFiles { get; set; }
