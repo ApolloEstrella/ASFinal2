@@ -182,6 +182,7 @@ export default function Purchase(props: Props) {
   const [purchase, getPurchase] = useState();
 
   useEffect(() => {
+    if (props.rowData == null) return;
     fetch(configData.SERVER_URL + "purchase/getbyid?id=" + props.rowData.id, {
       method: "GET",
       headers: {
@@ -209,7 +210,7 @@ export default function Purchase(props: Props) {
     getValues,
   } = useForm({
     //mode: "onChange",
-    defaultValues: props.rowData === undefined ? {} : props.rowData,
+    defaultValues: props.rowData === null ? {} : props.rowData,
     resolver: yupResolver(validationSchema),
   });
 
@@ -229,6 +230,8 @@ export default function Purchase(props: Props) {
   const [subTotal, setSubTotal] = useState(0);
   const [totalTaxes, setTotalTaxes] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [addMode, setAddMode] = useState(true);
+  const purchaseId = useRef(-1);
   const initialValues = {
     id: 0,
     name: "",
@@ -245,12 +248,17 @@ export default function Purchase(props: Props) {
     var url: string;
     var method: string;
 
-    if (props.rowData === null) {
+    if (props.rowData === null && addMode) {
       url = "purchase/add";
       method = "POST";
+      setAddMode(false)
     } else {
-      url = "purchase/update?Id=" + props.rowData.id;
+      url =
+        "purchase/update?Id=" +
+        (purchaseId.current === -1 ? props.rowData.id : purchaseId.current);
       method = "PUT";
+      values.id =
+        purchaseId.current === -1 ? props.rowData.id : purchaseId.current;
     }
 
     fetch(configData.SERVER_URL + url, {
@@ -263,6 +271,8 @@ export default function Purchase(props: Props) {
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
+        purchaseId.current = Number(data)
+        //setAddMode(false)
         //reset(initialValues);
         //props.updateList();
         //props.closeDialog();
@@ -290,6 +300,7 @@ export default function Purchase(props: Props) {
   };
 
   useEffect(() => {
+    if (props.rowData === null) return;
     setCosts(props.rowData.items);
 
     var subTotal: number = 0;
@@ -524,12 +535,17 @@ export default function Purchase(props: Props) {
   return vendors.length > 0 &&
     chartOfAccounts.length > 0 &&
     inventories.length > 0 &&
-    taxRates.length > 0 &&
-    purchase !== undefined ? (
+    taxRates.length > 0 ? (
     <form id="inventoryForm" onSubmit={handleSubmit(onSubmit)}>
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container spacing={0}>
         <Grid item xs={12}>
+          <TextField
+            name="id"
+            inputRef={register()}
+            defaultValue={props.rowData === null ? 0 : props.rowData.id}
+            className={classes.visuallyHidden}
+          />
           <Controller
             control={control}
             name="vendor"

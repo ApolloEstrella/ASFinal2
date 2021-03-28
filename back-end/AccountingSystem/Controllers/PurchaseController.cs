@@ -35,5 +35,17 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_purchaseService.GetById(Id));
         }
+
+        [HttpPut]
+        public ActionResult Update(PurchaseModel purchaseModel)
+        {
+            return Ok(_purchaseService.Update(purchaseModel));
+        }
+
+        [HttpDelete]
+        public ActionResult Delete(int Id)
+        {
+            return Ok(_purchaseService.Delete(Id));
+        }
     }
 }

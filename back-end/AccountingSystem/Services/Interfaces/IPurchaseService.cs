@@ -11,5 +11,7 @@ namespace AccountingSystem.Services.Interfaces
         List<PurchaseModel> GetAll();
         int Add(PurchaseModel purchaseModel);
         PurchaseModel GetById(int Id);
+        int Update(PurchaseModel purchaseModel);
+        int Delete(int Id);
     }
 }

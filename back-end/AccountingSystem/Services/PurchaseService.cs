@@ -185,5 +185,60 @@ namespace AccountingSystem.Services
 
             return purchaseModel;
         }
+
+        public int Update(PurchaseModel purchaseModel)
+        {
+            _serverContext.Database.BeginTransaction();
+            try
+            {
+                Purchase purchase = _serverContext.Purchases.Find(purchaseModel.Id);
+                purchase.SubsidiaryLedgerAccountId = purchaseModel.Vendor.Value;
+                purchase.PurchaseReferenceNo = purchaseModel.ReferenceNo;
+                purchase.Description = purchaseModel.Description;
+                purchase.PurchaseDate = purchaseModel.Date;
+                purchase.PurchaseDueDate = purchaseModel.DueDate;
+                _serverContext.SaveChanges();
+                foreach (var item in _serverContext.PurchaseDetails.Where(x => x.PurchaseId == purchaseModel.Id).ToList())
+                {
+                    PurchaseDetail purchaseDetail = new PurchaseDetail();
+                    purchaseDetail = _serverContext.PurchaseDetails.Find(item.Id);
+                    if (purchaseDetail != null)
+                    {
+                        _serverContext.PurchaseDetails.Remove(purchaseDetail);
+                        _serverContext.SaveChanges();
+                    }
+                }
+
+                foreach (PurchaseItemModel item in purchaseModel.Items)
+                {
+                    PurchaseDetail purchaseDetail = new PurchaseDetail();
+                    purchaseDetail.PurchaseId = purchase.Id;
+                    if (item.InventoryItem != null)
+                        purchaseDetail.PurchaseInventoryId = item.InventoryItem.Value;
+                    purchaseDetail.ChartOfAccountId = item.ChartOfAccountItem.Value;
+                    purchaseDetail.PurchaseTaxRateId = item.TaxRateItem.Value;
+                    purchaseDetail.PurchaseDetailDescription = item.Description;
+                    purchaseDetail.PurchaseQuantity = item.Quantity;
+                    purchaseDetail.PurchaseUnitPrice = item.UnitPrice;
+                    _serverContext.PurchaseDetails.Add(purchaseDetail);
+                    _serverContext.SaveChanges();
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+
+            return purchaseModel.Id;
+        }
+
+        public int Delete(int Id)
+        {
+            Purchase purchase = _serverContext.Purchases.Find(Id);
+            _serverContext.Purchases.Remove(purchase);
+            _serverContext.SaveChanges();
+            return Id;
+        }
     }
 }

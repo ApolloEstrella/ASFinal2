@@ -46,6 +46,8 @@ import Inventory from "../libraries/inventory";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
 import PurchaseApp from "../purchases/purchase-app";
+import Purchase from "../purchases/purchase"
+import { format } from "date-fns";
 
 interface Data {
   id: number;
@@ -395,7 +397,7 @@ export default function EnhancedTable() {
   };
 
   const handleDelete = () => {
-    fetch(configData.SERVER_URL + "inventory/delete?Id=" + deleteItemId, {
+    fetch(configData.SERVER_URL + "purchase/delete?Id=" + deleteItemId, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -421,8 +423,9 @@ export default function EnhancedTable() {
           color="primary"
           style={{ height: "39px" }}
           onClick={() => {
-            setRowInfo(null);
-            toggleOpen(true);
+            //setRowInfo(null);
+            //toggleOpen(true);
+            setOpenAdd(true)
           }}
         >
           New Bill / Expense
@@ -460,8 +463,12 @@ export default function EnhancedTable() {
                           ></TableCell>
                           <TableCell align="left">{row.name}</TableCell>
                           <TableCell align="left">{row.referenceNo}</TableCell>
-                          <TableCell align="left">{row.date}</TableCell>
-                          <TableCell align="left">{row.dueDate}</TableCell>
+                          <TableCell align="left">
+                            {format(new Date(row.date), "MM/dd/yyyy")}
+                          </TableCell>
+                          <TableCell align="left">
+                            {format(new Date(row.dueDate), "MM/dd/yyyy")}
+                          </TableCell>
                           <TableCell align="left">{row.description}</TableCell>
                           <TableCell align="left">
                             <EditIcon
@@ -508,6 +515,56 @@ export default function EnhancedTable() {
           disableEscapeKeyDown
           //maxWidth={"xl"}
           //fullWidth
+          open={openAdd}
+          aria-labelledby="responsive-dialog-title"
+          maxWidth={false}
+        >
+          <div style={{ width: 1400 }}>
+            <DialogTitle id="responsive-dialog-title">
+              {"Create Bill/Expense"}
+            </DialogTitle>
+            <DialogContent>
+              <div
+                style={{
+                  overflowX: "hidden",
+                  overflowY: "hidden",
+                  height: "100%",
+                  width: "100%",
+                }}
+              >
+                <div
+                  style={{
+                    paddingRight: "17px",
+                    height: "100%",
+                    width: "100%",
+                    boxSizing: "content-box",
+                    //overflow: "scroll",
+                  }}
+                >
+                  <DialogContentText></DialogContentText>
+                  <Purchase
+                    //id={purchaseId.current}
+                    rowData= {null}
+                    closeDialog={() => {
+                      setListCounter(listCounter + 1);
+                      setOpenAdd(false);
+                    }}
+                    //updateList={() => {
+                    // setListCounter(listCounter + 1);
+                    //}}
+                  />
+                </div>
+              </div>
+            </DialogContent>
+          </div>
+          <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          disableBackdropClick
+          disableEscapeKeyDown
+          //maxWidth={"xl"}
+          //fullWidth
           open={openEdit}
           aria-labelledby="responsive-dialog-title"
           maxWidth={false}
@@ -537,7 +594,10 @@ export default function EnhancedTable() {
                   <DialogContentText></DialogContentText>
                   <PurchaseApp
                     id={purchaseId.current}
-                    closeDialog={() => { setListCounter(listCounter + 1); setOpenEdit(false) }}
+                    closeDialog={() => {
+                      setListCounter(listCounter + 1);
+                      setOpenEdit(false);
+                    }}
                     //updateList={() => {
                     // setListCounter(listCounter + 1);
                     //}}
