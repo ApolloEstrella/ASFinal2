@@ -27,6 +27,7 @@ namespace AccountingSystem.Services
                 {
                     SubsidiaryLedgerAccountId = purchaseModel.Vendor.Value,
                     PurchaseReferenceNo = purchaseModel.ReferenceNo,
+                    PurchaseAmount = purchaseModel.Amount,
                     PurchaseDate = purchaseModel.Date,
                     PurchaseDueDate = purchaseModel.DueDate,
                     Description = purchaseModel.Description,
@@ -72,6 +73,7 @@ namespace AccountingSystem.Services
                                             b.Name,
                                             a.SubsidiaryLedgerAccountId,
                                             a.PurchaseReferenceNo,
+                                            a.PurchaseAmount,
                                             a.PurchaseDate,
                                             a.PurchaseDueDate,
                                             a.Description
@@ -79,12 +81,25 @@ namespace AccountingSystem.Services
                                         .Select(x => new PurchaseModel
                                         {
                                             Id = x.Id,
+                                            VendorId = x.SubsidiaryLedgerAccountId,
                                             Name = x.Name,
                                             Vendor = new Vendor { Value = x.SubsidiaryLedgerAccountId },
                                             Date = x.PurchaseDate,
                                             DueDate = x.PurchaseDueDate,
                                             Description = x.Description,
-                                            ReferenceNo = x.PurchaseReferenceNo
+                                            ReferenceNo = x.PurchaseReferenceNo,
+                                            Amount = x.PurchaseAmount,
+
+                                            UnpaidBalance = (decimal)x.PurchaseAmount - (from a in _serverContext.BillPaymentDetails
+                                                                                        join b in _serverContext.BillPayments
+                                                                                        on a.BillPaymentId equals b.Id
+                                                                                        where a.BillPaymentId == x.Id &&
+                                                                                              b.BillPaymentReferenceNo == x.PurchaseReferenceNo
+                                                                                        select a.BillPaymentDetailAmount).Sum(),
+
+
+
+
                                         }).OrderBy(x => x.Name).ToList();
 
             /*  List<PurchaseModel> list = (List<PurchaseModel>)(from a in _serverContext.Purchases
@@ -186,6 +201,42 @@ namespace AccountingSystem.Services
             return purchaseModel;
         }
 
+        public List<BillPaymentItemModel> GetBillPayments(int vendorId)
+        {
+            List<BillPaymentItemModel> list = (from a in _serverContext.Purchases
+                                               join b in _serverContext.BillPaymentDetails
+                                               on a.Id equals b.PurchaseId into jts
+                                               from jtResult in jts.DefaultIfEmpty()
+                                               select new
+                                               {
+                                                   a.Id,
+                                                   a.PurchaseReferenceNo,
+                                                   a.PurchaseAmount,
+                                                   a.PurchaseDate,
+                                                   a.PurchaseDueDate,
+                                                   a.SubsidiaryLedgerAccountId
+                                               })
+                                              .Where(x => x.SubsidiaryLedgerAccountId == vendorId)
+                                              .Select(x => new BillPaymentItemModel
+                                              {
+                                                  Id = x.Id,
+                                                  BillVendorId = x.SubsidiaryLedgerAccountId,
+                                                  BillReferenceNo = x.PurchaseReferenceNo,
+                                                  BillAmount = x.PurchaseAmount,
+                                                  BillDate = x.PurchaseDate,
+                                                  BillDueDate = x.PurchaseDueDate,
+                                                  BillUnPaidBalance = x.PurchaseAmount - (from a in _serverContext.BillPaymentDetails
+                                                                       join b in _serverContext.Purchases
+                                                                       on a.PurchaseId equals b.Id
+                                                                       where a.PurchaseId == x.Id &&
+                                                                             b.PurchaseReferenceNo == x.PurchaseReferenceNo
+                                                                       select a.BillPaymentDetailAmount).Sum()
+                                              })
+                                              .Distinct().ToList();
+
+            return list;
+        }
+
         public int Update(PurchaseModel purchaseModel)
         {
             _serverContext.Database.BeginTransaction();
@@ -193,6 +244,7 @@ namespace AccountingSystem.Services
             {
                 Purchase purchase = _serverContext.Purchases.Find(purchaseModel.Id);
                 purchase.SubsidiaryLedgerAccountId = purchaseModel.Vendor.Value;
+                purchase.PurchaseAmount = purchaseModel.Amount;
                 purchase.PurchaseReferenceNo = purchaseModel.ReferenceNo;
                 purchase.Description = purchaseModel.Description;
                 purchase.PurchaseDate = purchaseModel.Date;

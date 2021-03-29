@@ -9,6 +9,7 @@ namespace AccountingSystem.Data.Entities
     {
         public Purchase()
         {
+            BillPaymentDetails = new HashSet<BillPaymentDetail>();
             PurchaseDetails = new HashSet<PurchaseDetail>();
         }
 
@@ -20,8 +21,10 @@ namespace AccountingSystem.Data.Entities
         public DateTime PurchaseCreatedDate { get; set; }
         public DateTime? PurchaseModifiedDate { get; set; }
         public string Description { get; set; }
+        public decimal PurchaseAmount { get; set; }
 
         public virtual SubsidiaryLedgerAccountName SubsidiaryLedgerAccount { get; set; }
+        public virtual ICollection<BillPaymentDetail> BillPaymentDetails { get; set; }
         public virtual ICollection<PurchaseDetail> PurchaseDetails { get; set; }
     }
 }

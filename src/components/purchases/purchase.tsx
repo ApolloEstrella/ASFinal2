@@ -247,6 +247,7 @@ export default function Purchase(props: Props) {
   const onSubmit = (values: any, e: any) => {
     values.date = moment.parseZone(values.date.toString()).toDate();
     values.dueDate = moment.parseZone(values.dueDate.toString()).toDate();
+    values.amount = totalAmount;
 
     var url: string;
     var method: string;
@@ -545,6 +546,12 @@ export default function Purchase(props: Props) {
         <Grid item xs={12}>
           <TextField
             name="id"
+            inputRef={register()}
+            defaultValue={props.rowData === null ? 0 : props.rowData.id}
+            className={classes.visuallyHidden}
+          />
+          <TextField
+            name="amount"
             inputRef={register()}
             defaultValue={props.rowData === null ? 0 : props.rowData.id}
             className={classes.visuallyHidden}
@@ -1217,8 +1224,8 @@ export default function Purchase(props: Props) {
         style={{ marginTop: "200px" }}
         disabled={formState.isSubmitting}
         //disabled="true"
-        >
-          {console.log(formState.isSubmitting)}
+      >
+        {console.log(formState.isSubmitting)}
         Save
       </Button>
       <Button

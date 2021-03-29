@@ -110,18 +110,18 @@ namespace AccountingSystem.Data.Entities
 
                 entity.Property(e => e.BillPaymentId).HasColumnName("bill_payment_id");
 
-                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+                entity.Property(e => e.PurchaseId).HasColumnName("purchase_id");
 
                 entity.HasOne(d => d.BillPayment)
                     .WithMany(p => p.BillPaymentDetails)
                     .HasForeignKey(d => d.BillPaymentId)
                     .HasConstraintName("FK_bill_payment_detail_bill_payment_id");
 
-                entity.HasOne(d => d.LedgerMaster)
+                entity.HasOne(d => d.Purchase)
                     .WithMany(p => p.BillPaymentDetails)
-                    .HasForeignKey(d => d.LedgerMasterId)
+                    .HasForeignKey(d => d.PurchaseId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_bill_payment_detail_ledger_master_id");
+                    .HasConstraintName("FK_bill_payment_detail_purchase_id");
             });
 
             modelBuilder.Entity<ChartOfAccount>(entity =>
@@ -475,6 +475,10 @@ namespace AccountingSystem.Data.Entities
                 entity.Property(e => e.Description)
                     .HasMaxLength(3000)
                     .HasColumnName("description");
+
+                entity.Property(e => e.PurchaseAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("purchase_amount");
 
                 entity.Property(e => e.PurchaseCreatedDate)
                     .HasColumnType("datetime")

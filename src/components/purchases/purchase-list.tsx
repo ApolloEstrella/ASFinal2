@@ -51,6 +51,8 @@ import Purchase from "../purchases/purchase"
 import { format } from "date-fns";
 import PaymentIcon from "@material-ui/icons/Payment";
 import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
+import NumberFormat from "react-number-format";
+import BillsPayment from "../purchases/bills-payment";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -72,6 +74,7 @@ const StyledTableRow = withStyles((theme: Theme) => ({
 
 interface Data {
   id: number;
+  vendorId: number;
   name: string;
   amount: string;
   unpaidBalance: string;
@@ -370,6 +373,7 @@ export default function EnhancedTable() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const purchaseId: any = useRef(0);
+  const billPurchaseId = useRef(0);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -454,7 +458,16 @@ export default function EnhancedTable() {
       });
   };
 
-  
+  const vendorId = useRef(0);
+  const vendorName = useRef("");
+  const [openBillPayment, setOpenBillPayment] = useState(false);
+
+  const handlePurchasePayment = (vId: number, vendor: any, id: number) => {
+    vendorId.current = vId;
+    vendorName.current = vendor;
+    billPurchaseId.current = id;
+    setOpenBillPayment(true);
+  };
 
   return (
     <Grid container spacing={0} style={{ width: "80%" }}>
@@ -466,7 +479,7 @@ export default function EnhancedTable() {
           onClick={() => {
             //setRowInfo(null);
             //toggleOpen(true);
-            setOpenAdd(true)
+            setOpenAdd(true);
           }}
         >
           New Bill / Expense
@@ -494,7 +507,7 @@ export default function EnhancedTable() {
                   {stableSort(rows, getComparator(order, orderBy))
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
-                       const labelId: string = `enhanced-table-checkbox-${index}`; 
+                      const labelId: string = `enhanced-table-checkbox-${index}`;
 
                       return (
                         <StyledTableRow hover key={row.id}>
@@ -512,10 +525,18 @@ export default function EnhancedTable() {
                             {row.referenceNo}
                           </StyledTableCell>
                           <StyledTableCell align="right">
-                             
+                            <NumberFormat
+                              value={row.amount}
+                              displayType={"text"}
+                              thousandSeparator={true}
+                            />
                           </StyledTableCell>
                           <StyledTableCell align="right">
-                             
+                            <NumberFormat
+                              value={row.unpaidBalance}
+                              displayType={"text"}
+                              thousandSeparator={true}
+                            />
                           </StyledTableCell>
                           <StyledTableCell align="right">
                             {format(new Date(row.date), "MM/dd/yyyy")}
@@ -548,13 +569,13 @@ export default function EnhancedTable() {
                           <StyledTableCell align="right">
                             <PaymentIcon
                               color="primary"
-                              //onClick={() =>
-                              // handleInvoicePayment(
-                              //   row.customerId,
-                              //   row.customer,
-                              //    row.id
-                              //  )
-                              //}
+                              onClick={() =>
+                              handlePurchasePayment(
+                                 Number(row.vendorId),
+                                 row.name,
+                                  Number(row.id)
+                                )
+                              }
                             />
                           </StyledTableCell>
                           <StyledTableCell align="right">
@@ -631,7 +652,7 @@ export default function EnhancedTable() {
                   <DialogContentText></DialogContentText>
                   <Purchase
                     //id={purchaseId.current}
-                    rowData= {null}
+                    rowData={null}
                     closeDialog={() => {
                       setListCounter(listCounter + 1);
                       setOpenAdd(false);
@@ -728,6 +749,54 @@ export default function EnhancedTable() {
               Delete
             </Button>
           </DialogActions>
+        </Dialog>
+
+        <Dialog
+          //fullScreen
+          disableBackdropClick
+          disableEscapeKeyDown
+          maxWidth={"md"}
+          fullWidth
+          open={openBillPayment}
+          //onClose={() => setOpenInvoicePayment(false)}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            Bill Payment
+          </DialogTitle>
+          <DialogContent>
+            <div
+              style={{
+                overflowX: "hidden",
+                overflowY: "hidden",
+                height: "100%",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  paddingRight: "17px",
+                  height: "100%",
+                  width: "100%",
+                  boxSizing: "content-box",
+                  //overflow: "scroll",
+                  overflow: "visible",
+                }}
+              >
+                <DialogContentText></DialogContentText>
+                <BillsPayment
+                  vendorName={vendorName.current}
+                  vendorId={vendorId.current}
+                  //purchaseId={ledgerMasterId.current}
+                  parentMethod={() => {
+                    setListCounter(listCounter + 1);
+                    setOpenBillPayment(false);
+                  }}
+                />
+              </div>
+            </div>
+          </DialogContent>
+          <DialogActions></DialogActions>
         </Dialog>
       </>
     </Grid>

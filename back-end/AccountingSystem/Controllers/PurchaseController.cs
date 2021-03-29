@@ -47,5 +47,11 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_purchaseService.Delete(Id));
         }
+        [HttpGet]
+        public ActionResult GetBillPayments (int VendorId)
+        {
+            return Ok(_purchaseService.GetBillPayments(VendorId));
+        }
+
     }
 }
