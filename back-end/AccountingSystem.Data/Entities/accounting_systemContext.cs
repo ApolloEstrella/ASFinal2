@@ -76,11 +76,6 @@ namespace AccountingSystem.Data.Entities
                     .HasMaxLength(500)
                     .HasColumnName("bill_payment_notes");
 
-                entity.Property(e => e.BillPaymentReferenceNo)
-                    .IsRequired()
-                    .HasMaxLength(30)
-                    .HasColumnName("bill_payment_reference_no");
-
                 entity.Property(e => e.ChartOfAccountId).HasColumnName("chart_of_account_id");
 
                 entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");

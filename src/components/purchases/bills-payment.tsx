@@ -7,6 +7,7 @@ import {
   createStyles,
   useMediaQuery,
   useTheme,
+  Theme,
 } from "@material-ui/core";
 import {
   useForm,
@@ -47,15 +48,21 @@ import {
 import configData from "../../config.json";
 import moment from "moment";
 import { format } from "date-fns";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 interface Data {
   id: number;
   referenceNo: string;
   dueDate: any;
-  unpaidBalance: string;
-  BillAmount: string;
-  balance: string;
-  payment: string;
+  //unpaidBalance: string;
+  amount: string;
+  unPaidBalance: string;
+  blank1: string;
+  blank2: string;
 }
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -106,28 +113,49 @@ const headCells: HeadCell[] = [
     disablePadding: true,
     label: "Reference No",
   },
-  { id: "dueDate", numeric: false, disablePadding: false, label: "Due Date" },
   {
-    id: "BillAmount",
+    id: "dueDate",
+    numeric: false,
+    disablePadding: false,
+    label: "Due Date",
+  },
+  {
+    id: "amount",
     numeric: true,
     disablePadding: false,
     label: "Bill Amount",
   },
-  { id: "balance", numeric: true, disablePadding: false, label: "Balance" },
-  { id: "payment", numeric: true, disablePadding: false, label: "Payment" },
+  {
+    id: "unPaidBalance",
+    numeric: true,
+    disablePadding: false,
+    label: "Balance",
+  },
+  {
+    id: "blank1",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
+  {
+    id: "blank2",
+    numeric: true,
+    disablePadding: false,
+    label: "",
+  },
 ];
 
 interface EnhancedTableProps {
-    classes: ReturnType<typeof useStyles>;
-    numSelected: number;
-    onRequestSort: (
-        event: React.MouseEvent<unknown>,
-        property: keyof Data
-    ) => void;
-    onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    order: Order;
-    orderBy: string;
-    rowCount: number;
+  classes: ReturnType<typeof useStyles>;
+  numSelected: number;
+  onRequestSort: (
+    event: React.MouseEvent<unknown>,
+    property: keyof Data
+  ) => void;
+  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  order: Order;
+  orderBy: string;
+  rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
@@ -140,7 +168,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     rowCount,
     onRequestSort,
   } = props;
-  const createSortHandler = (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+  const createSortHandler = (property: keyof Data) => (
+    event: React.MouseEvent<unknown>
+  ) => {
     onRequestSort(event, property);
   };
 
@@ -183,10 +213,9 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-const useToolbarStyles = makeStyles((theme) => ({
+const useToolbarStyles = makeStyles((theme: Theme) => ({
   root: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(1),
+    flexGrow: 1,
   },
   highlight:
     theme.palette.type === "light"
@@ -214,7 +243,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 }));
 
 interface EnhancedTableToolbarProps {
-    numSelected: number;
+  numSelected: number;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -298,12 +327,14 @@ const useStyles = makeStyles((theme) => ({
 export default function BillsPayment(props: any) {
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState("customer");
+  const [orderBy, setOrderBy] = React.useState("referenceNo");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [rows, setRows] = React.useState([]);
+  const [rowCounter, setRowCounter] = useState(0);
+  const [openTotalPayment, setOpenTotalPayment] = useState(false)
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -313,35 +344,6 @@ export default function BillsPayment(props: any) {
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
-
- /* const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelecteds = rows.map((n) => n["referenceNo"]);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelected(newSelected);
-  }; */
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -371,19 +373,16 @@ export default function BillsPayment(props: any) {
   const [counterList, setCounterList] = useState(0);
 
   const validationSchema = Yup.object().shape({
-    billAmount: Yup.number()
+    amount: Yup.number()
       .nullable()
       .typeError("Received Amount is required")
       .required("Received  Amount is required"),
     chartOfAccountId: Yup.object().nullable().required("Bank is required"),
-    referenceNo: Yup.string().nullable().required("Enter reference no"),
+
     items: Yup.array().of(
       Yup.object().shape({
         id: Yup.number(),
-        amount: Yup.number()
-          .nullable()
-          .typeError("Amount is required")
-          .required("Amount is required"),
+        amountPaid: Yup.number(),
       })
     ),
   });
@@ -410,16 +409,6 @@ export default function BillsPayment(props: any) {
       keyName: "keyNameId",
     }
   );
-
- /* const handleNumeric = (event, fieldName) => {
-    setValue(
-      fieldName,
-      event.target.value === "" || isNaN(event.target.value)
-        ? ""
-        : event.target.value,
-      { shouldValidate: true }
-    );
-  }; */
 
   useEffect(() => {
     fetch(configData.SERVER_URL + "ChartOfAccount/GetSelect", {
@@ -458,15 +447,33 @@ export default function BillsPayment(props: any) {
       });
   }, [props.vendorId, counterList]);
 
+  const [paymentCounter, setPaymentCounter] = useState(0);
+  const [amountPaid, setAmountPaid] = useState([{}]);
+  const [total, setTotal] = useState(0);
+  useEffect(() => {
+    const sum = amountPaid.reduce((sum: any, p: any) => Number(sum) + Number(p));
+    console.log(sum)
+    setTotal(Number(sum));
+  }, [paymentCounter, amountPaid]);
+
+  const handleAmount = () => {};
+
   const onSubmit = (values: any) => {
-    values.ledgerMasterId = props.ledgerMasterId;
-    //values.customerId = props.customerId;
+  const amountPaid: Number = Number(getValues("amount"));
+
+    if (amountPaid !== total) {
+      setOpenTotalPayment(true)
+      return;
+  }
+
+    console.log(rows);
+    values.vendorId = props.vendorId;
     values.chartOfAccountId = values.chartOfAccountId.value;
     values.paymentDate = moment
       .parseZone(values.paymentDate.toString())
       .toDate();
     console.log("data", values);
-    fetch(configData.SERVER_URL + "sales/CustomerInvoicePayment", {
+    fetch(configData.SERVER_URL + "Purchase/Payment", {
       method: "POST",
       body: JSON.stringify(values),
       headers: {
@@ -484,88 +491,35 @@ export default function BillsPayment(props: any) {
       });
   };
 
-const handleNumeric = (event: any, fieldName: any) => {
-  setValue(
-    fieldName,
-    event.target.value === "" || isNaN(event.target.value)
-      ? ""
-      : event.target.value,
-    { shouldValidate: true }
-  );
-};
-    
+  const handleNumeric = (event: any, fieldName: any) => {
+    setValue(
+      fieldName,
+      event.target.value === "" || isNaN(event.target.value)
+        ? ""
+        : event.target.value,
+      { shouldValidate: true }
+    );
+    setRowCounter(rowCounter + 1);
+  };
+
+  const handleAmountPaid = (e: any, index: number, fieldName: string) => {
+   
+    setValue(`items[${index}].amountPaid`, e.target.value);
+    //setAmountPaid([e.target.value])
+    console.log(amountPaid);
+    //console.log(amountPaid);
+    //setCosts({ ...costs, id: id  });
+    const newTodo: any[] = [...amountPaid];
+    newTodo[index] = e.target.value;
+    setAmountPaid(newTodo);
+    console.log(amountPaid);
+    setPaymentCounter(paymentCounter + 1);
+  };
+
   return (
     <form id="billsPaymentForm" onSubmit={handleSubmit(onSubmit)}>
-      <div className={classes.root}>
-        <Grid container justify="space-around" direction="row">
-          <Grid item xs={6}>
-            <Controller
-              control={control}
-              name="ledgerMasterId"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <TextField
-                  name="ledgerMasterId"
-                  value={props.ledgerMasterId}
-                  className={classes.visuallyHidden}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="billAmount"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <TextField
-                  name="billAmount"
-                  onChange={(e) => handleNumeric(e, "billAmount")}
-                  //defaultValue={0}
-                  inputRef={register()}
-                  label="Amount Paid"
-                  fullWidth
-                />
-              )}
-            />
-            <p className={classes.p}>{errors.billAmount?.message}</p>
-          </Grid>
-
-          <Grid
-            item
-            xs={6}
-            //className={classes.textField}
-            //styles={{ zIndex: "9999" }}
-          >
-            <Controller
-              control={control}
-              name="chartOfAccountId"
-              render={(
-                { onChange, onBlur, value, name, ref },
-                { invalid, isTouched, isDirty }
-              ) => (
-                <CreatableSelect
-                  name="chartOfAccountId"
-                  onBlur={onBlur}
-                  onChange={(e) => handleChange(e, "chartOfAccountId")}
-                  // defaultValue=""
-                  inputRef={register()}
-                  options={salesItems}
-                  //className={classes.reactSelect}
-                  style={{
-                    paddingTop: "8px",
-                    fontSize: "13px",
-                    width: "100%",
-                    zIndex: "5",
-                  }}
-                  placeholder="Please select cash or bank account"
-                />
-              )}
-            />
-            <p className={classes.p}>{errors.chartOfAccountId?.message}</p>
-          </Grid>
+      <div>
+        <Grid container spacing={0}>
           <Grid item xs={12}>
             <Controller
               control={control}
@@ -580,38 +534,34 @@ const handleNumeric = (event: any, fieldName: any) => {
                   label="Vendor"
                   defaultValue={props.vendorName}
                   fullWidth
-                  disabled={true}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  style={{ fontWeight: "bolder" }}
                 />
               )}
-            />
-            <TextField
-              name="vendorId"
-              inputRef={register()}
-              label="Vendor"
-              defaultValue={props.vendorId}
-              fullWidth
-              disabled={true}
-              className={classes.visuallyHidden}
             />
           </Grid>
           <Grid item xs={6}>
             <Controller
               control={control}
-              name="referenceNo"
+              name="amount"
               render={(
                 { onChange, onBlur, value, name, ref },
                 { invalid, isTouched, isDirty }
               ) => (
                 <TextField
-                  name="referenceNo"
-                  defaultValue=""
+                  name="amount"
+                  onChange={(e) => handleNumeric(e, "amount")}
                   inputRef={register()}
-                  label="Reference No."
-                  style={{ width: "100%" }}
+                  label="Amount Paid"
+                  fullWidth
+                  //variant="filled"
+                  //style={{ paddingBottom: "3px" }}
                 />
               )}
             />
-            <p className={classes.p}>{errors.referenceNo?.message}</p>
+            <p className={classes.p}>{errors.amount?.message}</p>
           </Grid>
           <Grid item xs={6}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -637,7 +587,50 @@ const handleNumeric = (event: any, fieldName: any) => {
               />
             </MuiPickersUtilsProvider>
           </Grid>
+
+          <Grid item xs={12}>
+            <br></br>
+            <Controller
+              control={control}
+              name="chartOfAccountId"
+              render={(
+                { onChange, onBlur, value, name, ref },
+                { invalid, isTouched, isDirty }
+              ) => (
+                <CreatableSelect
+                  name="chartOfAccountId"
+                  onBlur={onBlur}
+                  onChange={(e) => handleChange(e, "chartOfAccountId")}
+                  // defaultValue=""
+                  inputRef={register()}
+                  options={salesItems}
+                  style={{
+                    marginTop: "300px",
+                    paddingTop: "200px",
+                    //fontSize: "13px",
+                    width: "100%",
+                    zIndex: "5",
+                    // marginBottom: "0px",
+                    // paddingBottom: "0px",
+                  }}
+                  placeholder="Please select cash or bank account"
+                />
+              )}
+            />
+            <p className={classes.p}>{errors.chartOfAccountId?.message}</p>
+          </Grid>
+
+          <TextField
+            name="vendorId"
+            inputRef={register()}
+            label="Vendor"
+            defaultValue={props.vendorId}
+            //fullWidth
+            disabled={true}
+            className={classes.visuallyHidden}
+          />
         </Grid>
+
         <Paper className={classes.paper}>
           <TableContainer>
             <Table
@@ -669,7 +662,7 @@ const handleNumeric = (event: any, fieldName: any) => {
                         role="checkbox"
                         //aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row.invoiceNo}
+                        key={index}
                         //selected={isItemSelected}
                       >
                         <TableCell
@@ -678,29 +671,31 @@ const handleNumeric = (event: any, fieldName: any) => {
                           scope="row"
                           padding="none"
                         >
-                          {row.billReferenceNo}
+                          {row.referenceNo}
                         </TableCell>
                         <TableCell align="left">
-                          {format(new Date(row.billDueDate), "MM/dd/yyyy")}
+                          {format(new Date(row.dueDate), "MM/dd/yyyy")}
                         </TableCell>
-                        <TableCell align="right">{row.billAmount}</TableCell>
-                        <TableCell align="right">
-                          {row.billUnPaidBalance}
-                        </TableCell>
+                        <TableCell align="right">{row.amount}</TableCell>
+                        <TableCell align="right">{row.unPaidBalance}</TableCell>
                         <TableCell align="right">
                           <Controller
                             control={control}
-                            name={`items[${index}].amount`}
+                            name={`items[${index}].amountPaid`}
                             render={(
                               { onChange, onBlur, value, name, ref },
                               { invalid, isTouched, isDirty }
                             ) => (
                               <TextField
-                                name={`items[${index}].amount`}
+                                name={`items[${index}].amountPaid`}
                                 defaultValue={0}
                                 label="Amount"
-                                onChange={(e) =>
-                                  handleNumeric(e, `items[${index}].amount`)
+                                onBlur={(e) =>
+                                  handleAmountPaid(
+                                    e,
+                                    index,
+                                    `items[${index}].amountPaid`
+                                  )
                                 }
                                 //className={classes.textField}
                                 margin="dense"
@@ -713,7 +708,7 @@ const handleNumeric = (event: any, fieldName: any) => {
                           />
                           <p className={classes.p}>
                             {
-                              errors?.["items"]?.[index]?.["amount"]?.[
+                              errors?.["items"]?.[index]?.["amountPaid"]?.[
                                 "message"
                               ]
                             }
@@ -746,17 +741,13 @@ const handleNumeric = (event: any, fieldName: any) => {
             onChangeRowsPerPage={handleChangeRowsPerPage}
           />
         </Paper>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={handleChangeDense} />}
-          label="Dense padding"
-        />
         <Button
           type="submit"
           variant="contained"
           color="primary"
           style={{ marginRight: "20px" }}
         >
-          Saved and Close
+          Save and Close
         </Button>
         <Button
           variant="contained"
@@ -765,6 +756,27 @@ const handleNumeric = (event: any, fieldName: any) => {
         >
           Close
         </Button>
+        <Dialog
+          open={openTotalPayment}
+          //onClose={handleCloseTax}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Warning </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Amount received should be equal to total amount of invoices paid.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              autoFocus
+              onClick={() => setOpenTotalPayment(false)}
+              color="primary"
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </form>
   );

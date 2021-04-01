@@ -53,6 +53,7 @@ import PaymentIcon from "@material-ui/icons/Payment";
 import DeleteSweepIcon from "@material-ui/icons/DeleteSweep";
 import NumberFormat from "react-number-format";
 import BillsPayment from "../purchases/bills-payment";
+import BillsDetailPayment from "../purchases/bills-detail-payment";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -240,6 +241,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   ) => {
     onRequestSort(event, property);
   };
+const [openPayment, setOpenPayment] = useState(false);
 
   return (
     <TableHead style={{ background: "#DFE7F6", color: "#189AB4" }}>
@@ -337,6 +339,8 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+
+
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name required"),
   productServiceCode: Yup.string().required("Code required"),
@@ -344,6 +348,10 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function EnhancedTable() {
+  const [openBillPaymentDetail, setOpenBillPaymentDetail] = useState(
+    false
+  );
+
   const classes = useStyles();
   const [rows, setRows] = useState([]);
   const [listCounter, setListCounter] = useState(0);
@@ -469,6 +477,24 @@ export default function EnhancedTable() {
     setOpenBillPayment(true);
   };
 
+  const [openVoid, setOpenVoid] = useState(false);
+  //const [openInvoicePayment, setOpenInvoicePayment] = useState(false);
+  //const [openBillPaymentDetail, setOpenBillPaymentDetail] = useState(
+  //  false
+  //);
+  //const billPurchaseId = useRef(0);
+
+  const handleBillPaymentDetail = (vId: number, vendor: string, id: number) => {
+    vendorId.current = vId;
+    vendorName.current = vendor;
+    billPurchaseId.current = id;
+    setOpenPayment(true);
+     
+  };
+
+  const [openPayment, setOpenPayment] = useState(false);
+   
+
   return (
     <Grid container spacing={0} style={{ width: "80%" }}>
       <Grid item xs={12}>
@@ -570,9 +596,9 @@ export default function EnhancedTable() {
                             <PaymentIcon
                               color="primary"
                               onClick={() =>
-                              handlePurchasePayment(
-                                 Number(row.vendorId),
-                                 row.name,
+                                handlePurchasePayment(
+                                  Number(row.vendorId),
+                                  row.name,
                                   Number(row.id)
                                 )
                               }
@@ -581,13 +607,13 @@ export default function EnhancedTable() {
                           <StyledTableCell align="right">
                             <DeleteSweepIcon
                               color="primary"
-                              //onClick={() =>
-                              //  handleInvoicePaymentDetail(
-                              //    row.customerId,
-                              //    row.customer,
-                              //    row.id
-                              //  )
-                              //}
+                              onClick={() => {
+                                handleBillPaymentDetail(
+                                  Number(row.vendorId),
+                                  row.name.toString(),
+                                  Number(row.id)
+                                );
+                              }}
                             />
                           </StyledTableCell>
                         </StyledTableRow>
@@ -665,6 +691,54 @@ export default function EnhancedTable() {
               </div>
             </DialogContent>
           </div>
+          <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          //fullScreen
+          disableBackdropClick
+          disableEscapeKeyDown
+          maxWidth={"md"}
+          fullWidth
+          open={openBillPaymentDetail}
+          //onClose={() => setOpenBillPayment(false)}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            Bill / Expense Payment
+          </DialogTitle>
+          <DialogContent>
+            <div
+              style={{
+                overflowX: "hidden",
+                overflowY: "hidden",
+                height: "100%",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  paddingRight: "17px",
+                  height: "100%",
+                  width: "100%",
+                  boxSizing: "content-box",
+                  //overflow: "scroll",
+                  overflow: "visible",
+                }}
+              >
+                <DialogContentText></DialogContentText>
+                <BillsPayment
+                  vendorName={vendorName.current}
+                  vendorId={vendorId.current}
+                  // ledgerMasterId={ledgerMasterId.current}
+                  parentMethod={() => {
+                    setListCounter(listCounter + 1);
+                    setOpenBillPayment(false);
+                  }}
+                />
+              </div>
+            </div>
+          </DialogContent>
           <DialogActions></DialogActions>
         </Dialog>
 
@@ -755,15 +829,60 @@ export default function EnhancedTable() {
           //fullScreen
           disableBackdropClick
           disableEscapeKeyDown
+          style={{ width: "100%" }}
+          maxWidth={"md"}
+          //fullWidth
+          open={openPayment}
+          //onClose={() => setOpenInvoicePaymentDetail(false)}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">Cancel Payment</DialogTitle>
+          <DialogContent>
+            <div
+              style={{
+                overflowX: "hidden",
+                overflowY: "hidden",
+                height: "100%",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  paddingRight: "17px",
+                  height: "100%",
+                  width: "100%",
+                  boxSizing: "content-box",
+                  //overflow: "scroll",
+                  overflow: "visible",
+                }}
+              >
+                <DialogContentText></DialogContentText>
+                <BillsDetailPayment
+                  vendorName={vendorName.current}
+                  vendorId={vendorId.current}
+                  purchaseId={billPurchaseId.current}
+                  parentMethod={() => {
+                    setListCounter(listCounter + 1);
+                    setOpenPayment(false);
+                  }}
+                />
+              </div>
+            </div>
+          </DialogContent>
+          <DialogActions></DialogActions>
+        </Dialog>
+
+        <Dialog
+          //fullScreen
+          disableBackdropClick
+          disableEscapeKeyDown
           maxWidth={"md"}
           fullWidth
           open={openBillPayment}
           //onClose={() => setOpenInvoicePayment(false)}
           aria-labelledby="responsive-dialog-title"
         >
-          <DialogTitle id="responsive-dialog-title">
-            Bill Payment
-          </DialogTitle>
+          <DialogTitle id="responsive-dialog-title">Bill Payment</DialogTitle>
           <DialogContent>
             <div
               style={{

@@ -17,14 +17,19 @@ namespace AccountingSystem.Entities
         {
         }
 
+        public virtual DbSet<BillPayment> BillPayments { get; set; }
+        public virtual DbSet<BillPaymentDetail> BillPaymentDetails { get; set; }
         public virtual DbSet<ChartOfAccount> ChartOfAccounts { get; set; }
         public virtual DbSet<ChartOfAccountsCategory> ChartOfAccountsCategories { get; set; }
         public virtual DbSet<ChartOfAccountsType> ChartOfAccountsTypes { get; set; }
         public virtual DbSet<IncomeItem> IncomeItems { get; set; }
+        public virtual DbSet<Inventory> Inventories { get; set; }
         public virtual DbSet<InvoicePayment> InvoicePayments { get; set; }
         public virtual DbSet<InvoicePaymentDetail> InvoicePaymentDetails { get; set; }
         public virtual DbSet<LedgerDetail> LedgerDetails { get; set; }
         public virtual DbSet<LedgerMaster> LedgerMasters { get; set; }
+        public virtual DbSet<Purchase> Purchases { get; set; }
+        public virtual DbSet<PurchaseDetail> PurchaseDetails { get; set; }
         public virtual DbSet<SubsidiaryLedgerAccountName> SubsidiaryLedgerAccountNames { get; set; }
         public virtual DbSet<TaxRate> TaxRates { get; set; }
         public virtual DbSet<Tracking> Trackings { get; set; }
@@ -43,6 +48,76 @@ namespace AccountingSystem.Entities
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
+            modelBuilder.Entity<BillPayment>(entity =>
+            {
+                entity.ToTable("bill_payment");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.BillPaymentAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("bill_payment_amount");
+
+                entity.Property(e => e.BillPaymentCreatedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("bill_payment_created_date");
+
+                entity.Property(e => e.BillPaymentDate)
+                    .HasColumnType("date")
+                    .HasColumnName("bill_payment_date");
+
+                entity.Property(e => e.BillPaymentModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("bill_payment_modified_date")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.BillPaymentNotes)
+                    .HasMaxLength(500)
+                    .HasColumnName("bill_payment_notes");
+
+                entity.Property(e => e.ChartOfAccountId).HasColumnName("chart_of_account_id");
+
+                entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
+
+                entity.HasOne(d => d.ChartOfAccount)
+                    .WithMany(p => p.BillPayments)
+                    .HasForeignKey(d => d.ChartOfAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_bill_payment_chart_of_account_id");
+
+                entity.HasOne(d => d.SubsidiaryLedgerAccount)
+                    .WithMany(p => p.BillPayments)
+                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_bill_payment_subsidiary_ledger_account_id");
+            });
+
+            modelBuilder.Entity<BillPaymentDetail>(entity =>
+            {
+                entity.ToTable("bill_payment_detail");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.BillPaymentDetailAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("bill_payment_detail_amount");
+
+                entity.Property(e => e.BillPaymentId).HasColumnName("bill_payment_id");
+
+                entity.Property(e => e.PurchaseId).HasColumnName("purchase_id");
+
+                entity.HasOne(d => d.BillPayment)
+                    .WithMany(p => p.BillPaymentDetails)
+                    .HasForeignKey(d => d.BillPaymentId)
+                    .HasConstraintName("FK_bill_payment_detail_bill_payment_id");
+
+                entity.HasOne(d => d.Purchase)
+                    .WithMany(p => p.BillPaymentDetails)
+                    .HasForeignKey(d => d.PurchaseId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_bill_payment_detail_purchase_id");
+            });
 
             modelBuilder.Entity<ChartOfAccount>(entity =>
             {
@@ -138,6 +213,64 @@ namespace AccountingSystem.Entities
                     .HasConstraintName("fk_income_account_id");
             });
 
+            modelBuilder.Entity<Inventory>(entity =>
+            {
+                entity.ToTable("inventory");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.InventoryProductDescription)
+                    .IsRequired()
+                    .HasMaxLength(2000)
+                    .HasColumnName("inventory_product_description");
+
+                entity.Property(e => e.InventoryProductServiceAssetAccountId).HasColumnName("inventory_product_service_asset_account_id");
+
+                entity.Property(e => e.InventoryProductServiceCode)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("inventory_product_service_code");
+
+                entity.Property(e => e.InventoryProductServiceCreatedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("inventory_product_service_created_date");
+
+                entity.Property(e => e.InventoryProductServiceExpenseAccountId).HasColumnName("inventory_product_service_expense_account_id");
+
+                entity.Property(e => e.InventoryProductServiceIncomeAccountId).HasColumnName("inventory_product_service_income_account_id");
+
+                entity.Property(e => e.InventoryProductServiceModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("inventory_product_service_modified_date")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.InventoryProductServiceName)
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnName("inventory_product_service_name");
+
+                entity.Property(e => e.InventoryProductServiceType)
+                    .IsRequired()
+                    .HasMaxLength(1)
+                    .HasColumnName("inventory_product_service_type")
+                    .IsFixedLength(true);
+
+                entity.HasOne(d => d.InventoryProductServiceAssetAccount)
+                    .WithMany(p => p.InventoryInventoryProductServiceAssetAccounts)
+                    .HasForeignKey(d => d.InventoryProductServiceAssetAccountId)
+                    .HasConstraintName("FK_inventory_product_service_asset_account_id");
+
+                entity.HasOne(d => d.InventoryProductServiceExpenseAccount)
+                    .WithMany(p => p.InventoryInventoryProductServiceExpenseAccounts)
+                    .HasForeignKey(d => d.InventoryProductServiceExpenseAccountId)
+                    .HasConstraintName("FK_inventory_product_service_expense_account_id");
+
+                entity.HasOne(d => d.InventoryProductServiceIncomeAccount)
+                    .WithMany(p => p.InventoryInventoryProductServiceIncomeAccounts)
+                    .HasForeignKey(d => d.InventoryProductServiceIncomeAccountId)
+                    .HasConstraintName("FK_inventory_product_service_income_account_id");
+            });
+
             modelBuilder.Entity<InvoicePayment>(entity =>
             {
                 entity.ToTable("invoice_payment");
@@ -172,7 +305,7 @@ namespace AccountingSystem.Entities
                     .HasMaxLength(30)
                     .HasColumnName("invoice_payment_reference_no");
 
-                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+                entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
 
                 entity.HasOne(d => d.ChartOfAccount)
                     .WithMany(p => p.InvoicePayments)
@@ -180,10 +313,11 @@ namespace AccountingSystem.Entities
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_invoice_payment_chart_of_account_id");
 
-                entity.HasOne(d => d.LedgerMaster)
+                entity.HasOne(d => d.SubsidiaryLedgerAccount)
                     .WithMany(p => p.InvoicePayments)
-                    .HasForeignKey(d => d.LedgerMasterId)
-                    .HasConstraintName("FK_invoice_payment_ledger_master_id");
+                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_invoice_payment_subsidiary_ledger_account_id");
             });
 
             modelBuilder.Entity<InvoicePaymentDetail>(entity =>
@@ -198,10 +332,18 @@ namespace AccountingSystem.Entities
 
                 entity.Property(e => e.InvoicePaymentId).HasColumnName("invoice_payment_id");
 
+                entity.Property(e => e.LedgerMasterId).HasColumnName("ledger_master_id");
+
                 entity.HasOne(d => d.InvoicePayment)
                     .WithMany(p => p.InvoicePaymentDetails)
                     .HasForeignKey(d => d.InvoicePaymentId)
                     .HasConstraintName("FK_invoice_payment_detail_invoice_payment_id");
+
+                entity.HasOne(d => d.LedgerMaster)
+                    .WithMany(p => p.InvoicePaymentDetails)
+                    .HasForeignKey(d => d.LedgerMasterId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_invoice_payment_detail_ledger_master_id");
             });
 
             modelBuilder.Entity<LedgerDetail>(entity =>
@@ -319,6 +461,101 @@ namespace AccountingSystem.Entities
                     .HasConstraintName("FK_subsidiary_ledger_account_id");
             });
 
+            modelBuilder.Entity<Purchase>(entity =>
+            {
+                entity.ToTable("purchase");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(3000)
+                    .HasColumnName("description");
+
+                entity.Property(e => e.PurchaseAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("purchase_amount");
+
+                entity.Property(e => e.PurchaseCreatedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("purchase_created_date");
+
+                entity.Property(e => e.PurchaseDate)
+                    .HasColumnType("date")
+                    .HasColumnName("purchase_date");
+
+                entity.Property(e => e.PurchaseDueDate)
+                    .HasColumnType("date")
+                    .HasColumnName("purchase_due_date");
+
+                entity.Property(e => e.PurchaseModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("purchase_modified_date")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.PurchaseReferenceNo)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("purchase_reference_no");
+
+                entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
+
+                entity.HasOne(d => d.SubsidiaryLedgerAccount)
+                    .WithMany(p => p.Purchases)
+                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_purchase_subsidiary_ledger_account_id");
+            });
+
+            modelBuilder.Entity<PurchaseDetail>(entity =>
+            {
+                entity.ToTable("purchase_detail");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.ChartOfAccountId).HasColumnName("chart_of_account_id");
+
+                entity.Property(e => e.PurchaseDetailDescription)
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnName("purchase_detail_description");
+
+                entity.Property(e => e.PurchaseId).HasColumnName("purchase_id");
+
+                entity.Property(e => e.PurchaseInventoryId).HasColumnName("purchase_inventory_id");
+
+                entity.Property(e => e.PurchaseQuantity)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("purchase_quantity");
+
+                entity.Property(e => e.PurchaseTaxRateId).HasColumnName("purchase_tax_rate_id");
+
+                entity.Property(e => e.PurchaseUnitPrice)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("purchase_unit_price");
+
+                entity.HasOne(d => d.ChartOfAccount)
+                    .WithMany(p => p.PurchaseDetails)
+                    .HasForeignKey(d => d.ChartOfAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_purchase_detail_chart_of_account_id");
+
+                entity.HasOne(d => d.Purchase)
+                    .WithMany(p => p.PurchaseDetails)
+                    .HasForeignKey(d => d.PurchaseId)
+                    .HasConstraintName("FK_purchase_detail_purchase_id");
+
+                entity.HasOne(d => d.PurchaseInventory)
+                    .WithMany(p => p.PurchaseDetails)
+                    .HasForeignKey(d => d.PurchaseInventoryId)
+                    .HasConstraintName("FK_purchase_detail_inventory_id");
+
+                entity.HasOne(d => d.PurchaseTaxRate)
+                    .WithMany(p => p.PurchaseDetails)
+                    .HasForeignKey(d => d.PurchaseTaxRateId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_purchase_detail_tax_rate_id");
+            });
+
             modelBuilder.Entity<SubsidiaryLedgerAccountName>(entity =>
             {
                 entity.ToTable("subsidiary_ledger_account_name");
@@ -349,6 +586,13 @@ namespace AccountingSystem.Entities
                 entity.Property(e => e.Rate)
                     .HasColumnType("decimal(5, 2)")
                     .HasColumnName("rate");
+
+                entity.Property(e => e.TaxType)
+                    .IsRequired()
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("tax_type")
+                    .IsFixedLength(true);
             });
 
             modelBuilder.Entity<Tracking>(entity =>

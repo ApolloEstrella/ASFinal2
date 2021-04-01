@@ -13,7 +13,6 @@ namespace AccountingSystem.Data.Entities
         }
 
         public int Id { get; set; }
-        public string BillPaymentReferenceNo { get; set; }
         public decimal BillPaymentAmount { get; set; }
         public string BillPaymentNotes { get; set; }
         public DateTime BillPaymentDate { get; set; }

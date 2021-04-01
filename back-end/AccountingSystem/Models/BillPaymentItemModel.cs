@@ -8,11 +8,12 @@ namespace AccountingSystem.Models
     public class BillPaymentItemModel
     {
         public int Id { get; set; }
-        public string BillReferenceNo { get; set; }
-        public decimal BillAmount { get; set; }
-        public decimal BillUnPaidBalance { get; set; }
-        public int BillVendorId { get; set; }
-        public DateTime BillDate { get; set; }
-        public DateTime BillDueDate { get; set; }
+        public string ReferenceNo { get; set; }
+        public decimal Amount { get; set; }
+        public decimal UnPaidBalance { get; set; }
+        public int VendorId { get; set; }
+        public DateTime Date { get; set; }
+        public DateTime DueDate { get; set; }
+        public decimal AmountPaid { get; set; }
     }
 }

@@ -91,11 +91,11 @@ namespace AccountingSystem.Services
                                             Amount = x.PurchaseAmount,
 
                                             UnpaidBalance = (decimal)x.PurchaseAmount - (from a in _serverContext.BillPaymentDetails
-                                                                                        join b in _serverContext.BillPayments
-                                                                                        on a.BillPaymentId equals b.Id
-                                                                                        where a.BillPaymentId == x.Id &&
-                                                                                              b.BillPaymentReferenceNo == x.PurchaseReferenceNo
-                                                                                        select a.BillPaymentDetailAmount).Sum(),
+                                                                                         join b in _serverContext.Purchases
+                                                                                         on a.PurchaseId equals b.Id
+                                                                                         where a.PurchaseId == x.Id &&
+                                                                                               b.PurchaseReferenceNo == x.PurchaseReferenceNo
+                                                                                         select a.BillPaymentDetailAmount).Sum()
 
 
 
@@ -220,12 +220,48 @@ namespace AccountingSystem.Services
                                               .Select(x => new BillPaymentItemModel
                                               {
                                                   Id = x.Id,
-                                                  BillVendorId = x.SubsidiaryLedgerAccountId,
-                                                  BillReferenceNo = x.PurchaseReferenceNo,
-                                                  BillAmount = x.PurchaseAmount,
-                                                  BillDate = x.PurchaseDate,
-                                                  BillDueDate = x.PurchaseDueDate,
-                                                  BillUnPaidBalance = x.PurchaseAmount - (from a in _serverContext.BillPaymentDetails
+                                                  VendorId = x.SubsidiaryLedgerAccountId,
+                                                  ReferenceNo = x.PurchaseReferenceNo,
+                                                  Amount = x.PurchaseAmount,
+                                                  Date = x.PurchaseDate,
+                                                  DueDate = x.PurchaseDueDate,
+                                                  UnPaidBalance = x.PurchaseAmount - (from a in _serverContext.BillPaymentDetails
+                                                                                          join b in _serverContext.Purchases
+                                                                                          on a.PurchaseId equals b.Id
+                                                                                          where a.PurchaseId == x.Id &&
+                                                                                                b.PurchaseReferenceNo == x.PurchaseReferenceNo
+                                                                                          select a.BillPaymentDetailAmount).Sum()
+                                              })
+                                              .Distinct().ToList();
+
+            return list.Where(x => x.UnPaidBalance != 0).ToList();
+        }
+
+        public List<BillPaymentItemModel> GetBillPaymentsByReferenceNo(int vendorId)
+        {
+            List<BillPaymentItemModel> list = (from a in _serverContext.Purchases
+                                               join b in _serverContext.BillPaymentDetails
+                                               on a.Id equals b.PurchaseId into jts
+                                               from jtResult in jts.DefaultIfEmpty()
+                                               select new
+                                               {
+                                                   a.Id,
+                                                   a.PurchaseReferenceNo,
+                                                   a.PurchaseAmount,
+                                                   a.PurchaseDate,
+                                                   a.PurchaseDueDate,
+                                                   a.SubsidiaryLedgerAccountId
+                                               })
+                                              .Where(x => x.SubsidiaryLedgerAccountId == vendorId)
+                                              .Select(x => new BillPaymentItemModel
+                                              {
+                                                  Id = x.Id,
+                                                  VendorId = x.SubsidiaryLedgerAccountId,
+                                                  ReferenceNo = x.PurchaseReferenceNo,
+                                                  Amount = x.PurchaseAmount,
+                                                  Date = x.PurchaseDate,
+                                                  DueDate = x.PurchaseDueDate,
+                                                  AmountPaid = (from a in _serverContext.BillPaymentDetails
                                                                        join b in _serverContext.Purchases
                                                                        on a.PurchaseId equals b.Id
                                                                        where a.PurchaseId == x.Id &&
@@ -234,7 +270,7 @@ namespace AccountingSystem.Services
                                               })
                                               .Distinct().ToList();
 
-            return list;
+            return list.Where(x => x.AmountPaid != 0).ToList();
         }
 
         public int Update(PurchaseModel purchaseModel)
@@ -291,6 +327,74 @@ namespace AccountingSystem.Services
             _serverContext.Purchases.Remove(purchase);
             _serverContext.SaveChanges();
             return Id;
+        }
+
+        public int Payment(VendorBillPaymentModel vendorBillPaymentModel)
+        {
+            int Id = 0;
+            _serverContext.Database.BeginTransaction();
+            try
+            {
+                BillPayment billPayment = new BillPayment();
+                billPayment.SubsidiaryLedgerAccountId = vendorBillPaymentModel.VendorId;
+                billPayment.BillPaymentAmount = vendorBillPaymentModel.BillAmount;
+                billPayment.BillPaymentDate = vendorBillPaymentModel.PaymentDate;
+                billPayment.BillPaymentCreatedDate = DateTime.Now;
+                billPayment.ChartOfAccountId = vendorBillPaymentModel.ChartOfAccountId;
+                _serverContext.BillPayments.Add(billPayment);
+                _serverContext.SaveChanges();
+                Id = billPayment.Id;
+                foreach (VendorBillPostPaymentItemModel item in vendorBillPaymentModel.Items)
+                {
+                    BillPaymentDetail billPaymentDetail = new BillPaymentDetail();
+                    billPaymentDetail.BillPaymentId = Id;
+                    billPaymentDetail.BillPaymentDetailAmount = item.AmountPaid;
+                    billPaymentDetail.PurchaseId = item.Id;
+                    _serverContext.BillPaymentDetails.Add(billPaymentDetail);
+                    _serverContext.SaveChanges();
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            return Id;
+        }
+        public int DeleteBillPayment(int id)
+        {
+            try
+            {
+                IList<int> billPaymentListId = new List<int>();
+                _serverContext.Database.BeginTransaction();
+                var billPaymentDetails = _serverContext.BillPaymentDetails.Where(x => x.PurchaseId == id).ToList();
+                foreach (BillPaymentDetail item in billPaymentDetails)
+                {
+                    _serverContext.BillPaymentDetails.Remove(_serverContext.BillPaymentDetails.Find(item.Id));
+                    _serverContext.SaveChanges();
+                    billPaymentListId.Add(item.BillPaymentId);
+                }
+                for (int i = 0; i < billPaymentListId.Count(); i++)
+                {
+                    var billPaymentDetail = _serverContext.BillPaymentDetails.Where(x => x.BillPaymentId == billPaymentListId[i]).ToList();
+                    if (billPaymentDetail == null || billPaymentDetail.Count() == 0)
+                    {
+                        var billPayment = _serverContext.BillPayments.Find(billPaymentListId[i]);
+                        if (billPayment != null)
+                        {
+                            
+                            _serverContext.BillPayments.Remove(_serverContext.BillPayments.Find(billPaymentListId[i]));
+                            _serverContext.SaveChanges();
+                        }
+                    }
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            return 1;
         }
     }
 }

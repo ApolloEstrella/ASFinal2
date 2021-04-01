@@ -17,7 +17,7 @@ namespace AccountingSystem.Entities
         public int InvoiceTrackingId { get; set; }
         public int ChartOfAccountId { get; set; }
 
-        public virtual IncomeItem InvoiceSalesItem { get; set; }
+        public virtual Inventory InvoiceSalesItem { get; set; }
         public virtual TaxRate InvoiceTaxRate { get; set; }
         public virtual Tracking InvoiceTracking { get; set; }
         public virtual LedgerMaster LedgerMaster { get; set; }

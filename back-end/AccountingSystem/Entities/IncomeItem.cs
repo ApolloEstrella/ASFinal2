@@ -7,11 +7,6 @@ namespace AccountingSystem.Entities
 {
     public partial class IncomeItem
     {
-        public IncomeItem()
-        {
-            LedgerDetails = new HashSet<LedgerDetail>();
-        }
-
         public int Id { get; set; }
         public string Name { get; set; }
         public string Sku { get; set; }
@@ -19,6 +14,5 @@ namespace AccountingSystem.Entities
         public int IncomeAccountId { get; set; }
 
         public virtual ChartOfAccount IncomeAccount { get; set; }
-        public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }
     }
 }

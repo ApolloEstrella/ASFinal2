@@ -14,5 +14,8 @@ namespace AccountingSystem.Services.Interfaces
         int Update(PurchaseModel purchaseModel);
         int Delete(int Id);
         List<BillPaymentItemModel> GetBillPayments(int vendorId);
+        int Payment(VendorBillPaymentModel vendorBillPaymentModel);
+        List<BillPaymentItemModel> GetBillPaymentsByReferenceNo(int vendorId);
+        int DeleteBillPayment(int id);
     }
 }
