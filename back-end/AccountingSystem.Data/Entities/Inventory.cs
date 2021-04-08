@@ -9,6 +9,7 @@ namespace AccountingSystem.Data.Entities
     {
         public Inventory()
         {
+            InventoryLedgers = new HashSet<InventoryLedger>();
             LedgerDetails = new HashSet<LedgerDetail>();
             PurchaseDetails = new HashSet<PurchaseDetail>();
         }
@@ -27,6 +28,7 @@ namespace AccountingSystem.Data.Entities
         public virtual ChartOfAccount InventoryProductServiceAssetAccount { get; set; }
         public virtual ChartOfAccount InventoryProductServiceExpenseAccount { get; set; }
         public virtual ChartOfAccount InventoryProductServiceIncomeAccount { get; set; }
+        public virtual ICollection<InventoryLedger> InventoryLedgers { get; set; }
         public virtual ICollection<LedgerDetail> LedgerDetails { get; set; }
         public virtual ICollection<PurchaseDetail> PurchaseDetails { get; set; }
     }

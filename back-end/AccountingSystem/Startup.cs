@@ -15,6 +15,7 @@ using AccountingSystem.Services;
 using AccountingSystem.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using AccountingSystem.Data.Entities;
+using AccountingSystem.Models;
 
 namespace AccountingSystem
 {
@@ -41,7 +42,7 @@ namespace AccountingSystem
 
 
             services.AddControllers();
-            services.AddDbContext<accounting_systemContext>(options => options.UseSqlServer("Server=DESKTOP-GT4AAMB;Database=accounting_system;Trusted_Connection=True;"));
+            services.AddDbContext<accounting_systemContext>(options => options.UseSqlServer("name=ConnectionStrings:DbConnectionString"));
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IChartOfAccountService, ChartOfAccountService>();
             services.AddScoped<ISubsdiaryLedgerService, SubsdiaryLedgerService>();
@@ -52,6 +53,7 @@ namespace AccountingSystem
             services.AddScoped<IFileAttachmentService, FileAttachmentService>();
             services.AddScoped<IPurchaseService, PurchaseService>();
             services.AddScoped<IInventoryService, InventoryService>();
+            services.Configure<AppSettingsModel>(Configuration.GetSection("AcccountSettings"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

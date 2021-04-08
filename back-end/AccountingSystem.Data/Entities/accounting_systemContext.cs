@@ -22,10 +22,14 @@ namespace AccountingSystem.Data.Entities
         public virtual DbSet<ChartOfAccount> ChartOfAccounts { get; set; }
         public virtual DbSet<ChartOfAccountsCategory> ChartOfAccountsCategories { get; set; }
         public virtual DbSet<ChartOfAccountsType> ChartOfAccountsTypes { get; set; }
+        public virtual DbSet<GeneralLedger> GeneralLedgers { get; set; }
+        public virtual DbSet<GeneralLedgerDetail> GeneralLedgerDetails { get; set; }
         public virtual DbSet<IncomeItem> IncomeItems { get; set; }
         public virtual DbSet<Inventory> Inventories { get; set; }
+        public virtual DbSet<InventoryLedger> InventoryLedgers { get; set; }
         public virtual DbSet<InvoicePayment> InvoicePayments { get; set; }
         public virtual DbSet<InvoicePaymentDetail> InvoicePaymentDetails { get; set; }
+        public virtual DbSet<InvoiceWithoutCost> InvoiceWithoutCosts { get; set; }
         public virtual DbSet<LedgerDetail> LedgerDetails { get; set; }
         public virtual DbSet<LedgerMaster> LedgerMasters { get; set; }
         public virtual DbSet<Purchase> Purchases { get; set; }
@@ -35,13 +39,13 @@ namespace AccountingSystem.Data.Entities
         public virtual DbSet<Tracking> Trackings { get; set; }
         public virtual DbSet<UploadedFile> UploadedFiles { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<ViewInventoryBalance> ViewInventoryBalances { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=DESKTOP-GT4AAMB;Database=accounting_system;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("name=DbConnectionString");
             }
         }
 
@@ -184,6 +188,88 @@ namespace AccountingSystem.Data.Entities
                     .HasConstraintName("fk_category_id");
             });
 
+            modelBuilder.Entity<GeneralLedger>(entity =>
+            {
+                entity.ToTable("general_ledger");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.GeneralLedgerCreatedModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("general_ledger_created_modified_date")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.GeneralLedgerDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("general_ledger_date");
+
+                entity.Property(e => e.GeneralLedgerDescription)
+                    .HasMaxLength(2000)
+                    .HasColumnName("general_ledger_description");
+
+                entity.Property(e => e.GeneralLedgerInvoiceNo)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("general_ledger_invoice_no");
+
+                entity.Property(e => e.GeneralLedgerReferenceNo)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("general_ledger_reference_no");
+
+                entity.Property(e => e.GeneralLedgerType)
+                    .IsRequired()
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasColumnName("general_ledger_type");
+
+                entity.Property(e => e.SubsidiaryLedgerAccountId).HasColumnName("subsidiary_ledger_account_id");
+
+                entity.HasOne(d => d.SubsidiaryLedgerAccount)
+                    .WithMany(p => p.GeneralLedgers)
+                    .HasForeignKey(d => d.SubsidiaryLedgerAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_general_ledger_subsidiary_ledger_account_id");
+            });
+
+            modelBuilder.Entity<GeneralLedgerDetail>(entity =>
+            {
+                entity.ToTable("general_ledger_detail");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.ChartOfAccountId).HasColumnName("chart_of_account_id");
+
+                entity.Property(e => e.GeneralLedgerDetailAmount)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("general_ledger_detail_amount");
+
+                entity.Property(e => e.GeneralLedgerDetailDescription)
+                    .IsRequired()
+                    .HasMaxLength(2000)
+                    .HasColumnName("general_ledger_detail_description");
+
+                entity.Property(e => e.GeneralLedgerDetailMode)
+                    .IsRequired()
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("general_ledger_detail_mode")
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.GeneralLedgerId).HasColumnName("general_ledger_id");
+
+                entity.HasOne(d => d.ChartOfAccount)
+                    .WithMany(p => p.GeneralLedgerDetails)
+                    .HasForeignKey(d => d.ChartOfAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_general_ledger_detail_chart_of_account_id");
+
+                entity.HasOne(d => d.GeneralLedger)
+                    .WithMany(p => p.GeneralLedgerDetails)
+                    .HasForeignKey(d => d.GeneralLedgerId)
+                    .HasConstraintName("FK_general_ledger_detail_general_ledger_id");
+            });
+
             modelBuilder.Entity<IncomeItem>(entity =>
             {
                 entity.ToTable("income_item");
@@ -271,6 +357,61 @@ namespace AccountingSystem.Data.Entities
                     .HasConstraintName("FK_inventory_product_service_income_account_id");
             });
 
+            modelBuilder.Entity<InventoryLedger>(entity =>
+            {
+                entity.ToTable("inventory_ledger");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.InventoryLedgerDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("inventory_ledger_date");
+
+                entity.Property(e => e.InventoryLedgerDescription)
+                    .HasMaxLength(2000)
+                    .HasColumnName("inventory_ledger_description");
+
+                entity.Property(e => e.InventoryLedgerInventoryId).HasColumnName("inventory_ledger_inventory_id");
+
+                entity.Property(e => e.InventoryLedgerQuantity)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("inventory_ledger_quantity");
+
+                entity.Property(e => e.InventoryLedgerQuantityIn)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("inventory_ledger_quantity_in");
+
+                entity.Property(e => e.InventoryLedgerQuantityOut)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("inventory_ledger_quantity_out");
+
+                entity.Property(e => e.InventoryLedgerReferenceId).HasColumnName("inventory_ledger_reference_id");
+
+                entity.Property(e => e.InventoryLedgerTotalCost)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("inventory_ledger_total_cost");
+
+                entity.Property(e => e.InventoryLedgerType)
+                    .IsRequired()
+                    .HasMaxLength(3)
+                    .IsUnicode(false)
+                    .HasColumnName("inventory_ledger_type");
+
+                entity.Property(e => e.InventoryLedgerUnitCost)
+                    .HasColumnType("decimal(14, 6)")
+                    .HasColumnName("inventory_ledger_unit_cost");
+
+                entity.Property(e => e.InventoryLedgerUnitPrice)
+                    .HasColumnType("decimal(12, 2)")
+                    .HasColumnName("inventory_ledger_unit_price");
+
+                entity.HasOne(d => d.InventoryLedgerInventory)
+                    .WithMany(p => p.InventoryLedgers)
+                    .HasForeignKey(d => d.InventoryLedgerInventoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_inventory_ledger_inventory_id");
+            });
+
             modelBuilder.Entity<InvoicePayment>(entity =>
             {
                 entity.ToTable("invoice_payment");
@@ -344,6 +485,22 @@ namespace AccountingSystem.Data.Entities
                     .HasForeignKey(d => d.LedgerMasterId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_invoice_payment_detail_ledger_master_id");
+            });
+
+            modelBuilder.Entity<InvoiceWithoutCost>(entity =>
+            {
+                entity.ToTable("invoice_without_cost");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.InvoiceWithoutCostDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("invoice_without_cost_date");
+
+                entity.Property(e => e.InvoiceWithoutCostInvoiceNo)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("invoice_without_cost_invoice_no");
             });
 
             modelBuilder.Entity<LedgerDetail>(entity =>
@@ -432,8 +589,7 @@ namespace AccountingSystem.Data.Entities
                     .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.InvoiceNo)
-                    .IsRequired()
-                    .HasMaxLength(30)
+                    .HasMaxLength(50)
                     .HasColumnName("invoice_no");
 
                 entity.Property(e => e.InvoiceReference)
@@ -644,6 +800,26 @@ namespace AccountingSystem.Data.Entities
                 entity.Property(e => e.Password)
                     .IsRequired()
                     .HasColumnName("password");
+            });
+
+            modelBuilder.Entity<ViewInventoryBalance>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("view_inventory_balance");
+
+                entity.Property(e => e.Balance)
+                    .HasColumnType("decimal(38, 2)")
+                    .HasColumnName("balance");
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnName("name");
             });
 
             OnModelCreatingPartial(modelBuilder);

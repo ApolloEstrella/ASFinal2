@@ -11,3 +11,4 @@ namespace AccountingSystem.Models
         public decimal AmountPaid { get; set; }
     }
 }
+

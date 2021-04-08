@@ -20,6 +20,7 @@ namespace AccountingSystem.Services
             List<InventoryModel> list = (from a in _serverContext.Inventories
                                          select new { a.Id, a.InventoryProductServiceName, a.InventoryProductServiceCode, 
                                                       a.InventoryProductDescription, a.InventoryProductServiceType,
+                                                      a.InventoryProductServiceAssetAccountId,
                                                       a.InventoryProductServiceIncomeAccountId,
                                                       a.InventoryProductServiceExpenseAccountId
                                          
@@ -31,6 +32,7 @@ namespace AccountingSystem.Services
                                             ProductServiceCode = x.InventoryProductServiceCode,
                                             Description = x.InventoryProductDescription,
                                             Type=x.InventoryProductServiceType,
+                                            AssetAccount = new AssetAccount { Value = x.InventoryProductServiceAssetAccountId },
                                             IncomeAccount = new IncomeAccount { Value = x.InventoryProductServiceIncomeAccountId},
                                             ExpenseAccount = new ExpenseAccount { Value = x.InventoryProductServiceExpenseAccountId}
                                         }).OrderBy(x => x.Name).ToList();
@@ -71,6 +73,7 @@ namespace AccountingSystem.Services
             inventory.InventoryProductServiceName = inventoryModel.Name;
             inventory.InventoryProductDescription = inventoryModel.Description;
             inventory.InventoryProductServiceCode = inventoryModel.ProductServiceCode;
+            inventory.InventoryProductServiceAssetAccountId = inventoryModel.AssetAccount.Value;
             inventory.InventoryProductServiceIncomeAccountId = inventoryModel.IncomeAccount.Value;
             inventory.InventoryProductServiceExpenseAccountId = inventoryModel.ExpenseAccount.Value;
             _serverContext.SaveChanges();

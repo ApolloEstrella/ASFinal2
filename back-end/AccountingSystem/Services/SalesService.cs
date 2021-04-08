@@ -6,16 +6,19 @@ using AccountingSystem.Models;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace AccountingSystem.Services
 {
     public class SalesService : ISalesService
     {
         private readonly accounting_systemContext _serverContext;
+        private readonly IOptions<AppSettingsModel> appSettings;
 
-        public SalesService(accounting_systemContext serverContext)
+        public SalesService(accounting_systemContext serverContext, IOptions<AppSettingsModel> app)
         {
             _serverContext = serverContext;
+            appSettings = app;
         }
         public List<CustomerInvoiceModel> GetSalesInvoice()
         {
@@ -78,6 +81,10 @@ namespace AccountingSystem.Services
 
         public List<CustomerInvoiceForListModel> GetAllSalesInvoicesByInvoiceNo(string invoiceNo)
         {
+
+            //DateTime ServerTime = _serverContext().Database.SqlQuery<DateTime>("Select getdate();").FirstOrDefault();
+            //MessageBox.Show(ServerTime.ToString());
+
             return (from a in _serverContext.LedgerMasters
                     join b in _serverContext.SubsidiaryLedgerAccountNames
                     on a.SubsidiaryLedgerAccountId equals b.Id
@@ -185,6 +192,7 @@ namespace AccountingSystem.Services
         public CustomerInvoiceModel AddSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
             int Id = 0;
+            int ARTradeKey = appSettings.Value.AR_TRADE_KEY;
             _serverContext.Database.BeginTransaction();
             try
             {
@@ -197,7 +205,7 @@ namespace AccountingSystem.Services
                 ledgerMaster.InvoiceTerms = customerInvoiceModel.Terms;
                 ledgerMaster.InvoiceReference = customerInvoiceModel.Reference;
                 ledgerMaster.InvoiceCreatedDate = DateTime.Now;
-                ledgerMaster.InvoiceAmount = customerInvoiceModel.Total;
+                ledgerMaster.InvoiceAmount = customerInvoiceModel.Amount;
                 ledgerMaster.TransactionType = "INV";
                 _serverContext.LedgerMasters.Add(ledgerMaster);
                 _serverContext.SaveChanges();
@@ -216,6 +224,71 @@ namespace AccountingSystem.Services
                     _serverContext.LedgerDetails.Add(ledgerDetail);
                     _serverContext.SaveChanges();
                 }
+
+                GeneralLedger generalLedger = new GeneralLedger
+                {
+                    SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value,
+                    GeneralLedgerInvoiceNo = customerInvoiceModel.InvoiceNo,
+                    GeneralLedgerDate = customerInvoiceModel.Date,
+                    GeneralLedgerReferenceNo = customerInvoiceModel.Reference,
+                    GeneralLedgerType = "INV",
+                };
+                _serverContext.GeneralLedgers.Add(generalLedger);
+                _serverContext.SaveChanges();
+
+
+                var ARAmount = customerInvoiceModel.Amount;
+                GeneralLedgerDetail ARGeneralLedgerDetail = new GeneralLedgerDetail();
+                ARGeneralLedgerDetail.GeneralLedgerId = generalLedger.Id;
+
+
+                ARGeneralLedgerDetail.GeneralLedgerDetailDescription = "";
+                ARGeneralLedgerDetail.ChartOfAccountId = ARTradeKey;
+                ARGeneralLedgerDetail.GeneralLedgerDetailMode = "D";
+                ARGeneralLedgerDetail.GeneralLedgerId = generalLedger.Id;
+                ARGeneralLedgerDetail.GeneralLedgerDetailAmount = ARAmount;
+                _serverContext.GeneralLedgerDetails.Add(ARGeneralLedgerDetail);
+                _serverContext.SaveChanges();
+
+                //var invoiceDetail = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => Convert.ToDecimal(s.Amount)) });
+
+                foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
+                {
+                    GeneralLedgerDetail generalLedgerDetail = new GeneralLedgerDetail();
+                    var temp = _serverContext.Inventories.Where(x => x.Id == item.SalesItem.Value).FirstOrDefault();
+                    generalLedgerDetail.ChartOfAccountId = Convert.ToInt32(temp.InventoryProductServiceIncomeAccountId);
+                    generalLedgerDetail.GeneralLedgerDetailMode = "C";
+                    generalLedgerDetail.GeneralLedgerId = generalLedger.Id;
+                    generalLedgerDetail.GeneralLedgerDetailAmount = Convert.ToDecimal(item.Amount);
+                    generalLedgerDetail.GeneralLedgerDetailDescription = item.Description;
+                    _serverContext.GeneralLedgerDetails.Add(generalLedgerDetail);
+                    _serverContext.SaveChanges();
+                }
+
+
+
+
+                // collectively sum all qty per itemid inorder to check items availability
+                var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
+                foreach (var item in results)
+                {
+                    var Quantity = (from a in _serverContext.ViewInventoryBalances
+                                    where a.Id == item.Id
+                                    select new { balance = a.Balance }).FirstOrDefault();
+
+                    if (Quantity.balance < item.Value)
+                    {
+                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
+                        {
+                            InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
+                            InvoiceWithoutCostDate = customerInvoiceModel.Date
+                        });
+                        _serverContext.SaveChanges();
+                        break;
+                    }
+                }
+
+
                 Id = ledgerMaster.Id;
                 _serverContext.Database.CommitTransaction();
             }
@@ -229,6 +302,7 @@ namespace AccountingSystem.Services
 
         public CustomerInvoiceModel EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
+            int ARTradeKey = appSettings.Value.AR_TRADE_KEY;
             _serverContext.Database.BeginTransaction();
             try
             {
@@ -236,6 +310,7 @@ namespace AccountingSystem.Services
                 ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value;
                 ledgerMaster.InvoiceBillingAddress = customerInvoiceModel.BillingAddress;
                 ledgerMaster.InvoiceNo = customerInvoiceModel.InvoiceNo;
+                ledgerMaster.InvoiceAmount = customerInvoiceModel.Amount;
                 ledgerMaster.InvoiceDate = customerInvoiceModel.Date;
                 ledgerMaster.InvoiceDueDate = customerInvoiceModel.DueDate;
                 ledgerMaster.InvoiceTerms = customerInvoiceModel.Terms;
@@ -268,6 +343,26 @@ namespace AccountingSystem.Services
                     ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
                     _serverContext.LedgerDetails.Add(ledgerDetail);
                     _serverContext.SaveChanges();
+                }
+
+                // collectively sum all qty per itemid inorder to check items availability
+                var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
+                foreach (var item in results)
+                {
+                    var Quantity = (from a in _serverContext.ViewInventoryBalances
+                                    where a.Id == item.Id
+                                    select new { balance = a.Balance }).FirstOrDefault();
+
+                    if (Quantity.balance < item.Value)
+                    {
+                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
+                        {
+                            InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
+                            InvoiceWithoutCostDate = customerInvoiceModel.Date
+                        });
+                        _serverContext.SaveChanges();
+                        break;
+                    }
                 }
                 _serverContext.Database.CommitTransaction();
             }
@@ -510,7 +605,7 @@ namespace AccountingSystem.Services
         {
             try
             {
-                
+
                 IList<int> invoicePaymentListId = new List<int>();
                 _serverContext.Database.BeginTransaction();
                 var invoicePaymentDetails = _serverContext.InvoicePaymentDetails.Where(x => x.LedgerMasterId == id).ToList();

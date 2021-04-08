@@ -20,6 +20,7 @@ namespace AccountingSystem.Models
         public List<CustomerInvoiceItemModel> Items { get; set; }
         public FileModel Files { get; set; }
         public List<LoadFileModel> LoadFiles { get; set; }
+        public decimal Amount { get; set; }
         public decimal SubTotal { get; set; }
         public decimal TotalTaxes { get; set; }
         public decimal Total { get; set; }

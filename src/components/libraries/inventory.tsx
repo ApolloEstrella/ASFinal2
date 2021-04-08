@@ -290,6 +290,41 @@ export default function EnhancedTable(props: Props) {
               <p className={classes.p}>{errors.description?.message}</p>
             </Grid>
             <Grid item xs={12}>
+              <h3>Inventory Account</h3>
+              <Controller
+                control={control}
+                name="assetAccount"
+                render={(
+                  { onChange, onBlur, value, name, ref },
+                  { invalid, isTouched, isDirty }
+                ) => (
+                  <Select
+                    name="assetAccount"
+                    onBlur={onBlur}
+                    onChange={(e) => handleSelectChange(e, "assetAccount")}
+                    inputRef={register()}
+                    options={salesItems}
+                    //className={classes.reactSelect}
+                    placeholder="Please select Inventory Account"
+                    // styles={customStyles}
+                    isClearable
+                    defaultValue={
+                      props.rowData === null
+                        ? null
+                        : salesItems.find(
+                            (obj) =>
+                              Number(obj["value"]) ===
+                              Number(props.rowData.assetAccount.value)
+                          )
+                    }
+                  />
+                )}
+              />
+              <p className={classes.p}>
+                {errors?.["incomeAccount"]?.["message"]}
+              </p>
+            </Grid>
+            <Grid item xs={12}>
               <h3>Sales Account</h3>
               <Controller
                 control={control}

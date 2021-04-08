@@ -910,8 +910,7 @@ const SalesInvoice = ({ preloadedValues, editMode, setOpenEdit }) => {
 
     values.date = moment.parseZone(values.date.toString()).toDate();
     values.dueDate = moment.parseZone(values.dueDate.toString()).toDate();
-
-    values.total = subTotal + totalTaxes;
+    values.amount = subTotal + totalTaxes;
 
     if (loadInvoice !== null) values.id = origId;
 
