@@ -9,8 +9,7 @@ namespace AccountingSystem.Models
     {
         public int value { get; set; }
         public string label { get; set; }
-
         public decimal rate { get; set; }
-
+        public int chartOfAccountId { get; set; }
     }
 }
