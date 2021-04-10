@@ -19,8 +19,8 @@ import store from "./store";
 import Logout from "./components/authentications/logout";
 import ChartOfAccounts from "./components/libraries/chart-of-account";
 import SubsidiaryLedgerAccounts from "./components/libraries/subsidiary-ledger-account";
-import SalesInvoice from "./components/sales/sales-invoice.jsx";
-import MaterialUIPickers from "./components/sales/test.jsx.bak"
+//import SalesInvoice from "./components/sales/sales-invoice.jsx";
+//import MaterialUIPickers from "./components/sales/test.jsx.bak"
 import SalesInvoiceList from "./components/sales/sales-invoice-list";
 //import SalesInvoiceApp from "./components/sales/sales-invoice-app";
 import FunctionalComponentWithHook from "./components/sales/test.tsx";

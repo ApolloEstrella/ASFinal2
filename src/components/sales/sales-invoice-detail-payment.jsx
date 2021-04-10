@@ -521,10 +521,6 @@ export default function EnhancedTable(props) {
             onChangeRowsPerPage={handleChangeRowsPerPage}
           />
         </Paper>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={handleChangeDense} />}
-          label="Dense padding"
-        />
         <Button
           variant="contained"
           color="primary"

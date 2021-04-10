@@ -14,11 +14,15 @@ namespace AccountingSystem.Services
     {
         private readonly accounting_systemContext _serverContext;
         private readonly IOptions<AppSettingsModel> appSettings;
+        private int ARTradeKey;
+        private int SalesTaxKey;
 
         public SalesService(accounting_systemContext serverContext, IOptions<AppSettingsModel> app)
         {
             _serverContext = serverContext;
             appSettings = app;
+            ARTradeKey = appSettings.Value.AR_TRADE_KEY;
+            SalesTaxKey = appSettings.Value.SALES_TAX_KEY;
         }
         public List<CustomerInvoiceModel> GetSalesInvoice()
         {
@@ -193,10 +197,91 @@ namespace AccountingSystem.Services
         {
             int Id = 0;
             int ARTradeKey = appSettings.Value.AR_TRADE_KEY;
+            //int SalesIncomeKey = appSettings.Value.SALES_INCOME_KEY;
+            int SalesTaxKey = appSettings.Value.SALES_TAX_KEY;
             _serverContext.Database.BeginTransaction();
             try
             {
-                LedgerMaster ledgerMaster = new LedgerMaster();
+                int ledgerMasterId = UpdateLedger(customerInvoiceModel, true);
+                UpdateGeneralLedger(customerInvoiceModel, ledgerMasterId, ARTradeKey, SalesTaxKey);
+
+                // collectively sum all qty per itemid inorder to check items availability
+                var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
+                foreach (var item in results)
+                {
+                    var Quantity = (from a in _serverContext.ViewInventoryBalances
+                                    where a.Id == item.Id
+                                    select new { balance = a.Balance }).FirstOrDefault();
+
+                    if (Quantity == null) continue;
+
+                    if (Quantity.balance < item.Value)
+                    {
+                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
+                        {
+                            InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
+                            InvoiceWithoutCostDate = customerInvoiceModel.Date
+                        });
+                        _serverContext.SaveChanges();
+                        break;
+                    }
+                }
+                Id = ledgerMasterId;
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            customerInvoiceModel.Id = Id;
+            return customerInvoiceModel;
+        }
+
+        public CustomerInvoiceModel EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
+        {
+            
+            _serverContext.Database.BeginTransaction();
+            try
+            {
+                int ledgerMasterId = UpdateLedger(customerInvoiceModel, false);
+                UpdateGeneralLedger(customerInvoiceModel, ledgerMasterId, ARTradeKey, SalesTaxKey);
+
+                // collectively sum all qty per itemid inorder to check items availability
+                var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
+                foreach (var item in results)
+                {
+                    var Quantity = (from a in _serverContext.ViewInventoryBalances
+                                    where a.Id == item.Id
+                                    select new { balance = a.Balance }).FirstOrDefault();
+
+                    if (Quantity == null) continue;
+
+                    if (Quantity.balance < item.Value)
+                    {
+                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
+                        {
+                            InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
+                            InvoiceWithoutCostDate = customerInvoiceModel.Date
+                        });
+                        _serverContext.SaveChanges();
+                        break;
+                    }
+                }
+                _serverContext.Database.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                _serverContext.Database.RollbackTransaction();
+            }
+            return customerInvoiceModel;
+        }
+
+        int UpdateLedger(CustomerInvoiceModel customerInvoiceModel, bool addMode)
+        {
+            LedgerMaster ledgerMaster = null;
+            if (addMode)
+            {
+                ledgerMaster = new LedgerMaster();
                 ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value;
                 ledgerMaster.InvoiceBillingAddress = customerInvoiceModel.BillingAddress;
                 ledgerMaster.InvoiceNo = customerInvoiceModel.InvoiceNo;
@@ -210,103 +295,24 @@ namespace AccountingSystem.Services
                 _serverContext.LedgerMasters.Add(ledgerMaster);
                 _serverContext.SaveChanges();
 
-                LedgerDetail ledgerDetail = new LedgerDetail();
-                foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
-                {
-                    ledgerDetail.Id = 0;
-                    ledgerDetail.LedgerMasterId = ledgerMaster.Id;
-                    ledgerDetail.InvoiceSalesItemId = item.SalesItem.Value;
-                    ledgerDetail.InvoiceDescription = item.Description;
-                    ledgerDetail.InvoiceQuantity = item.Qty;
-                    ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
-                    ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
-                    ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
-                    _serverContext.LedgerDetails.Add(ledgerDetail);
-                    _serverContext.SaveChanges();
-                }
-
-                GeneralLedger generalLedger = new GeneralLedger
-                {
-                    SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value,
-                    GeneralLedgerInvoiceNo = customerInvoiceModel.InvoiceNo,
-                    GeneralLedgerDate = customerInvoiceModel.Date,
-                    GeneralLedgerReferenceNo = customerInvoiceModel.Reference,
-                    GeneralLedgerType = "INV",
-                };
-                _serverContext.GeneralLedgers.Add(generalLedger);
-                _serverContext.SaveChanges();
-
-
-                var ARAmount = customerInvoiceModel.Amount;
-                GeneralLedgerDetail ARGeneralLedgerDetail = new GeneralLedgerDetail();
-                ARGeneralLedgerDetail.GeneralLedgerId = generalLedger.Id;
-
-
-                ARGeneralLedgerDetail.GeneralLedgerDetailDescription = "";
-                ARGeneralLedgerDetail.ChartOfAccountId = ARTradeKey;
-                ARGeneralLedgerDetail.GeneralLedgerDetailMode = "D";
-                ARGeneralLedgerDetail.GeneralLedgerId = generalLedger.Id;
-                ARGeneralLedgerDetail.GeneralLedgerDetailAmount = ARAmount;
-                _serverContext.GeneralLedgerDetails.Add(ARGeneralLedgerDetail);
-                _serverContext.SaveChanges();
-
-                //var invoiceDetail = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => Convert.ToDecimal(s.Amount)) });
-
-                foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
-                {
-                    GeneralLedgerDetail generalLedgerDetail = new GeneralLedgerDetail();
-                    var temp = _serverContext.Inventories.Where(x => x.Id == item.SalesItem.Value).FirstOrDefault();
-                    generalLedgerDetail.ChartOfAccountId = Convert.ToInt32(temp.InventoryProductServiceIncomeAccountId);
-                    generalLedgerDetail.GeneralLedgerDetailMode = "C";
-                    generalLedgerDetail.GeneralLedgerId = generalLedger.Id;
-                    generalLedgerDetail.GeneralLedgerDetailAmount = Convert.ToDecimal(item.Amount);
-                    generalLedgerDetail.GeneralLedgerDetailDescription = item.Description;
-                    _serverContext.GeneralLedgerDetails.Add(generalLedgerDetail);
-                    _serverContext.SaveChanges();
-                }
-
-
-
-
-                // collectively sum all qty per itemid inorder to check items availability
-                var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
-                foreach (var item in results)
-                {
-                    var Quantity = (from a in _serverContext.ViewInventoryBalances
-                                    where a.Id == item.Id
-                                    select new { balance = a.Balance }).FirstOrDefault();
-
-                    if (Quantity.balance < item.Value)
-                    {
-                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
-                        {
-                            InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
-                            InvoiceWithoutCostDate = customerInvoiceModel.Date
-                        });
-                        _serverContext.SaveChanges();
-                        break;
-                    }
-                }
-
-
-                Id = ledgerMaster.Id;
-                _serverContext.Database.CommitTransaction();
+                /*   LedgerDetail ledgerDetail = new LedgerDetail();
+                   foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
+                   {
+                       ledgerDetail.Id = 0;
+                       ledgerDetail.LedgerMasterId = ledgerMaster.Id;
+                       ledgerDetail.InvoiceSalesItemId = item.SalesItem.Value;
+                       ledgerDetail.InvoiceDescription = item.Description;
+                       ledgerDetail.InvoiceQuantity = item.Qty;
+                       ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
+                       ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
+                       ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
+                       _serverContext.LedgerDetails.Add(ledgerDetail);
+                       _serverContext.SaveChanges();
+                   } */
             }
-            catch (Exception ex)
+            else
             {
-                _serverContext.Database.RollbackTransaction();
-            }
-            customerInvoiceModel.Id = Id;
-            return customerInvoiceModel;
-        }
-
-        public CustomerInvoiceModel EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
-        {
-            int ARTradeKey = appSettings.Value.AR_TRADE_KEY;
-            _serverContext.Database.BeginTransaction();
-            try
-            {
-                LedgerMaster ledgerMaster = _serverContext.LedgerMasters.Find(customerInvoiceModel.Id);
+                ledgerMaster = _serverContext.LedgerMasters.Find(customerInvoiceModel.Id);
                 ledgerMaster.SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value;
                 ledgerMaster.InvoiceBillingAddress = customerInvoiceModel.BillingAddress;
                 ledgerMaster.InvoiceNo = customerInvoiceModel.InvoiceNo;
@@ -318,8 +324,10 @@ namespace AccountingSystem.Services
                 ledgerMaster.InvoiceModifiedDate = DateTime.Now;
                 ledgerMaster.TransactionType = "INV";
                 _serverContext.SaveChanges();
+            }
 
-
+            if (!addMode)
+            {
                 foreach (var item in _serverContext.LedgerDetails.Where(x => x.LedgerMasterId == customerInvoiceModel.Id).ToList())
                 {
                     LedgerDetail ledgerDetail = new LedgerDetail();
@@ -330,47 +338,80 @@ namespace AccountingSystem.Services
                         _serverContext.SaveChanges();
                     }
                 }
-                foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
-                {
-                    LedgerDetail ledgerDetail = new LedgerDetail();
-                    ledgerDetail.Id = 0;
-                    ledgerDetail.LedgerMasterId = ledgerMaster.Id;
-                    ledgerDetail.InvoiceSalesItemId = item.SalesItem.Value;
-                    ledgerDetail.InvoiceDescription = item.Description;
-                    ledgerDetail.InvoiceQuantity = item.Qty;
-                    ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
-                    ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
-                    ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
-                    _serverContext.LedgerDetails.Add(ledgerDetail);
-                    _serverContext.SaveChanges();
-                }
-
-                // collectively sum all qty per itemid inorder to check items availability
-                var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
-                foreach (var item in results)
-                {
-                    var Quantity = (from a in _serverContext.ViewInventoryBalances
-                                    where a.Id == item.Id
-                                    select new { balance = a.Balance }).FirstOrDefault();
-
-                    if (Quantity.balance < item.Value)
-                    {
-                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
-                        {
-                            InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
-                            InvoiceWithoutCostDate = customerInvoiceModel.Date
-                        });
-                        _serverContext.SaveChanges();
-                        break;
-                    }
-                }
-                _serverContext.Database.CommitTransaction();
             }
-            catch (Exception ex)
+            foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
             {
-                _serverContext.Database.RollbackTransaction();
+                LedgerDetail ledgerDetail = new LedgerDetail();
+                ledgerDetail.Id = 0;
+                ledgerDetail.LedgerMasterId = ledgerMaster.Id;
+                ledgerDetail.InvoiceSalesItemId = item.SalesItem.Value;
+                ledgerDetail.InvoiceDescription = item.Description;
+                ledgerDetail.InvoiceQuantity = item.Qty;
+                ledgerDetail.InvoiceUnitPrice = item.UnitPrice;
+                ledgerDetail.InvoiceTaxRateId = item.TaxRateItem.Value;
+                ledgerDetail.InvoiceTrackingId = item.TrackingItem.Value;
+                _serverContext.LedgerDetails.Add(ledgerDetail);
+                _serverContext.SaveChanges();
             }
-            return customerInvoiceModel;
+
+            if (!addMode)
+            {
+                var tempGl = _serverContext.GeneralLedgers.Where(x => x.LedgerMasterId == customerInvoiceModel.Id).SingleOrDefault();
+                _serverContext.GeneralLedgers.Remove(tempGl);
+            }
+            return ledgerMaster.Id;
+        }
+        void UpdateGeneralLedger(CustomerInvoiceModel customerInvoiceModel, int ledgerMasterId, int ARTradeKey, int SalesTaxKey)
+        {
+            GeneralLedger generalLedger = new GeneralLedger
+            {
+                SubsidiaryLedgerAccountId = customerInvoiceModel.Customer.Value,
+                GeneralLedgerInvoiceNo = customerInvoiceModel.InvoiceNo,
+                GeneralLedgerDate = customerInvoiceModel.Date,
+                GeneralLedgerReferenceNo = customerInvoiceModel.Reference,
+                GeneralLedgerType = "INV",
+                LedgerMasterId = ledgerMasterId
+            };
+            _serverContext.GeneralLedgers.Add(generalLedger);
+            _serverContext.SaveChanges();
+
+            var ARAmount = customerInvoiceModel.Amount;
+            GeneralLedgerDetail ARGeneralLedgerDetail = new GeneralLedgerDetail();
+            ARGeneralLedgerDetail.GeneralLedgerId = generalLedger.Id;
+            ARGeneralLedgerDetail.GeneralLedgerDetailDescription = "";
+            ARGeneralLedgerDetail.ChartOfAccountId = ARTradeKey;
+            ARGeneralLedgerDetail.GeneralLedgerDetailMode = "D";
+            ARGeneralLedgerDetail.GeneralLedgerId = generalLedger.Id;
+            ARGeneralLedgerDetail.GeneralLedgerDetailAmount = ARAmount;
+            _serverContext.GeneralLedgerDetails.Add(ARGeneralLedgerDetail);
+            _serverContext.SaveChanges();
+
+            //var invoiceDetail = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => Convert.ToDecimal(s.Amount)) });
+
+            foreach (CustomerInvoiceItemModel item in customerInvoiceModel.Items)
+            {
+                GeneralLedgerDetail generalLedgerDetail = new GeneralLedgerDetail();
+                var temp = _serverContext.Inventories.Where(x => x.Id == item.SalesItem.Value).FirstOrDefault();
+                generalLedgerDetail.ChartOfAccountId = Convert.ToInt32(temp.InventoryProductServiceIncomeAccountId);
+                generalLedgerDetail.GeneralLedgerDetailMode = "C";
+                generalLedgerDetail.GeneralLedgerId = generalLedger.Id;
+                generalLedgerDetail.GeneralLedgerDetailAmount = Convert.ToDecimal(item.Amount);
+                generalLedgerDetail.GeneralLedgerDetailDescription = item.Description;
+                _serverContext.GeneralLedgerDetails.Add(generalLedgerDetail);
+                _serverContext.SaveChanges();
+            }
+
+            if (customerInvoiceModel.TotalTaxes > 0)
+            {
+                GeneralLedgerDetail generalLedgerDetail = new GeneralLedgerDetail();
+                generalLedgerDetail.ChartOfAccountId = SalesTaxKey;
+                generalLedgerDetail.GeneralLedgerDetailMode = "C";
+                generalLedgerDetail.GeneralLedgerId = generalLedger.Id;
+                generalLedgerDetail.GeneralLedgerDetailAmount = customerInvoiceModel.TotalTaxes;
+                generalLedgerDetail.GeneralLedgerDetailDescription = "";
+                _serverContext.GeneralLedgerDetails.Add(generalLedgerDetail);
+                _serverContext.SaveChanges();
+            }
         }
 
         public int AddUploadFiles(int id, FileModel files)
@@ -521,6 +562,37 @@ namespace AccountingSystem.Services
                     _serverContext.InvoicePaymentDetails.Add(invoicePaymentDetail);
                     _serverContext.SaveChanges();
                 }
+
+                foreach (var item in customerInvoicePaymentModel.Items)
+                {   
+                    GeneralLedger generalLedger = new GeneralLedger
+                    {
+                        SubsidiaryLedgerAccountId = customerInvoicePaymentModel.CustomerId,
+                        GeneralLedgerInvoiceNo = string.Empty,
+                        GeneralLedgerDate = customerInvoicePaymentModel.PaymentDate,
+                        GeneralLedgerReferenceNo = customerInvoicePaymentModel.ReferenceNo,
+                        GeneralLedgerType = "PI",
+                        LedgerMasterId = item.Id
+                    };
+                    _serverContext.GeneralLedgers.Add(generalLedger);
+                    _serverContext.SaveChanges();
+                    GeneralLedgerDetail generalLedgerDetailDebit = new GeneralLedgerDetail();
+                    generalLedgerDetailDebit.ChartOfAccountId = customerInvoicePaymentModel.ChartOfAccountId;
+                    generalLedgerDetailDebit.GeneralLedgerDetailMode = "D";
+                    generalLedgerDetailDebit.GeneralLedgerId = generalLedger.Id;
+                    generalLedgerDetailDebit.GeneralLedgerDetailAmount = item.Amount;
+                    generalLedgerDetailDebit.GeneralLedgerDetailDescription = string.Empty;
+                    _serverContext.GeneralLedgerDetails.Add(generalLedgerDetailDebit);
+                    _serverContext.SaveChanges();
+                    GeneralLedgerDetail generalLedgerDetailCredit = new GeneralLedgerDetail();
+                    generalLedgerDetailCredit.ChartOfAccountId = ARTradeKey;
+                    generalLedgerDetailCredit.GeneralLedgerDetailMode = "C";
+                    generalLedgerDetailCredit.GeneralLedgerId = generalLedger.Id;
+                    generalLedgerDetailCredit.GeneralLedgerDetailAmount = item.Amount;
+                    generalLedgerDetailCredit.GeneralLedgerDetailDescription = string.Empty;
+                    _serverContext.GeneralLedgerDetails.Add(generalLedgerDetailCredit);
+                    _serverContext.SaveChanges();
+                }
                 _serverContext.Database.CommitTransaction();
             }
             catch (Exception ex)
@@ -605,7 +677,6 @@ namespace AccountingSystem.Services
         {
             try
             {
-
                 IList<int> invoicePaymentListId = new List<int>();
                 _serverContext.Database.BeginTransaction();
                 var invoicePaymentDetails = _serverContext.InvoicePaymentDetails.Where(x => x.LedgerMasterId == id).ToList();
@@ -627,8 +698,17 @@ namespace AccountingSystem.Services
                             _serverContext.SaveChanges();
                         }
                     }
-                }
-                _serverContext.Database.CommitTransaction();
+                } 
+                // update general ledger
+                var list = _serverContext.GeneralLedgers.Where(x => x.GeneralLedgerType == "PI" && x.LedgerMasterId == id).ToList();
+                foreach(var item in list)
+                {
+                    var glItem = _serverContext.GeneralLedgers.Find(item.Id);
+                    _serverContext.GeneralLedgers.Remove(glItem);
+                    _serverContext.SaveChanges();
+                };
+
+               _serverContext.Database.CommitTransaction();
             }
             catch (Exception ex)
             {
@@ -636,5 +716,10 @@ namespace AccountingSystem.Services
             }
             return 1;
         }
+    }
+    class InvoicePaymentItem
+    {
+        public int LedgerMasterId { get; set; }
+        public decimal Amount { get; set; }
     }
 }

@@ -47,6 +47,11 @@ import {
 import configData from "../../config.json";
 import moment from "moment";
 import { format } from "date-fns";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -263,7 +268,7 @@ export default function
   const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [rows, setRows] = React.useState([]);
-
+  const [openTotalPayment, setTotalPayment] = useState(false);
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -336,8 +341,8 @@ export default function
         id: Yup.number(),
         amount: Yup.number()
           .nullable()
-          .typeError("Quantity is required")
-          .required("Quantity is required"),
+          .typeError("Amount is required")
+          .required("Amount is required"),
       })
     ),
   });
@@ -420,7 +425,17 @@ export default function
     values.paymentDate = moment
       .parseZone(values.paymentDate.toString())
       .toDate();
-    console.log("data", values);
+    values.items = values.items.filter(x => x.amount > 0)
+    var sum = values.items.reduce(function (prev, current) {
+      return prev + +current.amount;
+    }, 0);
+    var totalPaid = Number(getValues("invoiceAmount"));
+    if (totalPaid !== sum)
+    {
+      setTotalPayment(true);
+      return
+    }
+    
     fetch(configData.SERVER_URL + "sales/CustomerInvoicePayment", {
       method: "POST",
       body: JSON.stringify(values),
@@ -694,10 +709,6 @@ export default function
             onChangeRowsPerPage={handleChangeRowsPerPage}
           />
         </Paper>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={handleChangeDense} />}
-          label="Dense padding"
-        />
         <Button
           type="submit"
           variant="contained"
@@ -714,6 +725,32 @@ export default function
           Close
         </Button>
       </div>
+      <>
+        <Dialog
+          //fullScreen={fullScreen}
+          open={openTotalPayment}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title">
+            Warning
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Total paid is not same to total payments.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              autoFocus
+              onClick={() => setTotalPayment(false)}
+              color="primary"
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     </form>
   );
+  
 }
