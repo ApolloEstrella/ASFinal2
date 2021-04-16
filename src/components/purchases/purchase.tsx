@@ -49,6 +49,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+//import Radio from "@material-ui/core/Radio";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -179,6 +180,9 @@ interface Props {
 }
 
 export default function Purchase(props: Props) {
+  const [counterRender, setCounterRender] = useState(0);
+  const [counterRender2, setCounterRender2] = useState(0);
+  useEffect(() => { setCounterRender2(counterRender2 + 1); console.log(counterRender)}, [counterRender]);
   const [purchase, getPurchase] = useState();
 
   useEffect(() => {
@@ -208,7 +212,7 @@ export default function Purchase(props: Props) {
     watch,
     setValue,
     getValues,
-    formState
+    formState,
   } = useForm({
     //mode: "onChange",
     defaultValues: props.rowData === null ? {} : props.rowData,
@@ -255,7 +259,7 @@ export default function Purchase(props: Props) {
     if (props.rowData === null && addMode) {
       url = "purchase/add";
       method = "POST";
-      setAddMode(false)
+      setAddMode(false);
     } else {
       url =
         "purchase/update?Id=" +
@@ -275,7 +279,7 @@ export default function Purchase(props: Props) {
       .then((results) => results.json())
       .then((data) => {
         console.log(data);
-        purchaseId.current = Number(data)
+        purchaseId.current = Number(data);
         //setAddMode(false)
         //reset(initialValues);
         //props.updateList();
@@ -340,11 +344,15 @@ export default function Purchase(props: Props) {
     setValue(field, e, { shouldValidate: true });
     //handleCostsChange();
   };
+
   const initialTaxValues = {
     description: dialogValueTax.description,
     rate: 0,
     tax_type: "S",
   };
+
+  const [selectDisable, setSelectDisable] = useState([]);
+
   useEffect(() => {
     fetch(configData.SERVER_URL + "SubsidiaryLedger/Get", {
       method: "GET",
@@ -532,9 +540,72 @@ export default function Purchase(props: Props) {
     setFieldCounter(fieldCounter + 1);
   };
 
+  const [paymentMethod, setPaymentMethod] = React.useState("PD");
+
+  const handleChangePaymentMethod = (e: any, field: string) => {
+    setValue(field, e.target.value, { shouldValidate: true });
+    setPaymentMethod(e.target.value);
+  };
+
+  
   const [addPurchaseItem, setAddPurchaseItem] = useState(false);
 
+  
+
+  interface ISelect {
+    id: number;
+    value: boolean;
+  }
+
+  const [reactSelect, setReactSelect] = useState<ISelect[]>([
+    { id: 0, value: false },
+    { id: 1, value: false },
+    { id: 2, value: false },
+  ]);
+
+  const [enableSelectChartOfAccount, setEnableSelectChartOfAccount] = useState("");
+
+  const handleChangeInventoryItem = (
+    e: any,
+    field: string,
+    field2: string,
+    index: number
+  ) => {
+    if (e === null) {
+      setValue(
+        `items[${index}].inventoryItem`,
+        { value: null },
+        { shouldValidate: true }
+      );
+
+      //alert(getValues(`items[${index}].inventoryItem`).value);
+
+      //const temp = [...reactSelect];
+      //temp[index].value = false;
+      //setReactSelect(temp);
+      setCounterRender(counterRender + 1);
+      return;
+    }
+    setValue(field, e, { shouldValidate: true });
+    setCounterRender(counterRender + 1);
+
+    //const temp = [...reactSelect];
+    //temp[index].value = false;
+    //setReactSelect(temp);
+    //setValue(field2, e, { shouldValidate: true });
+    //setValue(field2, { value: e.assetAccountId, label: "" });
+    //setDisableChartOfAccount(true);
+    //document.getElementById(field2);
+    //chartOfAccounts.find(x => x.Id === e.target.value)
+
+    //const temp = [...reactSelect];
+    //temp[index].value = true;
+    //setReactSelect(temp);
+  };
+
   renderCount++;
+
+  var chartOfAccountDisable: boolean[] = [false, false, false];
 
   return vendors.length > 0 &&
     chartOfAccounts.length > 0 &&
@@ -571,7 +642,7 @@ export default function Purchase(props: Props) {
                 options={vendors}
                 //className={classes.reactSelect}
                 placeholder="Please select vendor"
-                style={{ zindex: 999 }}
+                style={{ zindex: 999, paddingBottom: "100px" }}
                 isClearable
                 defaultValue={
                   props.rowData === null
@@ -586,6 +657,55 @@ export default function Purchase(props: Props) {
             )}
           />
           <p className={classes.p}>{errors?.["vendor"]?.["message"]}</p>
+        </Grid>
+        <Grid item xs={12}>
+          <div style={{ paddingBottom: "10px" }}></div>
+        </Grid>
+        <Grid item xs={2}>
+          <Radio
+            checked={paymentMethod === "PD"}
+            onChange={(e) => handleChangePaymentMethod(e, "chartOfAccountId")}
+            value="PD"
+            name="paymentMethod"
+          />{" "}
+          Paid
+        </Grid>
+        <Grid item xs={2}>
+          <Radio
+            checked={paymentMethod === "PY"}
+            onChange={(e) => handleChangePaymentMethod(e, "chartOfAccountId")}
+            value="PY"
+            name="paymentMethod"
+          />{" "}
+          Payable
+        </Grid>
+        <Grid item xs={8}>
+          <Controller
+            control={control}
+            name="chartOfAccountId"
+            render={(
+              { onChange, onBlur, value, name, ref },
+              { invalid, isTouched, isDirty }
+            ) => (
+              <CreatableSelect
+                name="chartOfAccountId"
+                onBlur={onBlur}
+                onChange={(e) => handleChange(e, "chartOfAccountId")}
+                inputRef={register()}
+                options={chartOfAccounts}
+                isDisabled={paymentMethod === "PY"}
+                //className={classes.reactSelect}
+                //style={{
+                //  marginTop: "20px",
+                //  fontSize: "13px",
+                //  width: "100%",
+                //  zIndex: "5",
+                //}}
+                placeholder="Please select cash or bank account"
+              />
+            )}
+          />
+          <p className={classes.p}>{errors.chartOfAccountId?.message}</p>
         </Grid>
         <Grid item xs={8}>
           <Controller
@@ -675,6 +795,7 @@ export default function Purchase(props: Props) {
                 defaultValue=""
                 size="small"
                 className={classes.multiLine}
+                style={{ marginTop: "0px" }}
                 multiline
                 rows={3}
                 rowsMax={3}
@@ -683,8 +804,13 @@ export default function Purchase(props: Props) {
             )}
           />
           <p className={classes.p}>{errors.description?.message}</p>
-        </Grid>
+          </Grid>
+          { console.log(fields)}
         {fields.map((item, index) => {
+          //setReactSelect([...setReactSelect, { id: index, value:}])
+          var fld = fields;
+          // setReactSelect((prevArray) => [...prevArray, {id: index, value: false}]);
+          console.log(fld)
           return (
             <div key={item.id} style={{ width: "100%" }}>
               <Grid container justify="space-around" direction="row">
@@ -709,26 +835,7 @@ export default function Purchase(props: Props) {
                       />
                     )}
                   />
-                  {/*   <Controller
-                    control={control}
-                    name={`items[${index}].keyNameId`}
-                    render={(
-                      { onChange, onBlur, value, name, ref },
-                      { invalid, isTouched, isDirty }
-                    ) => (
-                      <TextField
-                        name={`items[${index}].keyNameId`}
-                        defaultValue={`${item.keyNameId}`}
-                        variant="outlined"
-                        placeholder="keyNameId"
-                        label="keyNameId"
-                        className={classes.visuallyHidden}
-                        size="small"
-                        inputProps={{ "data-id": index }}
-                        inputRef={register()}
-                      />
-                    )}
-                    /> */}
+                   
                   <Controller
                     control={control}
                     name={`items[${index}].inventoryItem`}
@@ -740,8 +847,14 @@ export default function Purchase(props: Props) {
                         name={`items[${index}].inventoryItem`}
                         //defaultValue= {inventories.find(object => Number(object.value) === costs[index].taxRateItem.value)};
                         onChange={(e: any) =>
-                          handleChange(e, `items[${index}].inventoryItem`)
+                          handleChangeInventoryItem(
+                            e,
+                            `items[${index}].inventoryItem`,
+                            `items[${index}].chartOfAccountItem`,
+                            index
+                          )
                         }
+                        fullWidth
                         defaultValue={
                           addPurchaseItem === true
                             ? null
@@ -769,13 +882,16 @@ export default function Purchase(props: Props) {
 
                 <Grid item xs={2}>
                   <Controller
+                    //isDisabled = {reactSelect[index].value} //{`selectDisable${index}`}
                     control={control}
+                    id={`items[${index}].chartOfAccountItem`}
                     name={`items[${index}].chartOfAccountItem`}
                     render={(
                       { onChange, onBlur, value, name, ref },
                       { invalid, isTouched, isDirty }
                     ) => (
                       <CreatableSelect
+                        id={`items[${index}].chartOfAccountItem`}
                         name={`items[${index}].chartOfAccountItem`}
                         onChange={(e: any) =>
                           handleSelectChange(
@@ -787,21 +903,29 @@ export default function Purchase(props: Props) {
                           addPurchaseItem === true
                             ? null
                             : chartOfAccounts.find(
-                                (obj: any) =>
-                                  Number(obj["value"]) ===
-                                  Number(
-                                    props.rowData.items[index]
-                                      .chartOfAccountItem.value
-                                  )
-                              )
+                              (obj: any) =>
+                                Number(obj["value"]) ===
+                                Number(
+                                  props.rowData.items[index]
+                                    .chartOfAccountItem.value
+                                )
+                            )
                         }
                         inputRef={register()}
                         options={chartOfAccounts}
                         placeholder="Please select category"
                         className={classes.reactSelect}
+                        isDisabled={
+                          typeof getValues(`items[${index}].inventoryItem`) ===
+                            "undefined" ||
+                            getValues(`items[${index}].inventoryItem`).value === null
+                            ? false
+                            : true
+                        }
                       />
                     )}
                   />
+                  
                   <p className={classes.p}>
                     {
                       errors?.["items"]?.[index]?.["chartOfAccountItem"]?.[
@@ -952,7 +1076,7 @@ export default function Purchase(props: Props) {
                 </Grid>
                 <Grid item xs={2}>
                   <table
-                    width="100%"
+                    //width="100%"
                     cellPadding="0px"
                     cellSpacing="0px"
                     //style={{tableLayout: "fixed"}}
@@ -1077,6 +1201,7 @@ export default function Purchase(props: Props) {
                 remove(deleteItemId.current);
                 handleUpdateTotal();
                 setOpenDelete(false);
+                setCounterRender(counterRender + 1);
               }}
               color="primary"
               autoFocus
