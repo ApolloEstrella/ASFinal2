@@ -10,6 +10,7 @@ namespace AccountingSystem.Services.Interfaces
     {
         List<InventoryModel> GetAll();
         List<InventoryItemModel> GetSelect();
+        List<InventoryItemModel> GetSelectPerType(string type);
         int Add(InventoryModel inventoryModel);
         int Update(InventoryModel inventoryModel);
         int Delete(int Id);

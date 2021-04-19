@@ -26,6 +26,8 @@ namespace AccountingSystem.Services
                 Purchase purchase = new Purchase
                 {
                     SubsidiaryLedgerAccountId = purchaseModel.Vendor.Value,
+                    PurchaseModeOfPayment = purchaseModel.ModeOfPayment,
+                    ChartOfAccountId = purchaseModel.ChartOfAccounts.Value,
                     PurchaseReferenceNo = purchaseModel.ReferenceNo,
                     PurchaseAmount = purchaseModel.Amount,
                     PurchaseDate = purchaseModel.Date,
@@ -159,7 +161,9 @@ namespace AccountingSystem.Services
                                                a.PurchaseReferenceNo,
                                                a.PurchaseDate,
                                                a.PurchaseDueDate,
-                                               a.Description
+                                               a.Description,
+                                               a.PurchaseModeOfPayment,
+                                               a.ChartOfAccountId
                                            }).ToList()
                                         .Where(x => x.Id == Id)
                                         .Select(x => new PurchaseModel
@@ -170,6 +174,8 @@ namespace AccountingSystem.Services
                                             DueDate = x.PurchaseDueDate,
                                             Description = x.Description,
                                             ReferenceNo = x.PurchaseReferenceNo,
+                                            ModeOfPayment = x.PurchaseModeOfPayment,
+                                            ChartOfAccounts = new ChartOfAccounts { Value = x.ChartOfAccountId },
                                             Items = (from a in _serverContext.PurchaseDetails
                                                      join b in _serverContext.TaxRates
                                                      on a.PurchaseTaxRateId equals b.Id
@@ -280,6 +286,8 @@ namespace AccountingSystem.Services
             {
                 Purchase purchase = _serverContext.Purchases.Find(purchaseModel.Id);
                 purchase.SubsidiaryLedgerAccountId = purchaseModel.Vendor.Value;
+                purchase.PurchaseModeOfPayment = purchaseModel.ModeOfPayment;
+                purchase.ChartOfAccountId = purchaseModel.ChartOfAccounts.Value;
                 purchase.PurchaseAmount = purchaseModel.Amount;
                 purchase.PurchaseReferenceNo = purchaseModel.ReferenceNo;
                 purchase.Description = purchaseModel.Description;

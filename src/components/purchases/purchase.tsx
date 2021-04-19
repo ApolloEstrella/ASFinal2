@@ -146,12 +146,18 @@ const validationSchema = Yup.object().shape({
   //description: Yup.string().required("Description required"),
   //incomeAccount: Yup.object().nullable().required("Income Account required"),
   id: Yup.number(),
+  modeOfPayment: Yup.string(),
+  chartOfAccounts: Yup.object().when("modeOfPayment", {
+    is: (modeOfPayment) => modeOfPayment === "PD",
+    then: Yup.object().nullable().required("Enter cash or bank account"),
+  }),
+
   items: Yup.array().of(
     Yup.object().shape({
       id: Yup.number(),
-      chartOfAccountItem: Yup.object()
-        .nullable()
-        .required("Sales Item is required"),
+      //chartOfAccountItem: Yup.object()
+      //  .nullable()
+      //  .required("Sales Item is required"),
       //description: Yup.string().nullable().required("Description is required"),
       taxRateItem: Yup.object().nullable().required("Tax Rate is required"),
       //trackingItem: Yup.object().nullable().required("Tracking is required"),
@@ -163,6 +169,11 @@ const validationSchema = Yup.object().shape({
         .nullable()
         .typeError("Unit Price is required")
         .required("Unit Price is required"),
+      inventoryItem: Yup.object(),
+      chartOfAccountItem: Yup.object().when("inventoryItem", {
+        is: null || undefined,
+        then: Yup.object().required("Expense required"),
+      }),
     })
   ),
 });
@@ -182,6 +193,10 @@ interface Props {
 export default function Purchase(props: Props) {
   const [counterRender, setCounterRender] = useState(0);
   const [counterRender2, setCounterRender2] = useState(0);
+  const [editMode, setEditMode] = useState(props.rowData != null ? true : false);
+
+
+
   useEffect(() => { setCounterRender2(counterRender2 + 1); console.log(counterRender)}, [counterRender]);
   const [purchase, getPurchase] = useState();
 
@@ -196,6 +211,7 @@ export default function Purchase(props: Props) {
       .then((results) => results.json())
       .then((data) => {
         getPurchase(data);
+        setPaymentMethod(data?.["modeOfPayment"])
       })
       .catch(function (error) {
         console.log("network error");
@@ -389,7 +405,7 @@ export default function Purchase(props: Props) {
   }, [counterTax]);
 
   useEffect(() => {
-    fetch(configData.SERVER_URL + "Inventory/GetSelect", {
+    fetch(configData.SERVER_URL + "Inventory/GetSelectPerType?type='P'", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -543,7 +559,7 @@ export default function Purchase(props: Props) {
   const [paymentMethod, setPaymentMethod] = React.useState("PD");
 
   const handleChangePaymentMethod = (e: any, field: string) => {
-    setValue(field, e.target.value, { shouldValidate: true });
+    //setValue(field, e.target.value, { shouldValidate: true });
     setPaymentMethod(e.target.value);
   };
 
@@ -565,28 +581,63 @@ export default function Purchase(props: Props) {
 
   const [enableSelectChartOfAccount, setEnableSelectChartOfAccount] = useState("");
 
+
+const handleEnableChartOfAccount = (index: number) => {
+  //alert(getValues(`items[${index}].inventoryItem`).value);
+
+  //if (typeof getValues(`items[${index}].inventoryItem`) === "undefined") {
+  //alert("undefined")
+  //} else {
+  //alert(getValues(`items[${index}].inventoryItem`).value);
+  //}
+
+  if (index <= fields.length - 1  && editMode) {
+    const disable = fields[index].inventoryItem.value === null ? false : true;
+    if (index === fields.length - 1) {
+      setEditMode(false);
+    }
+    return disable;
+  }
+
+  const disable = typeof getValues(`items[${index}].inventoryItem`) === "undefined" ||
+    getValues(`items[${index}].inventoryItem`).value === null ? false : true;
+  
+  return disable;
+};
+
+
   const handleChangeInventoryItem = (
     e: any,
     field: string,
-    field2: string,
+    field2: any,
     index: number
   ) => {
     if (e === null) {
-      setValue(
+     /* setValue(
         `items[${index}].inventoryItem`,
         { value: null },
         { shouldValidate: true }
-      );
+      ); */
 
-      //alert(getValues(`items[${index}].inventoryItem`).value);
+      alert(getValues(`items[${index}].inventoryItem`).value);
 
       //const temp = [...reactSelect];
       //temp[index].value = false;
       //setReactSelect(temp);
-      setCounterRender(counterRender + 1);
+      //setCounterRender(counterRender + 1);
       return;
     }
+
     setValue(field, e, { shouldValidate: true });
+
+    const w = chartOfAccounts.find(p => p["value"] === 6055)
+
+    setValue(
+      `items[${index}].chartOfAccountItem`,
+      w,
+      { shouldValidate: false }
+    )
+    const x = getValues(field2);
     setCounterRender(counterRender + 1);
 
     //const temp = [...reactSelect];
@@ -615,6 +666,14 @@ export default function Purchase(props: Props) {
       <span className="counter">Render Count: {renderCount}</span>
       <Grid container spacing={0}>
         <Grid item xs={12}>
+          <Button
+            onClick={() => {
+              const s = 0;
+              alert(getValues(`items[0].inventoryItem`).value);
+            }}
+          >
+            asdfsadf
+          </Button>
           <TextField
             name="id"
             inputRef={register()}
@@ -666,7 +725,8 @@ export default function Purchase(props: Props) {
             checked={paymentMethod === "PD"}
             onChange={(e) => handleChangePaymentMethod(e, "chartOfAccountId")}
             value="PD"
-            name="paymentMethod"
+            name="modeOfPayment"
+            inputRef={register()}
           />{" "}
           Paid
         </Grid>
@@ -675,22 +735,23 @@ export default function Purchase(props: Props) {
             checked={paymentMethod === "PY"}
             onChange={(e) => handleChangePaymentMethod(e, "chartOfAccountId")}
             value="PY"
-            name="paymentMethod"
+            name="modeOfPayment"
+            inputRef={register()}
           />{" "}
           Payable
         </Grid>
         <Grid item xs={8}>
           <Controller
             control={control}
-            name="chartOfAccountId"
+            name="chartOfAccounts"
             render={(
               { onChange, onBlur, value, name, ref },
               { invalid, isTouched, isDirty }
             ) => (
               <CreatableSelect
-                name="chartOfAccountId"
+                name="chartOfAccounts"
                 onBlur={onBlur}
-                onChange={(e) => handleChange(e, "chartOfAccountId")}
+                onChange={(e) => handleChange(e, "chartOfAccounts")}
                 inputRef={register()}
                 options={chartOfAccounts}
                 isDisabled={paymentMethod === "PY"}
@@ -702,10 +763,19 @@ export default function Purchase(props: Props) {
                 //  zIndex: "5",
                 //}}
                 placeholder="Please select cash or bank account"
+                defaultValue=                
+                {
+                  props.rowData != null ?
+                  chartOfAccounts.find(
+                  (obj: any) =>
+                    Number(obj["value"]) ===
+                      Number(props.rowData.chartOfAccounts["value"])
+                    
+                ) : null }
               />
             )}
           />
-          <p className={classes.p}>{errors.chartOfAccountId?.message}</p>
+          <p className={classes.p}>{errors.chartOfAccounts?.message}</p>
         </Grid>
         <Grid item xs={8}>
           <Controller
@@ -804,13 +874,13 @@ export default function Purchase(props: Props) {
             )}
           />
           <p className={classes.p}>{errors.description?.message}</p>
-          </Grid>
-          { console.log(fields)}
+        </Grid>
+        {console.log(fields)}
         {fields.map((item, index) => {
           //setReactSelect([...setReactSelect, { id: index, value:}])
           var fld = fields;
           // setReactSelect((prevArray) => [...prevArray, {id: index, value: false}]);
-          console.log(fld)
+          console.log(fld);
           return (
             <div key={item.id} style={{ width: "100%" }}>
               <Grid container justify="space-around" direction="row">
@@ -835,7 +905,7 @@ export default function Purchase(props: Props) {
                       />
                     )}
                   />
-                   
+
                   <Controller
                     control={control}
                     name={`items[${index}].inventoryItem`}
@@ -903,29 +973,24 @@ export default function Purchase(props: Props) {
                           addPurchaseItem === true
                             ? null
                             : chartOfAccounts.find(
-                              (obj: any) =>
-                                Number(obj["value"]) ===
-                                Number(
-                                  props.rowData.items[index]
-                                    .chartOfAccountItem.value
-                                )
-                            )
+                                (obj: any) =>
+                                  Number(obj["value"]) ===
+                                  Number(
+                                    props.rowData.items[index]
+                                      .chartOfAccountItem.value
+                                  )
+                              )
                         }
                         inputRef={register()}
                         options={chartOfAccounts}
                         placeholder="Please select category"
                         className={classes.reactSelect}
-                        isDisabled={
-                          typeof getValues(`items[${index}].inventoryItem`) ===
-                            "undefined" ||
-                            getValues(`items[${index}].inventoryItem`).value === null
-                            ? false
-                            : true
-                        }
+                        isDisabled={handleEnableChartOfAccount(index)}
+                        isClearable
                       />
                     )}
                   />
-                  
+
                   <p className={classes.p}>
                     {
                       errors?.["items"]?.[index]?.["chartOfAccountItem"]?.[

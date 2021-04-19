@@ -47,8 +47,28 @@ namespace AccountingSystem.Services
         public List<InventoryItemModel> GetSelect()
         {
             return (from a in _serverContext.Inventories
-                    select new { a.Id, a.InventoryProductServiceName }).ToList()
-                     .Select(x => new InventoryItemModel { value = x.Id, label = x.InventoryProductServiceName }).OrderBy(x => x.label).ToList();
+                    select new { a.Id, 
+                                 a.InventoryProductServiceName, 
+                                 a.InventoryProductServiceAssetAccountId,
+                                 a.InventoryProductServiceIncomeAccountId,
+                                 a.InventoryProductServiceExpenseAccountId
+                    }).ToList()
+                     .Select(x => new InventoryItemModel { value = x.Id, label = x.InventoryProductServiceName, AssetAccountId = x.InventoryProductServiceAssetAccountId }).OrderBy(x => x.label).ToList();
+        }
+
+        public List<InventoryItemModel> GetSelectPerType(string type)
+        {
+            return (from a in _serverContext.Inventories
+                    where a.InventoryProductServiceType == "P"
+                    select new
+                    {
+                        a.Id,
+                        a.InventoryProductServiceName,
+                        a.InventoryProductServiceAssetAccountId,
+                        a.InventoryProductServiceIncomeAccountId,
+                        a.InventoryProductServiceExpenseAccountId
+                    }).ToList()
+                     .Select(x => new InventoryItemModel { value = x.Id, label = x.InventoryProductServiceName, AssetAccountId = x.InventoryProductServiceAssetAccountId }).OrderBy(x => x.label).ToList();
         }
         public int Add(InventoryModel inventoryModel)
         {

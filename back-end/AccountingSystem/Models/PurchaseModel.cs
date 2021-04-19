@@ -18,12 +18,21 @@ namespace AccountingSystem.Models
         public string Description { get; set; }
         public decimal Amount { get; set; }
         public decimal UnpaidBalance { get; set; }
+        public string ModeOfPayment { get; set; }
+        public ChartOfAccounts ChartOfAccounts { get; set; }
+        public int? ChartOfAccountId { get; set; }
         public List<PurchaseItemModel> Items { get; set; }
     }
 
     public class Vendor
     {
         public int Value { get; set; }
+        public string Label { get; set; }
+    }
+
+    public class ChartOfAccounts
+    {
+        public int? Value { get; set; }
         public string Label { get; set; }
     }
 }

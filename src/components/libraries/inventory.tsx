@@ -57,7 +57,7 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name required"),
   productServiceCode: Yup.string().required("Code required"),
   description: Yup.string().required("Description required"),
-  incomeAccount: Yup.object().nullable().required("Income Account required"),
+  //incomeAccount: Yup.object().nullable().required("Income Account required"),
   id: Yup.number(),
 });
 
@@ -378,7 +378,7 @@ export default function EnhancedTable(props: Props) {
                     placeholder="Please select Expense Account"
                     // styles={customStyles}
                     isClearable
-                    isDisabled={selectedRadioValue === "S" ? true : false}
+                    //isDisabled={selectedRadioValue === "S" ? true : false}
                     defaultValue={
                       props.rowData === null
                         ? null

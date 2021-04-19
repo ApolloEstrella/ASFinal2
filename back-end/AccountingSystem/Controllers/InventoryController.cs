@@ -29,6 +29,10 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_inventoryService.GetSelect());
         }
+        public ActionResult GetSelectPerType(string type)
+        {
+            return Ok(_inventoryService.GetSelectPerType(type));
+        }
         public ActionResult Add(InventoryModel inventoryModel)
         
         {

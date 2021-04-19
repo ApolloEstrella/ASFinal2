@@ -10,5 +10,6 @@ namespace AccountingSystem.Models
         public int AR_TRADE_KEY { get; set; }
         //public int SALES_INCOME_KEY { get; set; }
         public int SALES_TAX_KEY { get; set; }
+        public int AP_KEY { get; set; } 
     }
 }

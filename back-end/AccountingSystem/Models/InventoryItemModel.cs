@@ -9,5 +9,6 @@ namespace AccountingSystem.Models
     {
         public int value { get; set; } 
         public string label { get; set; }
+        public int? AssetAccountId { get; set; }
     }
 }
