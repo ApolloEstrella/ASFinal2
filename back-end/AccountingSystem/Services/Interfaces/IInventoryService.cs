@@ -14,5 +14,6 @@ namespace AccountingSystem.Services.Interfaces
         int Add(InventoryModel inventoryModel);
         int Update(InventoryModel inventoryModel);
         int Delete(int Id);
+        decimal GetUnitCost(int inventoryId, decimal quantity, decimal cost);
     }
 }

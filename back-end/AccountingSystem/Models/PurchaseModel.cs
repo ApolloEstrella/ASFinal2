@@ -22,6 +22,7 @@ namespace AccountingSystem.Models
         public ChartOfAccounts ChartOfAccounts { get; set; }
         public int? ChartOfAccountId { get; set; }
         public List<PurchaseItemModel> Items { get; set; }
+        public decimal TotalTaxes { get; set; }
     }
 
     public class Vendor

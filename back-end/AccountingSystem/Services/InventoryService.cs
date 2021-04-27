@@ -106,5 +106,14 @@ namespace AccountingSystem.Services
             _serverContext.SaveChanges();
             return Id;
         }
+        public decimal GetUnitCost(int inventoryId, decimal quantity, decimal cost)
+        {
+
+
+
+
+
+            return 1;
+        }
     }
 }

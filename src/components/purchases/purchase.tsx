@@ -268,6 +268,7 @@ export default function Purchase(props: Props) {
     values.date = moment.parseZone(values.date.toString()).toDate();
     values.dueDate = moment.parseZone(values.dueDate.toString()).toDate();
     values.amount = totalAmount;
+    values.totalTaxes = totalTaxes;
 
     var url: string;
     var method: string;
@@ -630,7 +631,7 @@ const handleEnableChartOfAccount = (index: number) => {
 
     setValue(field, e, { shouldValidate: true });
 
-    const w = chartOfAccounts.find(p => p["value"] === 6055)
+    const w = chartOfAccounts.find((p) => p["value"] === e.assetAccountId);
 
     setValue(
       `items[${index}].chartOfAccountItem`,

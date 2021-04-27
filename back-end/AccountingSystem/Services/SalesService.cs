@@ -199,10 +199,12 @@ namespace AccountingSystem.Services
             int ARTradeKey = appSettings.Value.AR_TRADE_KEY;
             //int SalesIncomeKey = appSettings.Value.SALES_INCOME_KEY;
             int SalesTaxKey = appSettings.Value.SALES_TAX_KEY;
+            int ledgerMasterId = 0;
             _serverContext.Database.BeginTransaction();
+            bool stocksAvailable = true;
             try
             {
-                int ledgerMasterId = UpdateLedger(customerInvoiceModel, true);
+                ledgerMasterId = UpdateLedger(customerInvoiceModel, true);
                 UpdateGeneralLedger(customerInvoiceModel, ledgerMasterId, ARTradeKey, SalesTaxKey);
 
                 // collectively sum all qty per itemid inorder to check items availability
@@ -217,29 +219,46 @@ namespace AccountingSystem.Services
 
                     if (Quantity.balance < item.Value)
                     {
-                        _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
+                        /* _serverContext.InvoiceWithoutCosts.Add(new InvoiceWithoutCost
                         {
                             InvoiceWithoutCostInvoiceNo = customerInvoiceModel.InvoiceNo,
                             InvoiceWithoutCostDate = customerInvoiceModel.Date
                         });
-                        _serverContext.SaveChanges();
+                        _serverContext.SaveChanges(); */
+                        stocksAvailable = false;
                         break;
                     }
                 }
-                Id = ledgerMasterId;
                 _serverContext.Database.CommitTransaction();
             }
             catch (Exception ex)
             {
                 _serverContext.Database.RollbackTransaction();
             }
-            customerInvoiceModel.Id = Id;
+            customerInvoiceModel.Id = ledgerMasterId;
             return customerInvoiceModel;
+        }
+
+        bool StocksAvailable(CustomerInvoiceModel customerInvoiceModel)
+        {
+            // collectively sum all qty per itemid inorder to check items availability
+            var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
+            foreach (var item in results)
+            {
+                var Quantity = (from a in _serverContext.ViewInventoryBalances
+                                where a.Id == item.Id
+                                select new { balance = a.Balance }).FirstOrDefault();
+
+                if (Quantity == null) continue;
+
+                if (Quantity.balance < item.Value) return false;
+            }
+            return true;
         }
 
         public CustomerInvoiceModel EditSalesInvoice(CustomerInvoiceModel customerInvoiceModel)
         {
-            
+
             _serverContext.Database.BeginTransaction();
             try
             {
@@ -412,6 +431,61 @@ namespace AccountingSystem.Services
                 _serverContext.GeneralLedgerDetails.Add(generalLedgerDetail);
                 _serverContext.SaveChanges();
             }
+            //if (StocksAvailable(customerInvoiceModel))
+            //{
+            var results = customerInvoiceModel.Items;
+            // collectively sum all qty per itemid inorder to check items availability
+            //var results = customerInvoiceModel.Items.GroupBy(x => x.SalesItem.Value).Select(g => new { Id = g.Key, Value = g.Sum(s => s.Qty) });
+
+            //decimal costs = 0;
+            foreach (var item in results)
+            {
+                var inventoryProductType = (_serverContext.Inventories.Where(x => x.Id == item.SalesItem.Value && x.InventoryProductServiceType == "P").Select(x => new { x.InventoryProductServiceType, x.Id }).SingleOrDefault());
+                if (inventoryProductType.InventoryProductServiceType == "P")
+                {
+                    /*var balance = (from a in _serverContext.ViewInventoryBalances
+                                   where a.Id == item.SalesItem.Value
+                                   select new { balance = a.Balance }).FirstOrDefault();
+
+                    var unitCost = (from a in _serverContext.ViewInventoryBalances
+                                    where a.Id == item.SalesItem.Value
+                                    select new { unitCost = a.UnitCost }).FirstOrDefault();*/
+
+
+                    //decimal costs = Math.Round(Convert.ToDecimal(balance) * Convert.ToDecimal(unitCost), 7);
+
+                    //var costOfSalesAccountId = _serverContext.Inventories.Where(x => x.Id == item.Id).Select(x => x.InventoryProductServiceExpenseAccountId).SingleOrDefault();
+                    //var inventoryAccountId = _serverContext.Inventories.Where(x => x.Id == item.Id).Select(x => x.InventoryProductServiceAssetAccountId).SingleOrDefault();
+
+
+                    var costs = (from a in _serverContext.ViewInventoryBalances
+                                   where a.Id == item.SalesItem.Value
+                                   select new { costBalance = a.Balance * a.UnitCost }).FirstOrDefault();
+
+
+
+                    GeneralLedgerDetail generalLedgerDetailDebit = new GeneralLedgerDetail();
+                    var tempDebit = _serverContext.Inventories.Where(x => x.Id == item.SalesItem.Value).FirstOrDefault();
+                    generalLedgerDetailDebit.ChartOfAccountId = Convert.ToInt32(tempDebit.InventoryProductServiceExpenseAccountId);
+                    generalLedgerDetailDebit.GeneralLedgerDetailMode = "D";
+                    generalLedgerDetailDebit.GeneralLedgerId = generalLedger.Id;
+                    generalLedgerDetailDebit.GeneralLedgerDetailAmount = Convert.ToDecimal(costs.costBalance);
+                    generalLedgerDetailDebit.GeneralLedgerDetailDescription = item.Description;
+                    _serverContext.GeneralLedgerDetails.Add(generalLedgerDetailDebit);
+                    _serverContext.SaveChanges();
+
+                    GeneralLedgerDetail generalLedgerDetailCredit = new GeneralLedgerDetail();
+                    var tempCredit = _serverContext.Inventories.Where(x => x.Id == item.SalesItem.Value).FirstOrDefault();
+                    generalLedgerDetailCredit.ChartOfAccountId = Convert.ToInt32(tempCredit.InventoryProductServiceAssetAccountId);
+                    generalLedgerDetailCredit.GeneralLedgerDetailMode = "C";
+                    generalLedgerDetailCredit.GeneralLedgerId = generalLedger.Id;
+                    generalLedgerDetailCredit.GeneralLedgerDetailAmount = Convert.ToDecimal(costs.costBalance);
+                    generalLedgerDetailDebit.GeneralLedgerDetailDescription = item.Description;
+                    _serverContext.GeneralLedgerDetails.Add(generalLedgerDetailCredit);
+                    _serverContext.SaveChanges();
+                }
+            }
+             
         }
 
         public int AddUploadFiles(int id, FileModel files)
@@ -564,7 +638,7 @@ namespace AccountingSystem.Services
                 }
 
                 foreach (var item in customerInvoicePaymentModel.Items)
-                {   
+                {
                     GeneralLedger generalLedger = new GeneralLedger
                     {
                         SubsidiaryLedgerAccountId = customerInvoicePaymentModel.CustomerId,
@@ -698,17 +772,17 @@ namespace AccountingSystem.Services
                             _serverContext.SaveChanges();
                         }
                     }
-                } 
+                }
                 // update general ledger
                 var list = _serverContext.GeneralLedgers.Where(x => x.GeneralLedgerType == "PI" && x.LedgerMasterId == id).ToList();
-                foreach(var item in list)
+                foreach (var item in list)
                 {
                     var glItem = _serverContext.GeneralLedgers.Find(item.Id);
                     _serverContext.GeneralLedgers.Remove(glItem);
                     _serverContext.SaveChanges();
                 };
 
-               _serverContext.Database.CommitTransaction();
+                _serverContext.Database.CommitTransaction();
             }
             catch (Exception ex)
             {

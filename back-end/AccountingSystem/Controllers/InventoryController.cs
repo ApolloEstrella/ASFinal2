@@ -48,5 +48,10 @@ namespace AccountingSystem.Controllers
         {
             return Ok(_inventoryService.Delete(Id));
         }
+
+        public ActionResult GetUnitCost(int inventoryId, decimal quantity,decimal cost)
+        {
+            return Ok(GetUnitCost(inventoryId, quantity, cost));
+        }
     }
 }
